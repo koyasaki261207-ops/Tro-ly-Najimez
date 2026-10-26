@@ -305,14 +305,25 @@ function healLedgerData(data) {
 
   if (changed) {
     try {
-      localStorage.setItem(APP_CONFIG.ledgerKey, JSON.stringify(data));
+      localStorage.setItem(getCurrentLedgerKey(), JSON.stringify(data));
     } catch (e) { }
   }
   return data;
 }
 
+// Lấy mã khóa lưu trữ riêng biệt theo tài khoản người dùng
+function getCurrentLedgerKey() {
+  const uid = window.currentUserUid || (window.currentUser && window.currentUser.uid);
+  if (uid) {
+    return `${APP_CONFIG.ledgerKey}_user_${uid}`;
+  }
+  return APP_CONFIG.ledgerKey;
+}
+window.getCurrentLedgerKey = getCurrentLedgerKey;
+
 function getLedgerData() {
-  const defaultData = {
+  const isGuest = !window.currentUserUid;
+  const defaultData = isGuest ? {
     transactions: [
       { id: 'tx-1', type: 'expense', amount: 45000, category: 'Ăn uống', note: 'Cà phê sáng', timestamp: Date.now() - 3600000 },
       { id: 'tx-2', type: 'expense', amount: 50000, category: 'Di chuyển', note: 'Đổ xăng xe máy', timestamp: Date.now() - 86400000 }
@@ -331,10 +342,21 @@ function getLedgerData() {
     },
     contacts: {},
     calendarEvents: []
+  } : {
+    transactions: [],
+    debts: [],
+    tasks: [],
+    bank: {
+      bankId: 'MB',
+      accountNo: '',
+      accountName: ''
+    },
+    contacts: {},
+    calendarEvents: []
   };
 
   try {
-    const raw = localStorage.getItem(APP_CONFIG.ledgerKey);
+    const raw = localStorage.getItem(getCurrentLedgerKey());
     if (!raw) return defaultData;
     const parsed = JSON.parse(raw);
     const merged = { ...defaultData, ...parsed };
@@ -352,7 +374,7 @@ function getLedgerData() {
 
 function saveLedgerData(data) {
   try {
-    localStorage.setItem(APP_CONFIG.ledgerKey, JSON.stringify(data));
+    localStorage.setItem(getCurrentLedgerKey(), JSON.stringify(data));
     if (typeof updateHeaderStats === 'function') updateHeaderStats();
     if (typeof renderFinanceTab === 'function') renderFinanceTab();
     if (typeof renderTodosTab === 'function') renderTodosTab();

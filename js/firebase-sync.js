@@ -25,8 +25,12 @@ let isCloudSyncing = false;
 let isApplyingRemoteUpdate = false;
 let autoSyncTimer = null;
 
-// Lấy mã đồng bộ hiện tại
+// Lấy mã đồng bộ hiện tại (Ưu tiên UID của tài khoản Google đã đăng nhập để tách biệt dữ liệu)
 function getFirebaseSyncKey() {
+  const uid = window.currentUserUid || (window.currentUser && window.currentUser.uid);
+  if (uid) {
+    return `user_${uid}`;
+  }
   return localStorage.getItem(FIREBASE_SYNC_KEY_STORAGE) || DEFAULT_SYNC_KEY;
 }
 
@@ -67,10 +71,10 @@ function initFirebaseModule() {
       }
     });
 
-    // Tự động đăng nhập ẩn danh để hỗ trợ Firestore Security Rules
-    firebaseAuth.signInAnonymously().catch(authErr => {
-      console.log('[Firebase] Anonymous Auth (tùy chọn):', authErr.message);
-    });
+    // Khởi tạo module xác thực Google (js/auth.js)
+    if (typeof initAuthModule === 'function') {
+      initAuthModule();
+    }
 
     updateSyncStatusUI('online', 'Đã kết nối Firebase');
     console.log('[Firebase] Khởi tạo thành công cho dự án:', NAJIMEZ_FIREBASE_CONFIG.projectId);
@@ -157,8 +161,9 @@ function applyRemoteCloudData(cloudData) {
     // Tự động chuẩn hóa dữ liệu
     const healed = typeof healLedgerData === 'function' ? healLedgerData(mergedData) : mergedData;
 
-    // Lưu vào LocalStorage
-    localStorage.setItem(APP_CONFIG.ledgerKey, JSON.stringify(healed));
+    // Lưu vào LocalStorage riêng biệt theo tài khoản
+    const targetKey = typeof getCurrentLedgerKey === 'function' ? getCurrentLedgerKey() : APP_CONFIG.ledgerKey;
+    localStorage.setItem(targetKey, JSON.stringify(healed));
     localStorage.setItem(FIREBASE_LAST_SYNC_STORAGE, Date.now().toString());
 
     // Cập nhật giao diện
@@ -428,6 +433,7 @@ function initFirebaseSyncModule() {
 }
 
 // Xuất các hàm ra phạm vi toàn cục
+window.initFirebaseModule = initFirebaseModule;
 window.initFirebaseSyncModule = initFirebaseSyncModule;
 window.syncLedgerToFirebase = syncLedgerToFirebase;
 window.pullLedgerFromFirebase = pullLedgerFromFirebase;

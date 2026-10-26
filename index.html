@@ -125,8 +125,28 @@
         </button>
       </nav>
 
-      <!-- Tiện ích nhanh ở chân Sidebar: Đồng hồ & Cài đặt STK VietQR -->
+      <!-- Tiện ích nhanh ở chân Sidebar: Thẻ Google, Đồng hồ & Cài đặt STK VietQR -->
       <div class="sidebar-bottom">
+        <div class="sidebar-user-card" id="sidebarUserCard">
+          <div class="user-guest-view" id="userGuestView">
+            <button type="button" class="btn-sidebar-google-login" id="btnSidebarGoogleLogin">
+              <i class="fa-brands fa-google"></i>
+              <span>Đăng nhập Google</span>
+            </button>
+            <span class="user-hint-text">Dữ liệu riêng biệt theo tài khoản</span>
+          </div>
+          <div class="user-logged-view" id="userLoggedView" style="display: none;">
+            <img id="sidebarUserAvatarImg" src="assets/najimez.jpg" alt="Avatar" class="sidebar-user-avatar" />
+            <div class="sidebar-user-info">
+              <span class="sidebar-user-name" id="sidebarUserName">Tài khoản Google</span>
+              <span class="sidebar-user-email" id="sidebarUserEmail">email@gmail.com</span>
+            </div>
+            <button type="button" class="btn-sidebar-logout" id="btnSidebarLogout" title="Đăng xuất">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
+            </button>
+          </div>
+        </div>
+
         <div class="live-clock-card">
           <span class="clock-time" id="sidebarLiveClock">18:28:44</span>
           <span class="clock-date" id="sidebarLiveDate">Thứ Sáu, 23/10/2026</span>
@@ -171,6 +191,10 @@
               <strong id="headerPendingTasks">2 việc</strong>
             </div>
           </div>
+          <button class="btn-user-profile" id="btnHeaderUserProfile" title="Tài khoản Google (Dữ liệu riêng)">
+            <img id="headerUserAvatarImg" src="assets/najimez.jpg" alt="Avatar" class="header-user-avatar-img" style="display: none;" />
+            <i class="fa-brands fa-google" id="headerUserGuestIcon"></i>
+          </button>
           <button class="btn-cloud-sync" id="btnCloudSync" title="Đồng bộ Đám mây Firebase">
             <i class="fa-solid fa-cloud"></i>
             <span class="cloud-sync-status-dot online" id="cloudSyncStatusDot"></span>
@@ -1592,6 +1616,7 @@
   <script src="js/voice-settings.js?v=3.53.0"></script>
   <script src="js/copilot.js?v=3.53.0"></script>
   <script src="js/stars.js?v=3.53.0"></script>
+  <script src="js/auth.js?v=3.54.0"></script>
   <script src="js/firebase-sync.js?v=3.54.0"></script>
   <!-- Entrypoint khởi động -->
   <script src="app.js?v=3.54.0"></script>
