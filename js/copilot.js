@@ -102,7 +102,7 @@ function initApiKeyModal() {
       if (statusText) statusText.textContent = 'Đang truy vấn ModelService từ Google AI Studio...';
 
       try {
-        const detected = await autoDetectAndTestModel(val);
+        const detected = await autoDetectAndTestModel(val, true);
         setStoredApiKey(val);
         closeModal();
         notifyChat(`🎉 **Kết nối Google Gemini API thành công!**\n\nNajimez đã tự động nhận diện và kích hoạt mô hình: **${detected.displayName || detected.modelName}** (${detected.version}).\n\nToàn bộ khả năng tư duy đỉnh cao, giải bài tập, viết code và phản hồi Real-time Streaming của Gemini đã sẵn sàng! Hãy thử nhắn một câu bất kỳ nhé.`);
@@ -150,14 +150,19 @@ function setActiveModelInfo(info) {
   } catch (e) { }
 }
 
-async function autoDetectAndTestModel(apiKey) {
+async function autoDetectAndTestModel(apiKey, forceDetect = false) {
   const cleanKey = (apiKey || '').trim().replace(/^["']|["']$/g, '').trim();
   if (!cleanKey) {
     throw new Error('Mã API Key trống. Vui lòng dán mã key từ Google AI Studio.');
   }
 
-  // 1. Thử model đã được lưu từ phiên trước
   const saved = getActiveModelInfo();
+  // Nếu đã có model lưu và không yêu cầu ép dò lại: dùng luôn mà không gửi request "hi"
+  if (!forceDetect && saved && saved.modelName && saved.version) {
+    return saved;
+  }
+
+  // 1. Thử model đã được lưu từ phiên trước (khi cần kiểm tra lại)
   if (saved && saved.modelName && saved.version) {
     try {
       const url = `https://generativelanguage.googleapis.com/${saved.version}/models/${saved.modelName}:generateContent?key=${cleanKey}`;
@@ -557,11 +562,16 @@ async function callGeminiAPIStream(userPrompt, onChunk) {
   const apiKey = getStoredApiKey();
   if (!apiKey) return null;
 
-  const modelInfo = await autoDetectAndTestModel(apiKey);
-  const streamUrl = `https://generativelanguage.googleapis.com/${modelInfo.version}/models/${modelInfo.modelName}:streamGenerateContent?key=${apiKey}&alt=sse`;
+  let modelInfo = await autoDetectAndTestModel(apiKey, false);
+  let streamUrl = `https://generativelanguage.googleapis.com/${modelInfo.version}/models/${modelInfo.modelName}:streamGenerateContent?key=${apiKey}&alt=sse`;
+
+  // Clone conversationHistory bằng structuredClone để tránh sửa trực tiếp vào conversationHistory[0] khi dùng model v1
+  const clonedHistory = (typeof structuredClone === 'function')
+    ? structuredClone(conversationHistory)
+    : JSON.parse(JSON.stringify(conversationHistory));
 
   const payload = {
-    contents: conversationHistory.concat([
+    contents: clonedHistory.concat([
       { role: 'user', parts: [{ text: userPrompt }] }
     ]),
     generationConfig: {
@@ -587,11 +597,26 @@ async function callGeminiAPIStream(userPrompt, onChunk) {
   let streamSucceeded = false;
 
   try {
-    const res = await fetch(streamUrl, {
+    let res = await fetch(streamUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
+
+    // Chỉ tự động dò lại model khi gọi API gặp lỗi 400 hoặc 404
+    if (res.status === 400 || res.status === 404) {
+      console.warn(`[Gemini Stream] Model ${modelInfo.modelName} trả về mã ${res.status}. Tiến hành tự động dò lại model...`);
+      modelInfo = await autoDetectAndTestModel(apiKey, true);
+      streamUrl = `https://generativelanguage.googleapis.com/${modelInfo.version}/models/${modelInfo.modelName}:streamGenerateContent?key=${apiKey}&alt=sse`;
+      if (modelInfo.version === 'v1beta') {
+        payload.system_instruction = { parts: [{ text: dynamicSystemPrompt }] };
+      }
+      res = await fetch(streamUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+    }
 
     if (res.ok && res.body) {
       const reader = res.body.getReader();
@@ -645,11 +670,16 @@ async function callGeminiAPIFallback(userPrompt, modelInfo = null) {
   const apiKey = getStoredApiKey();
   if (!apiKey) return null;
 
-  const info = modelInfo || await autoDetectAndTestModel(apiKey);
-  const url = `https://generativelanguage.googleapis.com/${info.version}/models/${info.modelName}:generateContent?key=${apiKey}`;
+  let info = modelInfo || await autoDetectAndTestModel(apiKey, false);
+  let url = `https://generativelanguage.googleapis.com/${info.version}/models/${info.modelName}:generateContent?key=${apiKey}`;
+
+  // Clone conversationHistory bằng structuredClone để không làm prompt nhân bản
+  const clonedHistory = (typeof structuredClone === 'function')
+    ? structuredClone(conversationHistory)
+    : JSON.parse(JSON.stringify(conversationHistory));
 
   const payload = {
-    contents: conversationHistory.concat([
+    contents: clonedHistory.concat([
       { role: 'user', parts: [{ text: userPrompt }] }
     ]),
     generationConfig: {
@@ -668,11 +698,26 @@ async function callGeminiAPIFallback(userPrompt, modelInfo = null) {
     }
   }
 
-  const res = await fetch(url, {
+  let res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
+
+  // Chỉ dò lại model khi gặp lỗi 400 hoặc 404
+  if (res.status === 400 || res.status === 404) {
+    console.warn(`[Gemini Fallback] Model ${info.modelName} trả về mã ${res.status}. Tiến hành tự động dò lại model...`);
+    info = await autoDetectAndTestModel(apiKey, true);
+    url = `https://generativelanguage.googleapis.com/${info.version}/models/${info.modelName}:generateContent?key=${apiKey}`;
+    if (info.version === 'v1beta') {
+      payload.system_instruction = { parts: [{ text: dynamicSystemPrompt }] };
+    }
+    res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  }
 
   if (res.ok) {
     const data = await res.json();
@@ -2125,6 +2170,9 @@ function getNaturalAIResponse(userText) {
     let amountStr = expenseMatch[2] || expenseMatch[1];
     let note = (expenseMatch[1] === amountStr ? expenseMatch[2] : expenseMatch[1]) || 'Khoản chi tiêu';
     let amount = parseAmount(amountStr);
+    if (amount <= 0) {
+      return { text: 'Số tiền chi tiêu bạn cung cấp không hợp lệ. Vui lòng nói rõ số tiền nhé!' };
+    }
     return {
       text: `Tôi đã ghi nhận khoản chi tiêu cho **${note}** với số tiền **${formatCurrency(amount)}** vào sổ tài chính của bạn.\n\n<!--NAJIMEZ_ACTION:{"type":"expense","amount":${amount},"category":"Chi tiêu","note":"${note}"}-->`
     };
@@ -2137,6 +2185,9 @@ function getNaturalAIResponse(userText) {
     let amountStr = incomeMatch[2] || incomeMatch[1];
     let note = (incomeMatch[1] === amountStr ? incomeMatch[2] : incomeMatch[1]) || 'Khoản thu';
     let amount = parseAmount(amountStr);
+    if (amount <= 0) {
+      return { text: 'Số tiền thu nhập bạn cung cấp không hợp lệ. Vui lòng nói rõ số tiền nhé!' };
+    }
     return {
       text: `Tuyệt vời! Tôi đã cộng khoản thu **${formatCurrency(amount)}** (${note}) vào ngân sách của bạn.\n\n<!--NAJIMEZ_ACTION:{"type":"income","amount":${amount},"category":"Thu nhập","note":"${note}"}-->`
     };
@@ -2204,6 +2255,9 @@ function getNaturalAIResponse(userText) {
     if (iBorrowMatch) {
       const person = iBorrowMatch[1].replace(/^(thằng|bạn|anh|chị|em)\s+/i, '').trim();
       const amount = parseAmount(iBorrowMatch[2]);
+      if (amount <= 0) {
+        return { text: 'Số tiền bạn vay mượn không hợp lệ. Vui lòng cung cấp số tiền cụ thể nha!' };
+      }
       const note = iBorrowMatch[3] || 'Tiền mượn';
       return {
         text: `Đã ghi nhận: Bạn vay mượn từ **${person}** số tiền **${formatCurrency(amount)}** (${note}). Khoản này đã được thêm vào mục **"Tôi nợ họ"** trong sổ nợ.\n\n<!--NAJIMEZ_ACTION:{"type":"debt","direction":"i_owe_them","person":"${person}","amount":${amount},"note":"${note}"}-->`
@@ -2214,6 +2268,9 @@ function getNaturalAIResponse(userText) {
     if (theyBorrowMatch) {
       const person = theyBorrowMatch[1].replace(/^(thằng|bạn|anh|chị|em)\s+/i, '').trim();
       const amount = parseAmount(theyBorrowMatch[2]);
+      if (amount <= 0) {
+        return { text: 'Số tiền cho mượn không hợp lệ. Vui lòng cung cấp số tiền cụ thể nha!' };
+      }
       const note = theyBorrowMatch[3] || 'Cho mượn tiền';
       return {
         text: `Đã lưu vào sổ nợ: **${person}** nợ bạn **${formatCurrency(amount)}** (${note}). Bạn có thể mở mã VietQR bên dưới để gửi yêu cầu thanh toán nhanh chóng.\n\n<!--NAJIMEZ_ACTION:{"type":"debt","direction":"they_owe_me","person":"${person}","amount":${amount},"note":"${note}"}-->`

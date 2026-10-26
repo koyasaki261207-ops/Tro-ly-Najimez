@@ -374,11 +374,38 @@ function escapeHTML(str) {
 }
 
 function parseAmount(str) {
-  if (!str) return 50000;
-  let clean = str.toLowerCase().replace(/đ|vnd/g, '').trim();
-  let num = parseFloat(clean.replace(',', '.'));
-  if (clean.includes('tr') || clean.includes('triệu')) return num * 1000000;
-  if (clean.includes('k') || clean.includes('nghìn') || clean.includes('ngàn')) return num * 1000;
+  if (str === null || str === undefined) return 0;
+  let clean = String(str).toLowerCase().replace(/đ|vnd/g, '').trim();
+  if (!clean) return 0;
+
+  const isMillion = clean.includes('tr') || clean.includes('triệu');
+  const isThousand = clean.includes('k') || clean.includes('nghìn') || clean.includes('ngàn');
+
+  // Loại bỏ các từ đơn vị để xử lý phần số
+  clean = clean.replace(/(?:triệu|tr|nghìn|ngàn|k)/g, '').trim();
+
+  // Nhận diện dấu phân cách hàng nghìn:
+  // 1. Dạng có từ 2 dấu chấm hoặc 2 dấu phẩy trở lên (vd: 1.000.000 hoặc 1,500,000)
+  if (/(?:\.\d{3}){2,}/.test(clean) || /(?:,\d{3}){2,}/.test(clean)) {
+    clean = clean.replace(/[.,]/g, '');
+  }
+  // 2. Dạng có đúng 1 dấu chấm hoặc phẩy và theo sau là đúng 3 chữ số kết thúc chuỗi (vd: 50.000 hoặc 50,000 hoặc 1.500)
+  else if (/^\d{1,3}[.,]\d{3}$/.test(clean)) {
+    clean = clean.replace(/[.,]/g, '');
+  }
+  // 3. Dạng số thập phân thông thường (vd: 1,5 hoặc 2,5)
+  else if (/^\d+,\d+$/.test(clean)) {
+    clean = clean.replace(',', '.');
+  }
+
+  let num = parseFloat(clean);
+  if (isNaN(num) || num <= 0) return 0;
+
+  if (isMillion) return Math.round(num * 1000000);
+  if (isThousand) return Math.round(num * 1000);
+
+  // Nếu người dùng chỉ nói số tắt < 1000 không đơn vị trong hội thoại (vd: 50 hay 35), quy về nghìn
   if (num < 1000) return num * 1000;
-  return num;
+
+  return Math.round(num);
 }
