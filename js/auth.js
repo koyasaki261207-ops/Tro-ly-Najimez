@@ -133,7 +133,10 @@ async function loginWithGoogle() {
       auth.signInWithRedirect(provider);
       return;
     }
-    if (err.code === 'auth/configuration-not-found' || err.code === 'auth/operation-not-allowed') {
+    if (err.code === 'auth/unauthorized-domain') {
+      const currentDomain = window.location.hostname;
+      alert(`⚠️ Tên miền "${currentDomain}" chưa được cấp quyền đăng nhập trong Firebase!\n\nCách khắc phục (chỉ mất 30 giây):\n1. Mở Firebase Console > Dự án najimez\n2. Vào mục Authentication > Settings (Cài đặt) > Authorized domains\n3. Bấm "Add domain" (Thêm miền) và dán: ${currentDomain}\n4. Bấm "Add" rồi quay lại đây đăng nhập là được ngay!`);
+    } else if (err.code === 'auth/configuration-not-found' || err.code === 'auth/operation-not-allowed') {
       alert('Vui lòng bật Google Provider trong Firebase Console > Authentication > Sign-in method!');
     } else if (err.code !== 'auth/popup-closed-by-user') {
       alert('Lỗi đăng nhập Google: ' + (err.message || 'Không thể đăng nhập'));
