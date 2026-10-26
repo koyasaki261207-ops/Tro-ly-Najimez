@@ -692,16 +692,22 @@ async function callGeminiAPIFallback(userPrompt, modelInfo = null) {
 
 function renderMarkdown(text) {
   if (!text) return '';
+  let rawHtml = '';
   if (window.marked && typeof window.marked.parse === 'function') {
-    return window.marked.parse(text);
+    rawHtml = window.marked.parse(text);
+  } else {
+    let html = escapeHTML(text)
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br/>');
+    rawHtml = `<p>${html}</p>`;
   }
-  let html = escapeHTML(text)
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    .replace(/`(.*?)`/g, '<code>$1</code>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br/>');
-  return `<p>${html}</p>`;
+  if (typeof DOMPurify !== 'undefined' && typeof DOMPurify.sanitize === 'function') {
+    return DOMPurify.sanitize(rawHtml);
+  }
+  return rawHtml;
 }
 
 function attachCodeBlockEnhancements(container) {
@@ -1998,7 +2004,7 @@ function executeAction(action, data) {
               <span>Đã dời lịch: ${escapeHTML(ev.title)}</span>
               <span class="card-category-badge" style="background: ${evColor}25; color: ${evColor};">${escapeHTML(ev.category || 'Học tập')}</span>
             </div>
-            <div class="action-card-sub"><i class="fa-regular fa-clock"></i> Đã chuyển từ ngày ${prevDate} sang ngày ${ev.date}${ev.time ? ` (${ev.time}${ev.endTime ? ' - ' + ev.endTime : ''})` : ''}</div>
+            <div class="action-card-sub"><i class="fa-regular fa-clock"></i> Đã chuyển từ ngày ${escapeHTML(prevDate)} sang ngày ${escapeHTML(ev.date)}${ev.time ? ` (${escapeHTML(ev.time)}${ev.endTime ? ' - ' + escapeHTML(ev.endTime) : ''})` : ''}</div>
           </div>
         </div>
         <div class="action-card-right">
@@ -2047,9 +2053,9 @@ function getNaturalAIResponse(userText) {
       return { text: 'Hiện tại trong hệ thống **không có ai đang nợ tiền bạn** cả! Bạn đang có một dòng tiền thu hồi rất sạch sẽ.' };
     }
     const topPerson = list[0];
-    const details = list.map((c, idx) => `${idx + 1}. **${c.name}**: ${formatCurrency(c.net)}`).join('\n');
+    const details = list.map((c, idx) => `${idx + 1}. **${escapeHTML(c.name)}**: ${formatCurrency(c.net)}`).join('\n');
     return {
-      text: `Dựa trên dữ liệu sổ nợ thời gian thực của bạn:\n\n🏆 Người đang nợ bạn nhiều nhất là **${topPerson.name}** với số tiền **${formatCurrency(topPerson.net)}**.\n\nDanh sách chi tiết những người đang nợ bạn:\n${details}\n\nBạn có muốn tôi tạo mã VietQR gửi cho ${topPerson.name} để nhắc thanh toán không?`
+      text: `Dựa trên dữ liệu sổ nợ thời gian thực của bạn:\n\n🏆 Người đang nợ bạn nhiều nhất là **${escapeHTML(topPerson.name)}** với số tiền **${formatCurrency(topPerson.net)}**.\n\nDanh sách chi tiết những người đang nợ bạn:\n${details}\n\nBạn có muốn tôi tạo mã VietQR gửi cho ${escapeHTML(topPerson.name)} để nhắc thanh toán không?`
     };
   }
 
@@ -2072,9 +2078,9 @@ function getNaturalAIResponse(userText) {
       return { text: 'Tin vui! Hiện tại **bạn không nợ ai bất kỳ khoản tiền nào** cả.' };
     }
     const topPerson = list[0];
-    const details = list.map((c, idx) => `${idx + 1}. **${c.name}**: bạn nợ ${formatCurrency(c.net)}`).join('\n');
+    const details = list.map((c, idx) => `${idx + 1}. **${escapeHTML(c.name)}**: bạn nợ ${formatCurrency(c.net)}`).join('\n');
     return {
-      text: `Dựa trên dữ liệu sổ nợ thời gian thực của bạn:\n\n⚠️ Người bạn đang nợ nhiều nhất là **${topPerson.name}** với số tiền **${formatCurrency(topPerson.net)}**.\n\nDanh sách chi tiết những người bạn đang nợ:\n${details}`
+      text: `Dựa trên dữ liệu sổ nợ thời gian thực của bạn:\n\n⚠️ Người bạn đang nợ nhiều nhất là **${escapeHTML(topPerson.name)}** với số tiền **${formatCurrency(topPerson.net)}**.\n\nDanh sách chi tiết những người bạn đang nợ:\n${details}`
     };
   }
 
