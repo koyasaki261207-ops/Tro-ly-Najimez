@@ -28,11 +28,32 @@ function initClock() {
 function initSidebar() {
   const btnToggle = document.getElementById('btnToggleSidebar');
   const sidebar = document.getElementById('omniSidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
 
-  if (btnToggle && sidebar) {
-    btnToggle.addEventListener('click', () => {
-      sidebar.classList.toggle('collapsed');
-    });
+  function toggleSidebar(forceState) {
+    if (!sidebar) return;
+    const isMobile = window.innerWidth <= 860;
+    if (isMobile) {
+      const willOpen = forceState !== undefined ? forceState : !sidebar.classList.contains('mobile-open');
+      sidebar.classList.toggle('mobile-open', willOpen);
+      if (backdrop) backdrop.classList.toggle('active', willOpen);
+    } else {
+      const willCollapse = forceState !== undefined ? forceState : !sidebar.classList.contains('collapsed');
+      sidebar.classList.toggle('collapsed', willCollapse);
+    }
+  }
+
+  function closeMobileSidebar() {
+    if (sidebar) sidebar.classList.remove('mobile-open');
+    if (backdrop) backdrop.classList.remove('active');
+  }
+
+  if (btnToggle) {
+    btnToggle.addEventListener('click', () => toggleSidebar());
+  }
+
+  if (backdrop) {
+    backdrop.addEventListener('click', closeMobileSidebar);
   }
 }
 
@@ -40,6 +61,7 @@ function initTabNavigation() {
   const navItems = document.querySelectorAll('.sidebar-nav .nav-item');
   const panes = document.querySelectorAll('.tab-pane');
   const sidebar = document.getElementById('omniSidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
 
   navItems.forEach(item => {
     item.addEventListener('click', () => {
@@ -78,9 +100,10 @@ function initTabNavigation() {
           }
         }
 
-        // Tự động ẩn sidebar trên màn hình hẹp
-        if (window.innerWidth <= 860 && sidebar) {
-          sidebar.classList.remove('collapsed');
+        // Tự động ẩn sidebar trên màn hình di động khi chuyển tab
+        if (window.innerWidth <= 860) {
+          if (sidebar) sidebar.classList.remove('mobile-open');
+          if (backdrop) backdrop.classList.remove('active');
         }
       }
     });
