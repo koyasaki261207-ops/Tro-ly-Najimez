@@ -358,6 +358,9 @@ function saveLedgerData(data) {
     if (typeof renderTodosTab === 'function') renderTodosTab();
     if (typeof renderCalendarTab === 'function') renderCalendarTab();
     if (typeof renderTimetableTab === 'function') renderTimetableTab();
+    if (typeof window.syncLedgerToFirebase === 'function') {
+      window.syncLedgerToFirebase(data);
+    }
   } catch (e) {
     console.warn('Lỗi lưu sổ cái:', e);
   }

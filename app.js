@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof initPersonInfoModal === 'function') initPersonInfoModal();
   if (typeof initLuckyWheel === 'function') initLuckyWheel();
   if (typeof initBillImageModule === 'function') initBillImageModule();
+  if (typeof initFirebaseSyncModule === 'function') initFirebaseSyncModule();
 
   // 3. Sổ cái & Thống kê dữ liệu
   initLedgerAndStats();
