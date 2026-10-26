@@ -673,11 +673,11 @@
           </label>
           <div class="input-with-action">
             <input type="text" id="firebaseSyncKeyInput" class="form-input-custom"
-              placeholder="najimez_primary" autocomplete="off" />
-            <button type="button" class="btn-sub-apply" id="btnSaveFirebaseSyncKey">Đổi Mã</button>
+              placeholder="Chưa đăng nhập" autocomplete="off" readonly disabled />
+            <button type="button" class="btn-sub-apply" id="btnSaveFirebaseSyncKey" style="display: none;">Đổi Mã</button>
           </div>
-          <small class="form-help">
-            Dùng chung mã này trên các thiết bị khác (điện thoại, máy tính) để tự động chia sẻ và đồng bộ dữ liệu với nhau!
+          <small class="form-help" id="firebaseSyncKeyHelp">
+            Dữ liệu được tự động bảo mật và đồng bộ riêng biệt theo tài khoản Google của bạn (không áp dụng đổi mã tùy ý).
           </small>
         </div>
 
@@ -706,7 +706,7 @@
           <div>
             <strong>Lưu ý về Firestore Rules:</strong>
             Nếu gặp lỗi quyền hạn (permission-denied), hãy vào Firebase Console &rarr; Firestore Database &rarr; Rules &rarr; đặt:
-            <code>allow read, write: if true;</code>.
+            <code>match /najimez_vault/{docId} { allow read, write: if request.auth != null && docId == 'user_' + request.auth.uid; }</code>
           </div>
         </div>
       </div>
