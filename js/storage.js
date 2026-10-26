@@ -193,31 +193,6 @@ function healLedgerData(data) {
       }
     });
 
-    // Tự động dọn dẹp lịch cũ bị dời: ví dụ Thi Python đã dời sang 25/11 thì xóa bản ghi cũ 25/10
-    const hasPythonNov = uniqueEvents.some(e =>
-      (e.title || '').toLowerCase().includes('thi python') && e.date === '2026-11-25'
-    );
-    if (hasPythonNov) {
-      const prevCount = uniqueEvents.length;
-      const filtered = uniqueEvents.filter(e =>
-        !((e.title || '').toLowerCase().includes('thi python') && e.date === '2026-10-25')
-      );
-      if (filtered.length !== prevCount) {
-        uniqueEvents.length = 0;
-        uniqueEvents.push(...filtered);
-      }
-    }
-
-    // Tự động gắn ngày kết thúc repeatUntil = '2026-12-21' cho các lịch môn Lập trình hướng đối tượng nếu bị thiếu
-    uniqueEvents.forEach(e => {
-      if ((e.title || '').toLowerCase().includes('lập trình hướng đối tượng')) {
-        if (!e.repeatUntil || e.repeatUntil === '') {
-          e.repeatUntil = '2026-12-21';
-          changed = true;
-        }
-      }
-    });
-
     if (uniqueEvents.length !== initialLen || changed) {
       data.calendarEvents = uniqueEvents;
       changed = true;
