@@ -19,7 +19,37 @@ except Exception:
 HOST = '127.0.0.1'
 PORT = 5050
 CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '.cache_tts')
+MAX_CACHE_SIZE_MB = 100
 os.makedirs(CACHE_DIR, exist_ok=True)
+
+def enforce_cache_limit(max_mb: int = MAX_CACHE_SIZE_MB):
+    """Giới hạn dung lượng bộ nhớ đệm, tự động dọn dẹp các tệp cũ nhất khi vượt ngưỡng."""
+    try:
+        if not os.path.exists(CACHE_DIR):
+            return
+        max_bytes = max_mb * 1024 * 1024
+        files = []
+        total_size = 0
+        for entry in os.scandir(CACHE_DIR):
+            if entry.is_file() and entry.name.endswith('.mp3'):
+                stat = entry.stat()
+                files.append((entry.path, stat.st_mtime, stat.st_size))
+                total_size += stat.st_size
+
+        if total_size > max_bytes:
+            # Sắp xếp theo mtime tăng dần (cũ nhất đứng trước)
+            files.sort(key=lambda x: x[1])
+            target_size = int(max_bytes * 0.8)  # Dọn về 80% mức trần
+            for path, _, size in files:
+                try:
+                    os.remove(path)
+                    total_size -= size
+                except Exception:
+                    pass
+                if total_size <= target_size:
+                    break
+    except Exception:
+        pass
 
 def strip_emojis(text: str) -> str:
     """Loại bỏ 100% emoji và biểu tượng icon để voice engine không đọc tên emoji thành tiếng."""
@@ -37,13 +67,51 @@ class NajimezTTSHandler(BaseHTTPRequestHandler):
     protocol_version = 'HTTP/1.1'
 
     def end_headers(self):
-        self.send_header('Access-Control-Allow-Origin', '*')
+        # Giới hạn CORS về localhost:* / 127.0.0.1:* hoặc domain chính thức của app thay vì wildcard '*'
+        req_origin = self.headers.get('Origin', '')
+        allowed_origins = [
+            'http://localhost', 'http://127.0.0.1',
+            'https://najimez.firebaseapp.com', 'https://najimez.web.app'
+        ]
+        send_origin = None
+        if req_origin:
+            if re.match(r'^https?://(?:localhost|127\.0\.0\.1)(?::\d+)?$', req_origin) or req_origin in allowed_origins:
+                send_origin = req_origin
+            elif req_origin == 'null':  # Trường hợp mở file HTML trực tiếp
+                send_origin = 'null'
+
+        if send_origin:
+            self.send_header('Access-Control-Allow-Origin', send_origin)
+            self.send_header('Vary', 'Origin')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type, xi-api-key')
         super().end_headers()
 
+    def send_error_response(self, code, message, content_type='text/plain; charset=utf-8'):
+        """Gửi phản hồi lỗi kèm Content-Length và Connection: close để client không bị treo."""
+        if isinstance(message, dict):
+            body = json.dumps(message, ensure_ascii=False).encode('utf-8')
+            content_type = 'application/json; charset=utf-8'
+        elif isinstance(message, str):
+            body = message.encode('utf-8')
+        elif isinstance(message, bytes):
+            body = message
+        else:
+            body = str(message).encode('utf-8')
+
+        self.send_response(code)
+        self.send_header('Content-Type', content_type)
+        self.send_header('Content-Length', str(len(body)))
+        self.send_header('Connection', 'close')
+        self.end_headers()
+        try:
+            self.wfile.write(body)
+        except Exception:
+            pass
+
     def do_OPTIONS(self):
         self.send_response(200)
+        self.send_header('Content-Length', '0')
         self.end_headers()
 
     async def stream_edge(self, text, voice, rate, pitch, cache_path):
@@ -56,6 +124,7 @@ class NajimezTTSHandler(BaseHTTPRequestHandler):
 
         communicate = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch)
         chunks = []
+        stream_completed = False
         try:
             async for chunk in communicate.stream():
                 if chunk["type"] == "audio":
@@ -64,30 +133,50 @@ class NajimezTTSHandler(BaseHTTPRequestHandler):
                     chunk_header = f"{len(data):X}\r\n".encode('ascii')
                     self.wfile.write(chunk_header + data + b"\r\n")
                     self.wfile.flush()
+
+            # Đóng chunked stream đúng chuẩn HTTP
             self.wfile.write(b"0\r\n\r\n")
             self.wfile.flush()
+            stream_completed = True
         except (ConnectionResetError, ConnectionAbortedError, BrokenPipeError):
             pass
+        except Exception as e:
+            # Xử lý lỗi edge_tts bằng cách đóng stream đúng chuẩn chunked, không gửi thêm 500 sau 200
+            try:
+                self.wfile.write(b"0\r\n\r\n")
+                self.wfile.flush()
+            except Exception:
+                pass
         finally:
-            if chunks:
+            # Chỉ ghi cache khi stream hoàn tất đầy đủ không có lỗi
+            if stream_completed and chunks:
                 all_bytes = b''.join(chunks)
+                tmp_path = cache_path + f".tmp.{os.getpid()}_{id(chunks)}"
                 try:
-                    with open(cache_path, 'wb') as f:
+                    with open(tmp_path, 'wb') as f:
                         f.write(all_bytes)
+                    os.replace(tmp_path, cache_path)
+                    enforce_cache_limit()
                 except Exception:
-                    pass
+                    if os.path.exists(tmp_path):
+                        try:
+                            os.remove(tmp_path)
+                        except Exception:
+                            pass
 
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
         if parsed.path == '/health':
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json; charset=utf-8')
-            self.end_headers()
-            self.wfile.write(json.dumps({
+            body = json.dumps({
                 'status': 'ok',
                 'engines': ['elevenlabs', 'edge-tts'],
                 'voices': ['vi-VN-HoaiMyNeural', 'vi-VN-NamMinhNeural', 'elevenlabs-multilingual-v2']
-            }).encode('utf-8'))
+            }).encode('utf-8')
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json; charset=utf-8')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
             return
 
         # GET /tts - Phát Microsoft Edge Neural TTS siêu tốc qua Streaming hoặc Cache
@@ -99,9 +188,7 @@ class NajimezTTSHandler(BaseHTTPRequestHandler):
             pitch = qs.get('pitch', ['+0Hz'])[0]
 
             if not text:
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(b'Missing text')
+                self.send_error_response(400, 'Missing text')
                 return
 
             # Kiểm tra cache đĩa để phát tức thì 0.005s
@@ -124,17 +211,11 @@ class NajimezTTSHandler(BaseHTTPRequestHandler):
 
             try:
                 asyncio.run(self.stream_edge(text, voice, rate, pitch, cache_path))
-            except Exception as e:
-                try:
-                    self.send_response(500)
-                    self.end_headers()
-                    self.wfile.write(str(e).encode('utf-8'))
-                except Exception:
-                    pass
+            except Exception:
+                pass
             return
 
-        self.send_response(404)
-        self.end_headers()
+        self.send_error_response(404, 'Not Found')
 
     def do_POST(self):
         parsed = urllib.parse.urlparse(self.path)
@@ -153,9 +234,7 @@ class NajimezTTSHandler(BaseHTTPRequestHandler):
             pitch = data.get('pitch', '+0Hz')
 
             if not text:
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(b'Missing text')
+                self.send_error_response(400, 'Missing text')
                 return
 
             cache_hash = hashlib.md5(f"edge_{voice}_{rate}_{pitch}_{text}".encode('utf-8')).hexdigest()
@@ -177,22 +256,15 @@ class NajimezTTSHandler(BaseHTTPRequestHandler):
 
             try:
                 asyncio.run(self.stream_edge(text, voice, rate, pitch, cache_path))
-            except Exception as e:
-                try:
-                    self.send_response(500)
-                    self.end_headers()
-                    self.wfile.write(str(e).encode('utf-8'))
-                except Exception:
-                    pass
+            except Exception:
+                pass
             return
 
         # 2. Kiểm tra ElevenLabs API Key & Hạn mức ký tự
         if parsed.path == '/check_eleven':
             api_key = data.get('apiKey', '').strip() or self.headers.get('xi-api-key', '').strip()
             if not api_key:
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(json.dumps({'valid': False, 'message': 'Vui lòng cung cấp ElevenLabs API Key'}).encode('utf-8'))
+                self.send_error_response(400, {'valid': False, 'message': 'Vui lòng cung cấp ElevenLabs API Key'})
                 return
 
             try:
@@ -205,16 +277,18 @@ class NajimezTTSHandler(BaseHTTPRequestHandler):
                     tier = info.get('tier', 'free')
                     used = info.get('character_count', 0)
                     limit = info.get('character_limit', 10000)
-                    self.send_response(200)
-                    self.send_header('Content-Type', 'application/json; charset=utf-8')
-                    self.end_headers()
-                    self.wfile.write(json.dumps({
+                    resp_body = json.dumps({
                         'valid': True,
                         'tier': tier,
                         'character_count': used,
                         'character_limit': limit,
                         'remaining': max(0, limit - used)
-                    }).encode('utf-8'))
+                    }).encode('utf-8')
+                    self.send_response(200)
+                    self.send_header('Content-Type', 'application/json; charset=utf-8')
+                    self.send_header('Content-Length', str(len(resp_body)))
+                    self.end_headers()
+                    self.wfile.write(resp_body)
             except urllib.error.HTTPError as he:
                 try:
                     err_json = json.loads(he.read().decode('utf-8'))
@@ -229,15 +303,19 @@ class NajimezTTSHandler(BaseHTTPRequestHandler):
                 except Exception:
                     friendly_msg = f"ElevenLabs HTTP {he.code}"
 
+                resp_body = json.dumps({'valid': False, 'message': friendly_msg}).encode('utf-8')
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Content-Length', str(len(resp_body)))
                 self.end_headers()
-                self.wfile.write(json.dumps({'valid': False, 'message': friendly_msg}).encode('utf-8'))
+                self.wfile.write(resp_body)
             except Exception as e:
+                resp_body = json.dumps({'valid': False, 'message': str(e)}).encode('utf-8')
                 self.send_response(200)
                 self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Content-Length', str(len(resp_body)))
                 self.end_headers()
-                self.wfile.write(json.dumps({'valid': False, 'message': str(e)}).encode('utf-8'))
+                self.wfile.write(resp_body)
             return
 
         # 3. Tạo giọng đọc ElevenLabs (kèm Cache đệm thông minh)
@@ -246,18 +324,20 @@ class NajimezTTSHandler(BaseHTTPRequestHandler):
             text = strip_emojis(data.get('text', '').strip())
             voice_id = data.get('voiceId', '21m00Tcm4TlvDq8ikWAM').strip() or '21m00Tcm4TlvDq8ikWAM'
             model_id = data.get('modelId', 'eleven_flash_v2_5').strip() or 'eleven_flash_v2_5'
-            stability = float(data.get('stability', 0.5))
-            similarity = float(data.get('similarity', 0.8))
+
+            # Bọc float(stability/similarity) bằng try/except trả 400
+            try:
+                stability = float(data.get('stability', 0.5))
+                similarity = float(data.get('similarity', 0.8))
+            except (ValueError, TypeError):
+                self.send_error_response(400, {'error': 'Tham số stability và similarity phải là số thực (float)'})
+                return
 
             if not api_key:
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(json.dumps({'error': 'Thiếu ElevenLabs API Key'}).encode('utf-8'))
+                self.send_error_response(400, {'error': 'Thiếu ElevenLabs API Key'})
                 return
             if not text:
-                self.send_response(400)
-                self.end_headers()
-                self.wfile.write(json.dumps({'error': 'Thiếu nội dung văn bản'}).encode('utf-8'))
+                self.send_error_response(400, {'error': 'Thiếu nội dung văn bản'})
                 return
 
             cache_hash = hashlib.md5(f"el_{voice_id}_{model_id}_{text}_{stability}_{similarity}".encode('utf-8')).hexdigest()
@@ -301,11 +381,18 @@ class NajimezTTSHandler(BaseHTTPRequestHandler):
                 with urllib.request.urlopen(req, timeout=25) as resp:
                     audio_bytes = resp.read()
 
+                tmp_path = cache_path + f".tmp.{os.getpid()}_{id(payload)}"
                 try:
-                    with open(cache_path, 'wb') as f:
+                    with open(tmp_path, 'wb') as f:
                         f.write(audio_bytes)
+                    os.replace(tmp_path, cache_path)
+                    enforce_cache_limit()
                 except Exception:
-                    pass
+                    if os.path.exists(tmp_path):
+                        try:
+                            os.remove(tmp_path)
+                        except Exception:
+                            pass
 
                 self.send_response(200)
                 self.send_header('Content-Type', 'audio/mpeg')
@@ -315,25 +402,12 @@ class NajimezTTSHandler(BaseHTTPRequestHandler):
                 self.wfile.write(audio_bytes)
             except urllib.error.HTTPError as he:
                 err_body = he.read().decode('utf-8', errors='replace')
-                self.send_response(he.code)
-                self.end_headers()
-                self.wfile.write(err_body.encode('utf-8'))
+                self.send_error_response(he.code, err_body)
             except Exception as e:
-                self.send_response(500)
-                self.end_headers()
-                self.wfile.write(str(e).encode('utf-8'))
+                self.send_error_response(500, str(e))
             return
 
-        self.send_response(404)
-        self.end_headers()
-
-    async def synthesize_edge(self, text, voice, rate, pitch):
-        communicate = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch)
-        chunks = []
-        async for chunk in communicate.stream():
-            if chunk["type"] == "audio":
-                chunks.append(chunk["data"])
-        return b''.join(chunks)
+        self.send_error_response(404, 'Not Found')
 
     def log_message(self, format, *args):
         pass
