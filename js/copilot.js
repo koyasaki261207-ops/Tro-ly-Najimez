@@ -2599,8 +2599,18 @@ function initChatEngine() {
   function addUserMessage(text) {
     const msg = document.createElement('div');
     msg.className = 'chat-msg user';
+    const userPhoto = (typeof getUserAvatarUrl === 'function' ? getUserAvatarUrl() : null)
+      || (window.currentUser && window.currentUser.photoURL)
+      || null;
+
     msg.innerHTML = `
-      <div class="msg-avt"><i class="fa-solid fa-user"></i></div>
+      <div class="msg-avt">
+        ${userPhoto ? `
+          <img src="${escapeHTML(userPhoto)}" alt="User" class="user-avatar-img" onerror="this.parentElement.innerHTML = '<i class=\\'fa-solid fa-user\\'></i>';" />
+        ` : `
+          <i class="fa-solid fa-user"></i>
+        `}
+      </div>
       <div class="msg-text-bubble"><p>${escapeHTML(text)}</p></div>
     `;
     feed.appendChild(msg);

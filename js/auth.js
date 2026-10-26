@@ -217,6 +217,39 @@ function updateUserAuthUI() {
       headerGuestIcon.style.display = 'inline-block';
     }
   }
+
+  // Đồng bộ cập nhật ảnh đại diện người dùng trong toàn bộ bong bóng chat
+  updateUserChatAvatars();
+}
+
+// Lấy URL ảnh đại diện của người dùng (Google Photo URL hoặc header avatar)
+function getUserAvatarUrl() {
+  const user = window.currentUser;
+  if (user && user.photoURL) {
+    return user.photoURL;
+  }
+  const headerAvatar = document.getElementById('headerUserAvatarImg');
+  if (headerAvatar && headerAvatar.style.display !== 'none' && headerAvatar.src && !headerAvatar.src.endsWith('assets/najimez.jpg')) {
+    return headerAvatar.src;
+  }
+  const sidebarAvatar = document.getElementById('sidebarUserAvatarImg');
+  if (sidebarAvatar && sidebarAvatar.src && !sidebarAvatar.src.endsWith('assets/najimez.jpg')) {
+    return sidebarAvatar.src;
+  }
+  return null;
+}
+
+// Cập nhật lại avatar của các tin nhắn người dùng trong khung chat
+function updateUserChatAvatars() {
+  const photo = getUserAvatarUrl();
+  const userAvatars = document.querySelectorAll('.chat-msg.user .msg-avt');
+  userAvatars.forEach(avt => {
+    if (photo) {
+      avt.innerHTML = `<img src="${escapeHTML(photo)}" alt="User" class="user-avatar-img" onerror="this.parentElement.innerHTML = '<i class=\\'fa-solid fa-user\\'></i>';" />`;
+    } else {
+      avt.innerHTML = '<i class="fa-solid fa-user"></i>';
+    }
+  });
 }
 
 // Xuất các hàm ra phạm vi toàn cục
@@ -225,3 +258,5 @@ window.initAuthModule = initAuthModule;
 window.loginWithGoogle = loginWithGoogle;
 window.logoutGoogleUser = logoutGoogleUser;
 window.updateUserAuthUI = updateUserAuthUI;
+window.getUserAvatarUrl = getUserAvatarUrl;
+window.updateUserChatAvatars = updateUserChatAvatars;
