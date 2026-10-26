@@ -2767,9 +2767,126 @@ function initChatEngine() {
     }, 350);
   }
 
+  // Quản lý tính năng Nhấn Mic để nói (Speech-to-Text / Web Speech API)
+  let stopVoiceInput = null;
+  const btnVoiceInput = document.getElementById('btnVoiceInput');
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (btnVoiceInput) {
+    if (!SpeechRecognition) {
+      btnVoiceInput.addEventListener('click', () => {
+        if (typeof showAppToast === 'function') {
+          showAppToast('Trình duyệt của bạn không hỗ trợ nhận diện giọng nói (Web Speech API). Vui lòng dùng Chrome, Edge hoặc Cốc Cốc.', 'warning');
+        } else {
+          alert('Trình duyệt của bạn không hỗ trợ nhận diện giọng nói.');
+        }
+      });
+    } else {
+      let recognition = null;
+      let isListening = false;
+      let finalTranscript = '';
+      const originalPlaceholder = input ? input.placeholder : '';
+
+      stopVoiceInput = function () {
+        if (!isListening) return;
+        isListening = false;
+        try {
+          if (recognition) recognition.stop();
+        } catch (e) {}
+        btnVoiceInput.classList.remove('listening');
+        btnVoiceInput.title = 'Nhấn để nói (Chuyển giọng nói thành văn bản tiếng Việt)';
+        const icon = btnVoiceInput.querySelector('i');
+        if (icon) icon.className = 'fa-solid fa-microphone';
+        if (input) {
+          input.placeholder = originalPlaceholder;
+          input.focus();
+        }
+      };
+
+      function startListening() {
+        if (isListening) {
+          stopVoiceInput();
+          return;
+        }
+
+        try {
+          recognition = new SpeechRecognition();
+          recognition.lang = 'vi-VN';
+          recognition.continuous = false; // Tự động ngắt khi kết thúc câu nói
+          recognition.interimResults = true; // Hiển thị chữ tức thì theo thời gian thực
+
+          const initialInputVal = input ? input.value : '';
+          const prefixText = initialInputVal ? (initialInputVal.trim() + ' ') : '';
+          finalTranscript = '';
+
+          recognition.onstart = () => {
+            isListening = true;
+            btnVoiceInput.classList.add('listening');
+            btnVoiceInput.title = 'Đang nghe bạn nói... (Bấm lại để dừng)';
+            const icon = btnVoiceInput.querySelector('i');
+            if (icon) icon.className = 'fa-solid fa-microphone-lines';
+            if (input) {
+              input.placeholder = '🎙️ Najimez đang lắng nghe bạn nói...';
+            }
+            if (typeof showAppToast === 'function') {
+              showAppToast('Đang nghe... Bạn hãy nói vào micro nhé!', 'info');
+            }
+          };
+
+          recognition.onresult = (event) => {
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+              const res = event.results[i];
+              if (res.isFinal) {
+                finalTranscript += res[0].transcript;
+              } else {
+                interimTranscript += res[0].transcript;
+              }
+            }
+            if (input) {
+              const currentWords = finalTranscript || interimTranscript;
+              input.value = prefixText + currentWords;
+            }
+          };
+
+          recognition.onerror = (event) => {
+            console.warn('Speech recognition error:', event.error);
+            if (event.error === 'not-allowed') {
+              if (typeof showAppToast === 'function') {
+                showAppToast('Vui lòng cấp quyền truy cập Micro trên trình duyệt để sử dụng tính năng nói.', 'error');
+              }
+            } else if (event.error !== 'no-speech') {
+              if (typeof showAppToast === 'function') {
+                showAppToast(`Lỗi nhận diện giọng nói: ${event.error}`, 'warning');
+              }
+            }
+            stopVoiceInput();
+          };
+
+          recognition.onend = () => {
+            stopVoiceInput();
+          };
+
+          recognition.start();
+        } catch (err) {
+          console.error('Không thể bật nhận diện giọng nói:', err);
+          stopVoiceInput();
+          if (typeof showAppToast === 'function') {
+            showAppToast('Không thể bật micro, vui lòng kiểm tra thiết bị.', 'error');
+          }
+        }
+      }
+
+      btnVoiceInput.addEventListener('click', () => {
+        startListening();
+      });
+    }
+  }
+
   if (form) {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
+      if (typeof stopVoiceInput === 'function') stopVoiceInput();
       handleUserTurn(input.value);
     });
   }

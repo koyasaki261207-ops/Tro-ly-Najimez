@@ -223,6 +223,7 @@
   }
 
   .btn-voice-settings,
+  .btn-voice-input,
   .btn-send-cmd {
     width: 38px;
     height: 38px;
