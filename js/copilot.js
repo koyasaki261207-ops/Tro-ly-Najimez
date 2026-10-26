@@ -873,20 +873,10 @@ function parseAndExecuteActions(text) {
     }
   }
 
-  // Safety Net (Lưới bảo vệ an toàn): Nếu AI tuyên bố đã xóa bằng lời thoại hoặc người dùng yêu cầu/xác nhận xóa nhưng AI quên xuất thẻ action
+  // Safety Net cho giải quyết / xung đột chiều sổ nợ nếu AI quên xuất thẻ action:
   if (cards.length === 0) {
-    const aiClaimsDebtCleared = /(?:đã\s+(?:tiến\s+hành\s+)?xóa\s+sạch|đã\s+xóa\s+toàn\s+bộ\s+(?:lịch\s+sử\s+)?(?:ghi\s+)?nợ|sổ\s+nợ.*(?:trống\s+trơn|sạch\s+sẽ)|xóa\s+sạch\s+toàn\s+bộ\s+lịch\s+sử\s+ghi\s+nợ)/i.test(text);
     const userPromptClean = typeof lastUserPrompt === 'string' ? lastUserPrompt.toLowerCase().trim() : '';
-    const userConfirmedClear = /(?:xoá\s+luôn|xóa\s+luôn|đồng\s+ý\s+xóa|xác\s+nhận\s+xóa|xoá\s+hết\s+đi|xóa\s+hết\s+đi|xoá\s+sạch|xóa\s+sạch)/i.test(userPromptClean);
-    const userRequestedClearDebts = /(?:xóa|xoá)\s+(?:tất\s+cả|toàn\s+bộ|hết|sạch)\s+(?:lịch\s+sử\s+)?(?:giao\s+dịch\s+)?(?:trong\s+)?sổ\s+nợ/i.test(userPromptClean);
-
-    if (aiClaimsDebtCleared || userRequestedClearDebts || (userConfirmedClear && /(?:sổ\s+nợ|khoản\s+nợ|ghi\s+nợ)/i.test(text))) {
-      const cardEl = executeAction({ type: 'clear_all_debts' }, data);
-      if (cardEl) cards.push(cardEl);
-    }
-
-    // Safety Net cho giải quyết / xung đột chiều sổ nợ nếu AI quên xuất thẻ action:
-    if (cards.length === 0 && userPromptClean && /(?:đã\s+trả\s+nợ|trả\s+nợ|thanh\s+toán\s+nợ|tất\s+toán|thu\s+nợ)/i.test(userPromptClean)) {
+    if (userPromptClean && /(?:đã\s+trả\s+nợ|trả\s+nợ|thanh\s+toán\s+nợ|tất\s+toán|thu\s+nợ)/i.test(userPromptClean)) {
       const mentionedDebt = (data.debts || []).find(d => d.person && matchPersonName(d.person, userPromptClean));
       if (mentionedDebt) {
         const pName = mentionedDebt.person;
@@ -944,7 +934,7 @@ function executeDebtSettlementDirectly(targetPerson, amt, direction, cardEl) {
           d.amount = dAmt - remaining;
           settledTotal += remaining;
           data.debts.push({
-            id: 'db-' + Date.now() + '-paid',
+            id: 'db-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8) + '-paid',
             direction: d.direction,
             person: d.person,
             amount: remaining,
@@ -1201,7 +1191,7 @@ function executeAction(action, data) {
             d.amount = dAmt - remaining;
             settledTotal += remaining;
             data.debts.push({
-              id: 'db-' + Date.now() + '-paid',
+              id: 'db-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8) + '-paid',
               direction: d.direction,
               person: d.person,
               amount: remaining,
@@ -1366,30 +1356,61 @@ function executeAction(action, data) {
     return card;
   }
 
-  // 5a. Xóa toàn bộ sổ nợ / Xóa sạch lịch sử giao dịch sổ nợ
+  // 5a. Xóa toàn bộ sổ nợ / Xóa sạch lịch sử giao dịch sổ nợ (Bắt buộc xác nhận qua showAppConfirm)
   if (action.type === 'clear_all_debts' || action.type === 'clear_debt_history' || action.type === 'delete_all_debts' || (action.type === 'delete_debt' && (!action.person || action.person.toLowerCase() === 'all'))) {
-    const totalDeleted = Array.isArray(data.debts) ? data.debts.length : 0;
-    data.debts = [];
-    data.contacts = {};
-    if (typeof renderDebtsUI === 'function') renderDebtsUI();
-
+    const totalCount = Array.isArray(data.debts) ? data.debts.length : 0;
     const card = document.createElement('div');
     card.className = 'action-card settle-card';
     card.dataset.id = id;
     card.innerHTML = `
       <div class="action-card-left">
         <div class="action-card-icon" style="background: rgba(244, 63, 94, 0.16); color: #fb7185;">
-          <i class="fa-solid fa-trash-can"></i>
+          <i class="fa-solid fa-triangle-exclamation"></i>
         </div>
         <div class="action-card-info">
           <div class="action-card-title">
-            <span>Toàn bộ lịch sử sổ nợ</span>
-            <span class="card-category-badge" style="background: rgba(244, 63, 94, 0.2); color: #fb7185;">Đã xóa sạch</span>
+            <span>Xóa sạch toàn bộ sổ nợ</span>
+            <span class="card-category-badge" style="background: rgba(244, 63, 94, 0.2); color: #fb7185;">Cần xác nhận</span>
           </div>
-          <div class="action-card-sub">Đã xóa ${totalDeleted} giao dịch sổ nợ (bảo toàn nguyên vẹn Sổ Thu Chi)</div>
+          <div class="action-card-sub">Hiện có ${totalCount} bản ghi nợ. Bấm nút để mở xác nhận xóa.</div>
         </div>
       </div>
+      <button type="button" class="btn-sub-apply btn-confirm-clear-debts" style="background: #e11d48; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Xác nhận xóa</button>
     `;
+
+    const btnConfirm = card.querySelector('.btn-confirm-clear-debts');
+    if (btnConfirm) {
+      btnConfirm.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const confirmed = typeof showAppConfirm === 'function'
+          ? await showAppConfirm(`Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu sổ nợ (${totalCount} bản ghi)? Toàn bộ giao dịch trong Sổ Thu Chi Cá Nhân vẫn sẽ được bảo toàn nguyên vẹn.`, {
+              title: 'Xóa toàn bộ sổ nợ',
+              btnText: 'Xác nhận xóa sạch',
+              btnIcon: 'fa-solid fa-trash-can'
+            })
+          : confirm(`Bạn có chắc chắn muốn xóa TOÀN BỘ dữ liệu sổ nợ không?`);
+
+        if (confirmed) {
+          const curData = getLedgerData();
+          curData.debts = [];
+          curData.contacts = {};
+          saveLedgerData(curData);
+          if (typeof renderDebtsUI === 'function') renderDebtsUI();
+          btnConfirm.remove();
+          const badge = card.querySelector('.card-category-badge');
+          if (badge) {
+            badge.textContent = 'Đã xóa sạch';
+            badge.style.background = 'rgba(16, 185, 129, 0.2)';
+            badge.style.color = '#34d399';
+          }
+          const sub = card.querySelector('.action-card-sub');
+          if (sub) sub.textContent = `Đã xóa sạch ${totalCount} giao dịch sổ nợ.`;
+          if (typeof showCustomToast === 'function') {
+            showCustomToast('🗑️ Đã xóa sạch toàn bộ sổ nợ thành công!');
+          }
+        }
+      });
+    }
     return card;
   }
 
@@ -2076,7 +2097,7 @@ function getNaturalAIResponse(userText) {
   // Xóa toàn bộ lịch sử sổ nợ hoặc xác nhận xóa luôn
   if (/(?:xóa|xoá)\s+(?:tất\s+cả|toàn\s+bộ|hết|sạch)\s+(?:lịch\s+sử\s+)?(?:giao\s+dịch\s+)?(?:trong\s+)?sổ\s+nợ|(?:xoá|xóa)\s+luôn/i.test(lower)) {
     return {
-      text: `Dạ rồi! Najimez đã tiến hành xóa sạch toàn bộ lịch sử ghi nợ theo yêu cầu của bạn nè. Sổ nợ của chúng ta bây giờ đã hoàn toàn trống trơn. Toàn bộ các giao dịch trong Sổ Thu Chi Cá Nhân vẫn được bảo toàn nguyên vẹn nha ✨\n\n<!--NAJIMEZ_ACTION:{"type":"clear_all_debts"}-->`
+      text: `Để đảm bảo an toàn cho dữ liệu tài chính của bạn, việc xóa toàn bộ sổ nợ cần sự xác nhận cụ thể. Bạn vui lòng bấm nút xác nhận bên dưới nhé:\n\n<!--NAJIMEZ_ACTION:{"type":"clear_all_debts"}-->`
     };
   }
 

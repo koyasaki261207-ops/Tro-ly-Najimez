@@ -265,7 +265,7 @@ function renderDebtsUI() {
           person: contact.name,
           amount: contact.netAmount || 50000,
           direction: contact.status,
-          note: contact.status === 'they_owe_me' ? `${contact.name} tra no` : `Tra no cho ${contact.name}`
+          note: contact.status === 'they_owe_me' ? `${contact.name} trả nợ` : `Trả nợ cho ${contact.name}`
         };
         if (typeof openVietQrModal === 'function') openVietQrModal(qrDebtObj);
       }
@@ -281,21 +281,24 @@ function renderDebtsUI() {
       const curData = getLedgerData();
       const contact = contactsList.find(c => matchPersonName(c.name, personName));
       const personDebts = curData.debts.filter(d => matchPersonName(d.person, personName) && d.status !== 'paid');
+      const settleTime = Date.now();
       personDebts.forEach(d => {
         d.status = 'paid';
-        d.settledAt = Date.now();
+        d.settledAt = settleTime;
       });
 
       // Tự động ghi vào Sổ Thu Chi
       if (contact && contact.netAmount > 0) {
         const isExpense = contact.status === 'i_owe_them';
         curData.transactions.unshift({
-          id: 'tx-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+          id: 'tx-' + settleTime + '-' + Math.floor(Math.random() * 1000),
           type: isExpense ? 'expense' : 'income',
           amount: contact.netAmount,
           category: isExpense ? 'Trả nợ' : 'Thu nợ',
           note: isExpense ? `Trả nợ cho ${contact.name}` : `${contact.name} trả nợ`,
-          timestamp: Date.now()
+          timestamp: settleTime,
+          debtSettlePerson: contact.name,
+          debtSettleAt: settleTime
         });
       }
       saveLedgerData(curData);
@@ -309,10 +312,39 @@ function renderDebtsUI() {
       closeAllDebtMenus();
       const personName = btn.dataset.person;
       const curData = getLedgerData();
-      const personDebts = curData.debts.filter(d => matchPersonName(d.person, personName));
+      // Chỉ khôi phục các khoản có settledAt và không đụng bản ghi "(Đã trả một phần)"
+      const personDebts = (curData.debts || []).filter(d =>
+        matchPersonName(d.person, personName) &&
+        d.settledAt &&
+        !String(d.note || '').includes('(Đã trả một phần)')
+      );
+
+      if (personDebts.length === 0) return;
+
+      const settledTimestamps = new Set(personDebts.map(d => Number(d.settledAt)).filter(Boolean));
+
+      // Xóa giao dịch thu/chi tương ứng đã tạo khi tất toán
+      if (Array.isArray(curData.transactions)) {
+        curData.transactions = curData.transactions.filter(tx => {
+          if (tx.debtSettlePerson && matchPersonName(tx.debtSettlePerson, personName)) {
+            return false;
+          }
+          const isSettleTx = (tx.category === 'Trả nợ' || tx.category === 'Thu nợ') &&
+            matchPersonName(tx.note || '', personName);
+          if (isSettleTx) {
+            const matchesTime = Array.from(settledTimestamps).some(st => Math.abs((tx.timestamp || 0) - st) < 5000);
+            if (matchesTime) return false;
+          }
+          return true;
+        });
+      }
+
+      // Khôi phục trạng thái chưa trả cho các khoản này
       personDebts.forEach(d => {
         d.status = 'pending';
+        delete d.settledAt;
       });
+
       saveLedgerData(curData);
     });
   });
