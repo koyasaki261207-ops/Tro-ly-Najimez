@@ -2586,7 +2586,6 @@ function initChatEngine() {
   const input = document.getElementById('copilotInput');
   const feed = document.getElementById('copilotFeed');
   const btnReset = document.getElementById('btnResetAllData');
-  const btnMic = document.getElementById('btnVoiceMic');
 
   if (feed) {
     const greetingEl = feed.querySelector('.greeting-text');
@@ -2772,21 +2771,6 @@ function initChatEngine() {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       handleUserTurn(input.value);
-    });
-  }
-
-  if (btnMic) {
-    btnMic.addEventListener('click', () => {
-      const prompts = [
-        'Hôm nay tôi ăn phở 45k và uống cà phê 30k',
-        'Tuấn mượn tôi 200k tiền ăn lẩu',
-        'Nhắc tôi 15h chiều mai đi họp đối tác',
-        'Giải thích nguyên lý hoạt động của trí tuệ nhân tạo',
-        'Bạn có thể hỗ trợ những tính năng gì?'
-      ];
-      const pick = prompts[Math.floor(Math.random() * prompts.length)];
-      input.value = pick;
-      input.focus();
     });
   }
 

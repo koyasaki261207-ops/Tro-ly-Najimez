@@ -211,26 +211,6 @@
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
-.btn-voice-mic {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: none;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff;
-  font-size: 1.15rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-
-.btn-voice-mic:hover {
-  transform: scale(1.05);
-}
-
 .input-inner-wrap {
   flex: 1;
   display: flex;
