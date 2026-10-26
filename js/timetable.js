@@ -6,6 +6,7 @@
 let timetableSelectedDate = new Date();
 let timetableRealtimeTimer = null;
 let timetableNightCollapsed = localStorage.getItem('najimez_tt_night_collapsed') !== '0'; // Mặc định thu gọn ban đêm
+let timetableScrollMode = localStorage.getItem('najimez_tt_scroll_mode') === '1'; // Chế độ cuộn thoải mái (56px/giờ)
 
 /**
  * Tìm ngày Thứ Hai của tuần chứa ngày d (chuẩn ISO / Việt Nam)
@@ -150,6 +151,25 @@ function renderTimetableTab() {
       toggleBtn.innerHTML = '<i class="fa-solid fa-sun" style="color: #fbbf24;"></i> <span id="ttToggleNightText">0h – 24h (Đầy đủ)</span>';
       toggleBtn.title = 'Đang hiển thị đủ 24 giờ. Bấm để thu gọn ban đêm vừa vặn 1 màn hình';
     }
+  }
+
+  // Cập nhật trạng thái nút chuyển chế độ xem 1 màn hình / cuộn thoải mái
+  const toggleViewBtn = document.getElementById('btnTtToggleViewMode');
+  if (toggleViewBtn) {
+    if (timetableScrollMode) {
+      toggleViewBtn.innerHTML = '<i class="fa-solid fa-arrows-up-down" style="color: #38bdf8;"></i> <span id="ttToggleViewModeText">Cuộn Thoải Mái</span>';
+      toggleViewBtn.title = 'Đang ở chế độ Cuộn Thoải Mái (56px/giờ). Bấm để chuyển về Vừa Khít 1 Màn Hình';
+    } else {
+      toggleViewBtn.innerHTML = '<i class="fa-solid fa-table-cells" style="color: #a855f7;"></i> <span id="ttToggleViewModeText">1 Màn Hình</span>';
+      toggleViewBtn.title = 'Đang ở chế độ Vừa Khít 1 Màn Hình. Bấm để chuyển sang Cuộn Thoải Mái';
+    }
+  }
+
+  const gridCard = document.querySelector('.timetable-grid-card');
+  if (gridCard) {
+    gridCard.classList.toggle('mode-scroll', timetableScrollMode);
+    gridCard.style.setProperty('--tt-active-hours', timetableNightCollapsed ? 18 : 24);
+    gridCard.style.setProperty('--tt-slot-height', '56px');
   }
 
   // 2. Lấy dữ liệu sự kiện từ Storage
@@ -433,25 +453,54 @@ function renderTimetableTab() {
         const displayTag = ev.category || theme.tagText || '';
         const iconHtml = theme.icon ? `<i class="${theme.icon} tt-event-icon" style="color: ${color};"></i>` : '';
 
-        blockEl.innerHTML = `
-          <div class="tt-event-title">
-            ${iconHtml}
-            <span>${escapeHTML(ev.title)}</span>
-          </div>
-          <div class="tt-event-time">
-            <i class="fa-regular fa-clock"></i> ${timeLabel}
-          </div>
-          ${(durMin >= 65 && displayTag) ? `
-            <span class="tt-event-meta-tag" style="background: ${theme.tagBg}; color: ${theme.tagColor}; border: 1px solid ${theme.border};">
-              ${escapeHTML(displayTag)}
-            </span>
-          ` : ''}
-          ${(durMin >= 100 && ev.note) ? `
-            <div class="tt-event-note">
-              <i class="fa-regular fa-note-sticky" style="font-size: 0.6rem; opacity: 0.8;"></i> ${escapeHTML(ev.note)}
+        // Phân cấp bố cục thông minh theo thời lượng sự kiện chống đè chữ
+        if (durMin < 45) {
+          // Siêu ngắn (< 45 phút): 1 dòng inline compact, icon + tên + giờ bắt đầu
+          blockEl.classList.add('is-compact-single');
+          blockEl.innerHTML = `
+            <div class="tt-event-inline">
+              ${iconHtml}
+              <span class="tt-event-inline-title">${escapeHTML(ev.title)}</span>
+              <span class="tt-event-inline-time">${minutesToTimeStr(ev.startMin)}</span>
             </div>
-          ` : ''}
-        `;
+          `;
+        } else if (durMin < 85 && !timetableScrollMode) {
+          // Ngắn (45 - 85 phút ở chế độ 1 màn hình): 2 dòng rõ nét, dòng 1 tiêu đề, dòng 2 giờ (ẩn tag để không đè chữ)
+          blockEl.classList.add('is-compact-double');
+          blockEl.innerHTML = `
+            <div class="tt-event-title">
+              ${iconHtml}
+              <span class="tt-event-title-text">${escapeHTML(ev.title)}</span>
+            </div>
+            <div class="tt-event-time">
+              <i class="fa-regular fa-clock"></i> ${timeLabel}
+            </div>
+          `;
+        } else {
+          // Đủ rộng (Scroll Mode >= 45p hoặc 1 Màn Hình >= 85p)
+          const showTag = displayTag && (timetableScrollMode ? durMin >= 65 : durMin >= 95);
+          const showNote = ev.note && (timetableScrollMode ? durMin >= 100 : durMin >= 140);
+
+          blockEl.innerHTML = `
+            <div class="tt-event-title">
+              ${iconHtml}
+              <span class="tt-event-title-text">${escapeHTML(ev.title)}</span>
+            </div>
+            <div class="tt-event-time">
+              <i class="fa-regular fa-clock"></i> ${timeLabel}
+            </div>
+            ${showTag ? `
+              <span class="tt-event-meta-tag" style="background: ${theme.tagBg}; color: ${theme.tagColor}; border: 1px solid ${theme.border};">
+                ${escapeHTML(displayTag)}
+              </span>
+            ` : ''}
+            ${showNote ? `
+              <div class="tt-event-note">
+                <i class="fa-regular fa-note-sticky" style="font-size: 0.6rem; opacity: 0.8;"></i> ${escapeHTML(ev.note)}
+              </div>
+            ` : ''}
+          `;
+        }
 
         // Bắt sự kiện hover hiển thị thẻ nổi (Hover Tooltip Card)
         blockEl.addEventListener('mouseenter', (e) => showEventHoverTooltip(e, ev, timeLabel));
@@ -590,6 +639,34 @@ function updateRealtimeIndicator() {
 }
 
 /**
+ * Tự động cuộn đến vạch thời gian hiện tại trong chế độ cuộn thoải mái
+ */
+function autoScrollTimetableToCurrentTime() {
+  const gridBody = document.getElementById('ttGridBody');
+  if (!gridBody) return;
+  if (!timetableScrollMode) return;
+
+  const indicator = document.getElementById('ttCurrentTimeIndicator');
+  if (indicator && indicator.offsetParent !== null) {
+    const top = indicator.offsetTop;
+    gridBody.scrollTo({
+      top: Math.max(0, top - 140),
+      behavior: 'smooth'
+    });
+  } else {
+    const now = new Date();
+    const curHour = now.getHours();
+    const startH = timetableNightCollapsed ? 6 : 0;
+    const targetH = Math.max(startH, Math.min(22, curHour - 1));
+    const slotHeight = 56;
+    gridBody.scrollTo({
+      top: Math.max(0, (targetH - startH) * slotHeight),
+      behavior: 'smooth'
+    });
+  }
+}
+
+/**
  * Khởi tạo phân hệ Thời Khóa Biểu
  */
 function initTimetable() {
@@ -598,6 +675,7 @@ function initTimetable() {
   const btnCurrent = document.getElementById('btnTtCurrentWeek');
   const btnAdd = document.getElementById('btnTtAddEvent');
   const btnToggleNight = document.getElementById('btnTtToggleNight');
+  const btnToggleView = document.getElementById('btnTtToggleViewMode');
 
   if (btnPrev) {
     btnPrev.addEventListener('click', () => {
@@ -617,6 +695,9 @@ function initTimetable() {
     btnCurrent.addEventListener('click', () => {
       timetableSelectedDate = new Date();
       renderTimetableTab();
+      if (timetableScrollMode) {
+        setTimeout(autoScrollTimetableToCurrentTime, 80);
+      }
     });
   }
 
@@ -629,12 +710,24 @@ function initTimetable() {
     });
   }
 
-  // Nút chuyển chế độ thu gọn ban đêm (Phương án 2)
+  // Nút chuyển chế độ thu gọn ban đêm
   if (btnToggleNight) {
     btnToggleNight.addEventListener('click', () => {
       timetableNightCollapsed = !timetableNightCollapsed;
       localStorage.setItem('najimez_tt_night_collapsed', timetableNightCollapsed ? '1' : '0');
       renderTimetableTab();
+    });
+  }
+
+  // Nút chuyển đổi giữa 1 màn hình và cuộn thoải mái
+  if (btnToggleView) {
+    btnToggleView.addEventListener('click', () => {
+      timetableScrollMode = !timetableScrollMode;
+      localStorage.setItem('najimez_tt_scroll_mode', timetableScrollMode ? '1' : '0');
+      renderTimetableTab();
+      if (timetableScrollMode) {
+        setTimeout(autoScrollTimetableToCurrentTime, 80);
+      }
     });
   }
 
@@ -644,7 +737,11 @@ function initTimetable() {
 
   // Render lần đầu
   renderTimetableTab();
+  if (timetableScrollMode) {
+    setTimeout(autoScrollTimetableToCurrentTime, 120);
+  }
 }
 
 window.initTimetable = initTimetable;
 window.renderTimetableTab = renderTimetableTab;
+window.autoScrollTimetableToCurrentTime = autoScrollTimetableToCurrentTime;
