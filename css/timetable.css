@@ -1,0 +1,673 @@
+/**
+ * css/timetable.css - Giao diện Thời Khóa Biểu & Lịch Trình Tuần Vừa Khít 1 Màn Hình (Fit-Screen 100%)
+ * Thiết kế chuẩn Cyber Luxury Glassmorphism, thu gọn giờ ngủ (00:00 - 06:00), không cần cuộn dọc.
+ */
+
+/* ==========================================================================
+   1. BỐ CỤC CHÍNH WORKSPACE THỜI KHÓA BIỂU
+   ========================================================================== */
+.timetable-workspace-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 12px 18px 16px;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* Header điều khiển tuần và thông số */
+.timetable-header-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-glass);
+  flex-shrink: 0;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.tt-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tt-header-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(56, 189, 248, 0.25));
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.25);
+}
+
+.tt-header-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+  margin: 0;
+}
+
+.tt-header-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tt-week-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.tt-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tt-nav-btns {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Nút chuyển chế độ thu gọn ban đêm */
+.btn-tt-toggle-night {
+  padding: 0 12px;
+  height: 34px;
+  border-radius: 8px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: #c084fc;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.btn-tt-toggle-night:hover {
+  background: rgba(168, 85, 247, 0.18);
+  border-color: #a855f7;
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
+}
+
+/* ==========================================================================
+   2. KHUNG LƯỚI VỪA KHÍT 1 MÀN HÌNH (NO SCROLL GRID)
+   ========================================================================== */
+.timetable-grid-card {
+  flex: 1;
+  min-height: 0; /* Quan trọng để flex child không tràn quá 100% màn hình */
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-glass);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Hàng tiêu đề 7 cột ngày */
+.timetable-col-headers {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 20;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.tt-time-corner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  border-right: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.7);
+  padding: 8px 2px;
+}
+
+.tt-time-corner i {
+  color: #c084fc;
+  font-size: 0.8rem;
+}
+
+.tt-col-header-cell {
+  padding: 6px 4px;
+  text-align: center;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  position: relative;
+  transition: background 0.2s;
+}
+
+.tt-col-header-cell:last-child {
+  border-right: none;
+}
+
+.tt-col-header-cell.weekend .tt-day-name {
+  color: #f43f5e;
+}
+
+.tt-col-header-cell.is-today {
+  background: linear-gradient(180deg, rgba(168, 85, 247, 0.16), rgba(168, 85, 247, 0.02));
+}
+
+.tt-col-header-cell.is-today::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #a855f7, #38bdf8);
+  box-shadow: 0 0 10px #a855f7;
+}
+
+.tt-day-name {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.tt-day-date-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.tt-day-number {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #f8fafc;
+  line-height: 1.15;
+}
+
+.tt-col-header-cell.is-today .tt-day-number {
+  color: #38bdf8;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.6);
+}
+
+.tt-day-lunar {
+  font-size: 0.64rem;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+
+.tt-today-pill {
+  font-size: 0.58rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  padding: 1px 5px;
+  border-radius: 8px;
+  margin-top: 1px;
+  box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+}
+
+/* Hàng sự kiện Cả Ngày (All-Day Row) */
+.timetable-allday-row {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(30, 41, 59, 0.35);
+  font-size: 0.72rem;
+  z-index: 15;
+  flex-shrink: 0;
+}
+
+.tt-allday-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-dim);
+  border-right: 1px solid var(--border-color);
+  padding: 4px 2px;
+}
+
+.tt-allday-cols {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-column: 2 / -1;
+}
+
+.tt-allday-cell {
+  padding: 3px 4px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 26px;
+}
+
+.tt-allday-cell:last-child {
+  border-right: none;
+}
+
+.tt-allday-pill {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.tt-allday-pill:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* ==========================================================================
+   3. HÀNG THU GỌN BAN ĐÊM (00:00 - 06:00 STRIP)
+   ========================================================================== */
+.timetable-night-strip-row {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  border-bottom: 1px dashed rgba(168, 85, 247, 0.3);
+  background: rgba(15, 23, 42, 0.85);
+  height: 28px;
+  z-index: 14;
+  flex-shrink: 0;
+}
+
+.tt-night-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #c084fc;
+  border-right: 1px solid var(--border-color);
+  padding: 0 2px;
+  user-select: none;
+}
+
+.tt-night-label i {
+  color: #a855f7;
+}
+
+.tt-night-cols {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-column: 2 / -1;
+  height: 100%;
+}
+
+.tt-night-cell {
+  border-right: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  align-items: center;
+  padding: 2px 4px;
+  gap: 4px;
+  overflow: hidden;
+  cursor: default;
+}
+
+.tt-night-cell:last-child {
+  border-right: none;
+}
+
+.tt-night-event-capsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.tt-night-event-capsule:hover {
+  transform: scale(1.05);
+}
+
+/* ==========================================================================
+   4. THÂN LƯỚI KHUNG GIỜ HOẠT ĐỘNG (100% CHIỀU CAO - KHÔNG CUỘN)
+   ========================================================================== */
+.timetable-grid-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  position: relative;
+  height: 100%;
+  overflow: hidden; /* Không có cuộn dọc, vừa khít trọn vẹn màn hình */
+}
+
+/* Cột mốc giờ bên trái */
+.tt-time-axis {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  border-right: 1px solid var(--border-color);
+  background: rgba(15, 23, 42, 0.65);
+  user-select: none;
+  z-index: 10;
+}
+
+.tt-time-axis-hour {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tt-time-label {
+  font-size: 0.72rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* 7 Cột Ngày */
+.tt-days-columns {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-column: 2 / -1;
+  height: 100%;
+  position: relative;
+}
+
+.tt-day-col {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.008);
+  transition: background 0.15s;
+}
+
+.tt-day-col:last-child {
+  border-right: none;
+}
+
+.tt-day-col.is-today {
+  background: rgba(168, 85, 247, 0.035);
+}
+
+/* Ô giờ bên trong cột (chia đều bằng flex - chỉ làm đường kẻ lưới tĩnh) */
+.tt-hour-slot {
+  flex: 1;
+  min-height: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  position: relative;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   5. KHỐI SỰ KIỆN ĐỊNH VỊ TỈ LỆ PHẦN TRĂM (%)
+   ========================================================================== */
+.tt-event-block {
+  position: absolute;
+  border-radius: 6px;
+  padding: 4px 7px;
+  overflow: hidden;
+  cursor: pointer;
+  z-index: 5;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.tt-event-block:hover {
+  z-index: 35 !important;
+  transform: scale(1.03) translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65), 0 0 12px rgba(255, 255, 255, 0.15);
+}
+
+.tt-event-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tt-event-title span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tt-event-icon {
+  font-size: 0.78rem;
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.35));
+}
+
+.tt-event-time {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.95);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 1px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.tt-event-meta-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-top: 3px;
+  width: fit-content;
+  letter-spacing: 0.2px;
+  backdrop-filter: blur(4px);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.tt-event-note {
+  font-size: 0.63rem;
+  color: rgba(255, 255, 255, 0.82);
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ==========================================================================
+   6. VẠCH CHỈ THỊ THỜI GIAN THỰC (REAL-TIME INDICATOR)
+   ========================================================================== */
+.tt-current-time-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #f43f5e;
+  box-shadow: 0 0 10px #f43f5e, 0 0 16px rgba(244, 63, 94, 0.6);
+  z-index: 18;
+  pointer-events: none;
+}
+
+.tt-current-time-line::before {
+  content: "";
+  position: absolute;
+  left: -4px;
+  top: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f43f5e;
+  box-shadow: 0 0 10px #f43f5e;
+}
+
+.tt-current-time-badge {
+  position: absolute;
+  right: 4px;
+  top: -9px;
+  font-size: 0.62rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 800;
+  color: #fff;
+  background: #f43f5e;
+  padding: 1px 5px;
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(244, 63, 94, 0.5);
+  pointer-events: none;
+}
+
+/* ==========================================================================
+   7. THẺ NỔI XEM NHANH CHI TIẾT SỰ KIỆN (HOVER POPUP CARD)
+   ========================================================================== */
+.tt-event-hover-tooltip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  max-width: 280px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.7), 0 0 16px rgba(168, 85, 247, 0.25);
+  backdrop-filter: blur(16px);
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  transition: opacity 0.15s ease;
+}
+
+.tt-tooltip-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tt-tooltip-time {
+  font-size: 0.76rem;
+  color: #38bdf8;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tt-tooltip-category {
+  font-size: 0.7rem;
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 1px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.tt-tooltip-note {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-top: 4px;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   8. RESPONSIVE
+   ========================================================================== */
+@media (max-width: 900px) {
+  .timetable-workspace-layout {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .timetable-header-card {
+    padding: 8px 12px;
+  }
+
+  .tt-header-title {
+    font-size: 1rem;
+  }
+
+  .timetable-col-headers,
+  .timetable-night-strip-row,
+  .timetable-grid-body,
+  .timetable-allday-row {
+    grid-template-columns: 50px repeat(7, 110px);
+  }
+
+  .timetable-grid-card {
+    overflow-x: auto;
+  }
+}

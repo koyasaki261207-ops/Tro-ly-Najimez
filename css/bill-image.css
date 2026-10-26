@@ -1,0 +1,319 @@
+/**
+ * css/bill-image.css - Định kiểu cho tính năng Đính Kèm & Xem Ảnh Giao Dịch / Hóa Đơn / Món Ăn
+ * Phong cách Cyber Luxury Glassmorphism đồng bộ Najimez
+ */
+
+/* ==========================================================================
+   1. THUMBNAIL ẢNH TRÊN HÀNG GIAO DỊCH (LỊCH SỬ NỢ & THU CHI)
+   ========================================================================== */
+
+/* Căn chỉnh lại cụm góc phải của hàng lịch sử giao dịch */
+.history-timeline-item .history-item-right {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  flex-shrink: 0;
+}
+
+.history-item-amount-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* Khung Thumbnail góc phải */
+.history-item-thumb-wrap {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  border: 1.5px solid rgba(168, 85, 247, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  background: rgba(15, 23, 42, 0.6);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+.history-item-thumb-wrap:hover {
+  transform: scale(1.08) translateY(-1px);
+  border-color: #c084fc;
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+}
+
+.history-item-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Huy hiệu zoom nhỏ ở góc thumbnail */
+.thumb-badge-zoom {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  background: rgba(3, 7, 18, 0.82);
+  color: #e2e8f0;
+  font-size: 0.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+
+.history-item-thumb-wrap:hover .thumb-badge-zoom {
+  opacity: 1;
+}
+
+/* Nút Camera để thêm ảnh nhanh khi chưa có ảnh */
+.btn-item-attach-img {
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-item-attach-img:hover {
+  background: rgba(168, 85, 247, 0.16);
+  border-color: #a855f7;
+  color: #c084fc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 10px rgba(168, 85, 247, 0.3);
+}
+
+/* Thumbnail trong Sổ Thu Chi Cá Nhân */
+.expense-amount-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.expense-amount-right .history-item-thumb-wrap {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 8px;
+}
+
+.expense-amount-right .btn-item-attach-img {
+  width: 30px;
+  height: 30px;
+  min-width: 30px;
+  font-size: 0.8rem;
+}
+
+/* ==========================================================================
+   2. THANH ĐÍNH KÈM ẢNH TRONG FORM GHI NỢ & GHI THU CHI (DRAWER)
+   ========================================================================== */
+.form-attach-image-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px dashed rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-sm);
+  flex-wrap: wrap;
+}
+
+.btn-form-attach-photo {
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: #c084fc;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-form-attach-photo:hover {
+  background: rgba(168, 85, 247, 0.22);
+  border-color: #c084fc;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn-form-attach-paste {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+
+.btn-form-attach-paste:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.form-attach-preview-mini {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 3px 8px 3px 3px;
+  border-radius: 8px;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
+.form-attach-preview-mini img {
+  width: 34px;
+  height: 34px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+
+.form-attach-preview-mini span.preview-label {
+  font-size: 0.76rem;
+  color: #e2e8f0;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.btn-remove-form-img {
+  background: rgba(244, 63, 94, 0.2);
+  border: none;
+  color: #fb7185;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  transition: all 0.2s;
+}
+
+.btn-remove-form-img:hover {
+  background: #f43f5e;
+  color: #fff;
+}
+
+/* ==========================================================================
+   3. MODAL XEM & ĐÍNH KÈM ẢNH GIAO DỊCH (#transactionImageModal)
+   ========================================================================== */
+.tx-image-large-preview-wrap {
+  width: 100%;
+  max-height: 380px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(3, 7, 18, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.tx-image-large-preview-wrap img {
+  max-width: 100%;
+  max-height: 380px;
+  object-fit: contain;
+  display: block;
+  border-radius: var(--radius-md);
+}
+
+.tx-image-meta-info {
+  margin-top: 10px;
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Khu vực Dropzone thêm ảnh */
+.tx-image-dropzone {
+  border: 2px dashed rgba(168, 85, 247, 0.35);
+  background: rgba(168, 85, 247, 0.03);
+  border-radius: var(--radius-md);
+  padding: 26px 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.tx-image-dropzone:hover,
+.tx-image-dropzone.dragover {
+  border-color: #c084fc;
+  background: rgba(168, 85, 247, 0.08);
+  box-shadow: 0 4px 18px rgba(168, 85, 247, 0.2);
+}
+
+.dropzone-content i {
+  display: block;
+}
+
+.tx-preview-in-dropzone {
+  position: relative;
+  display: inline-block;
+}
+
+.tx-preview-in-dropzone img {
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+
+.btn-remove-preview-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #f43f5e;
+  color: #fff;
+  border: 2px solid #0f172a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}

@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Najimez - Trợ Lý Ảo Thông Minh</title>
+  <meta name="description"
+    content="Najimez - Trợ lý ảo thông minh: Trò chuyện, giải đáp thắc mắc, quản lý chi tiêu, sổ nợ và lên lịch trình.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+
+  <!-- Favicon Najimez -->
+  <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
+
+  <link rel="stylesheet" href="style.css?v=3.53.0">
+</head>
+
+<body>
+  <!-- Bầu trời sao thiên thể & Hiệu ứng Cực quang Vũ trụ (Starry Sky & Aurora) -->
+  <canvas id="starrySkyCanvas" class="starry-sky-canvas"></canvas>
+  <div class="cosmic-nebula-glow"></div>
+
+  <div class="omni-app">
+
+    <!-- 1. THANH ĐIỀU HƯỚNG BÊN TRÁI (MAIN NAVIGATION SIDEBAR) -->
+    <aside class="omni-sidebar" id="omniSidebar">
+      <div class="sidebar-brand">
+        <div class="brand-logo">
+          <img src="assets/najimez.jpg" alt="Najimez" class="brand-avatar-img" />
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">Naji<span class="gradient-text">mez</span></span>
+          <span class="brand-subtitle">Trợ Lý Ảo Toàn Năng</span>
+        </div>
+      </div>
+
+      <!-- Menu các phân hệ tiện ích -->
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">TRUNG TÂM TIỆN ÍCH</div>
+        <button class="nav-item active" data-tab="tab-copilot">
+          <img src="assets/najimez.jpg" alt="Najimez" class="nav-avatar-icon" />
+          <span>Trợ Lý Najimez</span>
+          <span class="pill-badge">AI</span>
+        </button>
+        <button class="nav-item" data-tab="tab-finance">
+          <i class="fa-solid fa-wallet"></i>
+          <span>Tài Chính & Sổ Nợ</span>
+        </button>
+        <button class="nav-item" data-tab="tab-todos">
+          <i class="fa-solid fa-calendar-check"></i>
+          <span>Lịch Trình & To-Do</span>
+        </button>
+        <button class="nav-item" data-tab="tab-calendar">
+          <i class="fa-solid fa-calendar-days"></i>
+          <span>Lịch &amp; Sự Kiện</span>
+        </button>
+        <button class="nav-item" data-tab="tab-timetable">
+          <i class="fa-solid fa-calendar-week"></i>
+          <span>Thời Khóa Biểu</span>
+        </button>
+        <button class="nav-item" data-tab="tab-copilot"
+          data-quick-prompt="Hỏi đáp và giải bài tập Toán, Lý, Hóa, Lập trình">
+          <i class="fa-solid fa-graduation-cap"></i>
+          <span>Hỏi Đáp & Học Tập</span>
+        </button>
+        <button class="nav-item" data-tab="tab-copilot"
+          data-quick-prompt="Tâm sự, chia sẻ cảm xúc và đời sống cùng bạn">
+          <i class="fa-solid fa-heart-pulse"></i>
+          <span>Đời Sống & Kỷ Niệm</span>
+        </button>
+        <button class="nav-item" id="btnSidebarLuckyWheel" type="button">
+          <i class="fa-solid fa-dharmachakra"></i>
+          <span>Vòng Quay May Mắn</span>
+        </button>
+      </nav>
+
+      <!-- Tiện ích nhanh ở chân Sidebar: Đồng hồ & Cài đặt STK VietQR -->
+      <div class="sidebar-bottom">
+        <div class="live-clock-card">
+          <span class="clock-time" id="sidebarLiveClock">18:28:44</span>
+          <span class="clock-date" id="sidebarLiveDate">Thứ Sáu, 23/10/2026</span>
+        </div>
+        <button class="btn-sidebar-cfg" id="btnOpenBankSettings" title="Cài đặt số tài khoản ngân hàng để tạo mã QR">
+          <i class="fa-solid fa-qrcode"></i>
+          <span>Cài STK VietQR</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- 2. KHÔNG GIAN LÀM VIỆC CHÍNH (MAIN WORKSPACE) -->
+    <div class="omni-workspace">
+
+      <!-- Top Header toàn cục -->
+      <header class="omni-header">
+        <div class="header-left">
+          <button class="btn-sidebar-toggle" id="btnToggleSidebar">
+            <i class="fa-solid fa-bars"></i>
+          </button>
+          <div class="header-greeting">
+            <h2 id="headerGreetingText">Chào buổi tối! Najimez có thể hỗ trợ gì cho bạn?</h2>
+            <span class="header-sub">Hệ thống trợ lý thông minh Najimez sẵn sàng phục vụ</span>
+          </div>
+        </div>
+
+        <div class="header-quick-stats">
+          <div class="stat-bubble green" title="Số dư tài chính tháng này">
+            <i class="fa-solid fa-chart-line"></i>
+            <div>
+              <span class="bubble-title">CÂN ĐỐI THU CHI</span>
+              <strong id="headerNetCashflow">-95.000 đ</strong>
+            </div>
+          </div>
+          <div class="stat-bubble purple" title="Công việc chưa hoàn thành hôm nay">
+            <i class="fa-solid fa-circle-check"></i>
+            <div>
+              <span class="bubble-title">VIỆC CẦN LÀM</span>
+              <strong id="headerPendingTasks">2 việc</strong>
+            </div>
+          </div>
+          <button class="btn-api-key" id="btnOpenApiKeyModal" title="Cài đặt Google Gemini API Key">
+            <i class="fa-solid fa-key"></i>
+          </button>
+          <button class="btn-clear-all" id="btnResetAllData" title="Xóa toàn bộ dữ liệu để bắt đầu lại">
+            <i class="fa-regular fa-trash-can"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Không gian nội dung chính hiển thị trên giao diện -->
+      <main class="omni-main-content">
+        <!-- =================================================================
+             TAB 1: TRỢ LÝ NAJIMEZ COPILOT (AI STREAMING CHAT)
+             ================================================================= -->
+        <section class="tab-pane active" id="tab-copilot">
+          <div class="copilot-container">
+            <div class="copilot-feed" id="copilotFeed">
+              <div class="chat-msg ai">
+                <div class="msg-avt">
+                  <img src="assets/najimez.jpg" alt="Najimez" class="ai-avatar-img" />
+                </div>
+                <div class="msg-text-bubble">
+                  <p class="greeting-text">Chào buổi tối, tôi có thể giúp gì cho bạn?</p>
+                </div>
+              </div>
+
+              <!-- Typing indicator khi AI đang suy nghĩ -->
+              <div class="chat-msg ai typing-msg" id="typingIndicator" style="display: none;">
+                <div class="msg-avt">
+                  <img src="assets/najimez.jpg" alt="Najimez" class="ai-avatar-img" />
+                </div>
+                <div class="msg-text-bubble typing-bubble">
+                  <div class="typing-dots">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <span class="typing-text">Najimez đang suy nghĩ...</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Khung nhập lệnh thông minh ở đáy -->
+            <div class="copilot-input-bar">
+              <form id="copilotForm" class="copilot-form" autocomplete="off">
+                <button type="button" class="btn-voice-settings" id="btnOpenVoiceSettings"
+                  title="Cài đặt giọng đọc & âm thanh Najimez">
+                  <i class="fa-solid fa-sliders"></i>
+                </button>
+                <button type="button" class="btn-voice-mic" id="btnVoiceMic"
+                  title="Gợi ý câu lệnh mẫu cho Najimez">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
+                <div class="input-inner-wrap">
+                  <input type="text" id="copilotInput"
+                    placeholder="Nói hoặc gõ với Najimez: trò chuyện, hỏi chức năng, ghi thu chi..."
+                    autocomplete="off" />
+                </div>
+                <button type="submit" class="btn-send-cmd" id="btnSendCmd" title="Gửi lệnh">
+                  <i class="fa-solid fa-arrow-up"></i>
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             TAB 2: QUẢN LÝ TÀI CHÍNH & SỔ NỢ (FINANCE & DEBTS DASHBOARD)
+             ================================================================= -->
+        <section class="tab-pane" id="tab-finance">
+          <div class="finance-grid">
+
+            <!-- CỘT 1: SỔ THU CHI CÁ NHÂN -->
+            <div class="finance-card">
+              <div class="card-header-styled">
+                <div class="card-title">
+                  <i class="fa-solid fa-money-bill-transfer"></i>
+                  <span>Sổ Thu Chi Cá Nhân</span>
+                </div>
+                <button type="button" class="btn-mini-add primary" id="btnToggleAddExpense">
+                  <i class="fa-solid fa-plus"></i> Ghi Thu / Chi
+                </button>
+              </div>
+
+              <!-- Thống kê số dư hiện có -->
+              <div class="cashflow-summary-ribbon">
+                <div class="cashflow-item-balance">
+                  <div class="balance-label-group">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>Số dư:</span>
+                  </div>
+                  <strong id="summaryRemainingBalance">0 đ</strong>
+                </div>
+              </div>
+
+              <!-- Form nhập nhanh Thu / Chi (Collapsible Drawer) -->
+              <div class="quick-record-box" id="expenseRecordFormBox" style="display: none;">
+                <div class="quick-record-header">
+                  <span><i class="fa-solid fa-circle-plus"></i> Thêm giao dịch thu chi</span>
+                  <button type="button" class="btn-close-record" id="btnCloseExpenseRecord">&times;</button>
+                </div>
+                <div class="form-grid-3">
+                  <select id="expenseTypeSelect" class="form-ctrl">
+                    <option value="expense">Khoản Chi (-)</option>
+                    <option value="income">Khoản Thu (+)</option>
+                  </select>
+                  <input type="text" id="expenseAmountInput" class="form-ctrl"
+                    placeholder="Số tiền (VD: 45k, 200.000)..." />
+                  <input type="text" id="expenseCategoryInput" class="form-ctrl"
+                    placeholder="Danh mục (Ăn uống, Xăng, Lương...)" />
+                </div>
+                <input type="text" id="expenseNoteInput" class="form-ctrl"
+                  placeholder="Ghi chú chi tiết (VD: Ăn phở bò, Mua cà phê sáng)..." />
+                <div class="form-attach-image-row">
+                  <input type="file" id="expenseFormFileInput" accept="image/*" style="display: none;" />
+                  <button type="button" class="btn-form-attach-photo" id="btnExpenseFormPickImg">
+                    <i class="fa-solid fa-camera"></i> Đính kèm ảnh (hóa đơn, cơm...)
+                  </button>
+                  <button type="button" class="btn-form-attach-paste" id="btnExpenseFormPasteImg">
+                    <i class="fa-solid fa-paste"></i> Dán ảnh
+                  </button>
+                  <div class="form-attach-preview-mini" id="expenseFormImgPreview" style="display: none;">
+                    <img src="" id="expenseFormPreviewImgTag" alt="Ảnh đính kèm" />
+                    <span class="preview-label">Đã chọn ảnh</span>
+                    <button type="button" class="btn-remove-form-img" id="btnExpenseFormRemoveImg" title="Bỏ ảnh">&times;</button>
+                  </div>
+                </div>
+                <div class="form-actions-inline">
+                  <button type="button" class="btn-confirm-record" id="btnSaveExpenseItem">
+                    <i class="fa-solid fa-check"></i> Lưu Giao Dịch
+                  </button>
+                  <button type="button" class="btn-cancel-record" id="btnCancelExpenseRecord">Hủy</button>
+                </div>
+              </div>
+
+              <!-- Bộ lọc thu chi -->
+              <div class="filter-chips-row">
+                <button type="button" class="filter-chip active" data-filter="all">Tất cả</button>
+                <button type="button" class="filter-chip" data-filter="expense">Khoản Chi</button>
+                <button type="button" class="filter-chip" data-filter="income">Khoản Thu</button>
+              </div>
+
+              <!-- Danh sách giao dịch thu chi -->
+              <div class="history-list-box" id="expenseHistoryList">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+
+            <!-- CỘT 2: SỔ NỢ & ĐỐI TƯỢNG (VIETQR) -->
+            <div class="finance-card">
+              <div class="card-header-styled">
+                <div class="card-title">
+                  <i class="fa-solid fa-hand-holding-dollar"></i>
+                  <span>Sổ Nợ</span>
+                </div>
+                <div class="card-header-right">
+                  <span class="badge-tag-count" id="debtContactsCount">0 người</span>
+                  <button type="button" class="btn-mini-add primary" id="btnToggleAddDebt">
+                    <i class="fa-solid fa-plus"></i> Ghi Nợ Mới
+                  </button>
+                </div>
+              </div>
+
+
+              <!-- Form nhập nợ mới (Collapsible Drawer) -->
+              <div class="quick-record-box" id="debtRecordFormBox" style="display: none;">
+                <div class="quick-record-header">
+                  <span><i class="fa-solid fa-handshake"></i> Ghi nhận khoản nợ mới</span>
+                  <button type="button" class="btn-close-record" id="btnCloseDebtRecord">&times;</button>
+                </div>
+                <div class="form-grid-3">
+                  <select id="debtDirectionSelect" class="form-ctrl">
+                    <option value="they_owe_me">Họ nợ tôi (Cần đòi)</option>
+                    <option value="i_owe_them">Tôi nợ họ (Phải trả)</option>
+                  </select>
+                  <input type="text" id="debtPersonInput" class="form-ctrl"
+                    placeholder="Tên đối tượng (VD: Tuấn, Nam, Lan)..." />
+                  <input type="text" id="debtAmountInput" class="form-ctrl"
+                    placeholder="Số tiền (VD: 50k, 200.000)..." />
+                </div>
+                <input type="text" id="debtNoteInput" class="form-ctrl"
+                  placeholder="Lý do nợ (VD: Tiền ăn lẩu, Tiền trà sữa GongCha)..." />
+                <div class="form-attach-image-row">
+                  <input type="file" id="debtFormFileInput" accept="image/*" style="display: none;" />
+                  <button type="button" class="btn-form-attach-photo" id="btnDebtFormPickImg">
+                    <i class="fa-solid fa-camera"></i> Đính kèm ảnh (tiền cơm, hóa đơn...)
+                  </button>
+                  <button type="button" class="btn-form-attach-paste" id="btnDebtFormPasteImg">
+                    <i class="fa-solid fa-paste"></i> Dán ảnh
+                  </button>
+                  <div class="form-attach-preview-mini" id="debtFormImgPreview" style="display: none;">
+                    <img src="" id="debtFormPreviewImgTag" alt="Ảnh đính kèm" />
+                    <span class="preview-label">Đã chọn ảnh</span>
+                    <button type="button" class="btn-remove-form-img" id="btnDebtFormRemoveImg" title="Bỏ ảnh">&times;</button>
+                  </div>
+                </div>
+                <div class="form-actions-inline">
+                  <button type="button" class="btn-confirm-record" id="btnSaveDebtItem">
+                    <i class="fa-solid fa-check"></i> Lưu Khoản Nợ
+                  </button>
+                  <button type="button" class="btn-cancel-record" id="btnCancelDebtRecord">Hủy</button>
+                </div>
+              </div>
+
+              <!-- Chuyển đổi hiển thị Sổ nợ: Người / Lịch sử giao dịch -->
+              <div class="debt-view-toggle-row">
+                <button type="button" class="filter-chip-debt active" data-view="contacts">
+                  <i class="fa-solid fa-users"></i>
+                  <span>Người</span>
+                </button>
+                <button type="button" class="filter-chip-debt" data-view="history">
+                  <i class="fa-solid fa-clock-rotate-left"></i>
+                  <span>Lịch sử giao dịch</span>
+                </button>
+              </div>
+
+              <!-- Danh sách khoản nợ -->
+              <div class="history-list-box" id="debtContactsList">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- =================================================================
+             TAB 3: LỊCH TRÌNH & VIỆC CẦN LÀM (TODOS WORKSPACE)
+             ================================================================= -->
+        <section class="tab-pane" id="tab-todos">
+          <div class="todos-grid">
+            <div class="finance-card" style="height: 100%;">
+              <div class="card-header-styled">
+                <div class="card-title">
+                  <i class="fa-solid fa-calendar-check"></i>
+                  <span>Danh Sách Việc Cần Làm &amp; Lịch Trình</span>
+                </div>
+                <span class="badge-tag-count" id="todosCountBadge">0 việc</span>
+              </div>
+
+              <!-- Form thêm task nhanh -->
+              <div class="form-grid-3" style="grid-template-columns: 1fr 140px auto; margin-top: 4px;">
+                <input type="text" id="quickTaskTitleInput" class="form-ctrl"
+                  placeholder="Nội dung công việc (VD: Nộp báo cáo tài chính)..." />
+                <input type="text" id="quickTaskTimeInput" class="form-ctrl"
+                  placeholder="Thời gian (Hôm nay, 15:00)..." />
+                <button type="button" class="btn-confirm-record" id="btnQuickAddTask">
+                  <i class="fa-solid fa-plus"></i> Thêm Việc
+                </button>
+              </div>
+
+              <div class="history-list-box" id="todosWorkspaceList">
+                <!-- Rendered by JS -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             TAB 4: LỊCH VẠN NIÊN & QUẢN LÝ SỰ KIỆN (CALENDAR WORKSPACE)
+             ================================================================= -->
+        <section class="tab-pane" id="tab-calendar">
+          <div class="calendar-workspace-layout">
+            <!-- Cột trái: Lịch tháng trực quan -->
+            <div class="calendar-month-card">
+              <!-- Header điều hướng tháng -->
+              <div class="cal-month-header">
+                <div class="cal-month-title-wrap">
+                  <div class="cal-month-icon">
+                    <i class="fa-regular fa-calendar-days"></i>
+                  </div>
+                  <h2 class="cal-month-title" id="calMonthTitle">Tháng 10, 2026</h2>
+                </div>
+                <div class="cal-nav-btns">
+                  <button type="button" class="btn-cal-nav" id="btnCalPrevMonth" title="Tháng trước">
+                    <i class="fa-solid fa-chevron-left"></i>
+                  </button>
+                  <button type="button" class="btn-cal-today" id="btnCalToday">Hôm Nay</button>
+                  <button type="button" class="btn-cal-nav" id="btnCalNextMonth" title="Tháng sau">
+                    <i class="fa-solid fa-chevron-right"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Tiêu đề thứ trong tuần -->
+              <div class="cal-weekdays-row">
+                <span class="cal-weekday-label">T2</span>
+                <span class="cal-weekday-label">T3</span>
+                <span class="cal-weekday-label">T4</span>
+                <span class="cal-weekday-label">T5</span>
+                <span class="cal-weekday-label">T6</span>
+                <span class="cal-weekday-label weekend">T7</span>
+                <span class="cal-weekday-label weekend">CN</span>
+              </div>
+
+              <!-- Lưới các ô ngày trong tháng -->
+              <div class="cal-days-grid" id="calDaysGrid">
+                <!-- Rendered by js/calendar.js -->
+              </div>
+
+              <!-- Chú thích chấm màu sự kiện -->
+              <div class="cal-legend-bar">
+                <div class="cal-legend-item" title="Chấm màu trên ô lịch tự động đồng bộ theo màu chủ đề Thời Khóa Biểu">
+                  <span class="cal-dot event"></span>
+                  <span>Sự kiện (theo màu TKB)</span>
+                </div>
+                <div class="cal-legend-item">
+                  <span class="cal-dot task"></span>
+                  <span>Việc cần làm</span>
+                </div>
+                <div class="cal-legend-item">
+                  <span class="cal-dot tx"></span>
+                  <span>Thu chi</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cột phải: Dòng thời gian chi tiết của ngày đang chọn -->
+            <div class="calendar-day-detail-card">
+              <div class="cal-detail-header">
+                <div>
+                  <h3 class="cal-detail-date-title" id="calDetailDateTitle">Hôm nay</h3>
+                  <div class="cal-detail-date-sub" id="calDetailDateSub">Chi tiết lịch trình ngày</div>
+                </div>
+                <button type="button" class="btn-add-event-primary" id="btnOpenAddCalendarEventModal">
+                  <i class="fa-solid fa-plus"></i> Thêm Sự Kiện
+                </button>
+              </div>
+
+              <div class="cal-day-timeline-list" id="calDayTimelineList">
+                <!-- Rendered by js/calendar.js -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             TAB 5: THỜI KHÓA BIỂU & LỊCH TRÌNH TUẦN (WEEKLY TIMETABLE WORKSPACE)
+             ================================================================= -->
+        <section class="tab-pane" id="tab-timetable">
+          <div class="timetable-workspace-layout">
+            <!-- Header điều khiển tuần và thông số -->
+            <div class="timetable-header-card">
+              <div class="tt-header-left">
+                <div class="tt-header-icon">
+                  <i class="fa-solid fa-calendar-week"></i>
+                </div>
+                <div>
+                  <h2 class="tt-header-title" id="ttWeekTitle">Thời Khóa Biểu Tuần</h2>
+                  <div class="tt-header-sub" id="ttWeekSub">
+                    <span id="ttMonthYear">Tháng 10, 2026</span> • <span id="ttWeekEventsCount">0 sự kiện tuần này</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="tt-header-controls">
+                <div class="tt-nav-btns">
+                  <button type="button" class="btn-cal-nav" id="btnTtPrevWeek" title="Tuần trước">
+                    <i class="fa-solid fa-chevron-left"></i>
+                  </button>
+                  <button type="button" class="btn-cal-today" id="btnTtCurrentWeek">Tuần Này</button>
+                  <button type="button" class="btn-cal-nav" id="btnTtNextWeek" title="Tuần sau">
+                    <i class="fa-solid fa-chevron-right"></i>
+                  </button>
+                </div>
+
+                <button type="button" class="btn-tt-toggle-night" id="btnTtToggleNight" title="Bật/tắt thu gọn khung giờ ngủ (00:00 - 06:00)">
+                  <i class="fa-solid fa-moon"></i> <span id="ttToggleNightText">6h – 24h (Gọn)</span>
+                </button>
+
+                <button type="button" class="btn-add-event-primary" id="btnTtAddEvent">
+                  <i class="fa-solid fa-plus"></i> Thêm Sự Kiện
+                </button>
+              </div>
+            </div>
+
+            <!-- Khung Lưới Thời Gian Vừa Khít 1 Màn Hình -->
+            <div class="timetable-grid-card">
+              <!-- Hàng tiêu đề Thứ & Ngày -->
+              <div class="timetable-col-headers" id="ttColHeaders">
+                <!-- Rendered by js/timetable.js -->
+              </div>
+
+              <!-- Hàng sự kiện Cả ngày nếu có -->
+              <div class="timetable-allday-row" id="ttAllDayRow" style="display: none;">
+                <div class="tt-allday-label">Cả ngày</div>
+                <div class="tt-allday-cols" id="ttAllDayCols"></div>
+              </div>
+
+              <!-- Hàng thu gọn ban đêm (00:00 - 06:00) -->
+              <div class="timetable-night-strip-row" id="ttNightStripRow">
+                <div class="tt-night-label" title="Khung giờ nghỉ ngơi (00:00 - 06:00)">
+                  <i class="fa-solid fa-moon"></i>
+                  <span>0h - 6h</span>
+                </div>
+                <div class="tt-night-cols" id="ttNightCols">
+                  <!-- 7 ô đêm T2 -> CN chứa capsule sự kiện đêm nếu có -->
+                </div>
+              </div>
+
+              <!-- Thân lưới hiển thị các khung giờ (100% chiều cao, không cuộn dọc) -->
+              <div class="timetable-grid-body" id="ttGridBody">
+                <!-- Cột bên trái: Các mốc giờ -->
+                <div class="tt-time-axis" id="ttTimeAxis"></div>
+
+                <!-- 7 Cột thời gian cho 7 ngày T2 - CN -->
+                <div class="tt-days-columns" id="ttDaysColumns"></div>
+              </div>
+            </div>
+
+            <!-- Tooltip nổi xem nhanh chi tiết khi rê chuột -->
+            <div class="tt-event-hover-tooltip" id="ttEventHoverTooltip">
+              <div class="tt-tooltip-title" id="ttTooltipTitle"></div>
+              <div class="tt-tooltip-time" id="ttTooltipTime"></div>
+              <div class="tt-tooltip-category" id="ttTooltipCategory" style="display: none;"></div>
+              <div class="tt-tooltip-note" id="ttTooltipNote" style="display: none;"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+    </div>
+  </div>
+
+  <!-- MODAL: HỘP THOẠI XÁC NHẬN CHUNG (UNIVERSAL APP CONFIRM) -->
+  <div class="modal-backdrop" id="appConfirmModal">
+    <div class="modal-dialog" style="max-width: 420px;">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-triangle-exclamation" id="appConfirmIcon" style="color: #fb7185;"></i>
+          <span id="appConfirmTitle">Xác nhận thao tác</span>
+        </div>
+        <button class="btn-close-modal" id="btnCloseAppConfirmModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 22px 20px;">
+        <p class="modal-desc" id="appConfirmMessage" style="font-size: 0.94rem; color: #e2e8f0; line-height: 1.5; margin: 0;"></p>
+        <div class="modal-actions-row" style="margin-top: 14px;">
+          <button type="button" class="btn-modal-action secondary" id="btnAppConfirmCancel">Hủy</button>
+          <button type="button" class="btn-modal-action danger" id="btnAppConfirmAccept">
+            <i class="fa-solid fa-trash-can"></i> Xác nhận xóa
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CÀI ĐẶT GOOGLE GEMINI API KEY -->
+  <div class="modal-backdrop" id="apiKeyModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-brain"></i>
+          <span>Cài Đặt Google Gemini AI</span>
+        </div>
+        <button class="btn-close-modal" id="btnCloseApiKeyModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Kết nối trực tiếp với mô hình <strong>Google Gemini</strong> để Najimez sở hữu trí tuệ nhân tạo toàn năng: trò
+          chuyện tự nhiên, giải bài tập Toán, Lý, Hóa, lập trình và tư vấn mọi lĩnh vực.
+        </p>
+
+        <div class="form-group-custom">
+          <label for="geminiApiKeyInput">Google Gemini API Key:</label>
+          <div class="input-with-action">
+            <input type="password" id="geminiApiKeyInput" class="form-input-custom"
+              placeholder="Dán mã API Key của bạn (AIzaSy...)" autocomplete="off" />
+            <button type="button" class="btn-toggle-pw" id="btnToggleApiKeyVisibility" title="Ẩn/Hiện mã key">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+          </div>
+          <small class="form-help">
+            Chưa có mã key? <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">Nhận API Key
+              miễn phí tại Google AI Studio <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+          </small>
+        </div>
+
+        <div class="api-status-badge" id="apiStatusBadge">
+          <i class="fa-solid fa-circle-info"></i>
+          <span id="apiStatusText">Đang sử dụng bộ não dự phòng nội bộ</span>
+        </div>
+
+        <div class="modal-actions-row">
+          <button type="button" class="btn-modal-action primary" id="btnSaveApiKey">
+            <i class="fa-solid fa-check"></i> Lưu &amp; Kết Nối
+          </button>
+          <button type="button" class="btn-modal-action secondary" id="btnRemoveApiKey">
+            <i class="fa-solid fa-trash-can"></i> Xóa Key
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CÀI ĐẶT TÀI KHOẢN NGÂN HÀNG VIETQR -->
+  <div class="modal-backdrop" id="bankSettingsModal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-qrcode"></i>
+          <span>Cài Đặt Tài Khoản VietQR</span>
+        </div>
+        <button class="btn-close-modal" id="btnCloseBankSettingsModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Nhập tài khoản ngân hàng để Najimez tự động tạo mã <strong>VietQR chuyển khoản nhanh</strong> khi phát sinh
+          giao dịch hoặc đòi nợ.
+        </p>
+
+        <div class="form-group-custom">
+          <label for="bankSelect">Ngân hàng thụ hưởng:</label>
+          <select id="bankSelect" class="form-input-custom form-select-custom">
+            <option value="MB">MBBank (Ngân hàng Quân Đội)</option>
+            <option value="VCB">Vietcombank (Ngoại Thương VN)</option>
+            <option value="TCB">Techcombank (Kỹ Thương VN)</option>
+            <option value="VPB">VPBank (Việt Nam Thịnh Vượng)</option>
+            <option value="ACB">ACB (Á Châu)</option>
+            <option value="ICB">VietinBank (Công Thương VN)</option>
+            <option value="BIDV">BIDV (Đầu Tư &amp; Phát Triển VN)</option>
+            <option value="HDB">HDBank (Phát Triển TP.HCM)</option>
+            <option value="TPB">TPBank (Tiên Phong)</option>
+            <option value="STB">Sacombank (Sài Gòn Thương Tín)</option>
+            <option value="VIB">VIB (Quốc Tế VN)</option>
+            <option value="AGRI">Agribank (Nông nghiệp &amp; PTNT)</option>
+            <option value="SHB">SHB (Sài Gòn Hà Nội)</option>
+            <option value="OCB">OCB (Phương Đông)</option>
+            <option value="MSB">MSB (Hàng Hải VN)</option>
+            <option value="EIB">Eximbank (XNK VN)</option>
+            <option value="SEAB">SeABank (Đông Nam Á)</option>
+            <option value="LPB">LPBank (Lộc Phát)</option>
+          </select>
+        </div>
+
+        <div class="form-group-custom">
+          <label for="bankAccountNo">Số tài khoản nhận tiền:</label>
+          <input type="text" id="bankAccountNo" class="form-input-custom" placeholder="Ví dụ: 0987654321..." />
+        </div>
+
+        <div class="form-group-custom">
+          <label for="bankAccountName">Tên chủ tài khoản (không dấu):</label>
+          <input type="text" id="bankAccountName" class="form-input-custom" placeholder="Ví dụ: NGUYEN VAN A..." />
+        </div>
+
+        <div class="modal-actions-row">
+          <button type="button" class="btn-modal-action primary" id="btnSaveBankSettings">
+            <i class="fa-solid fa-check"></i> Lưu Cài Đặt VietQR
+          </button>
+          <button type="button" class="btn-modal-action secondary" id="btnTestBankQR">
+            <i class="fa-solid fa-wifi"></i> Kiểm tra kết nối
+          </button>
+        </div>
+
+        <!-- Test QR Preview -->
+        <div id="bankTestQRSection" style="display:none;">
+          <div class="bank-test-divider">
+            <span>Kết quả kiểm tra</span>
+          </div>
+          <div class="bank-test-result" id="bankTestResult">
+            <div class="bank-test-status" id="bankTestStatus">
+              <i class="fa-solid fa-circle-notch fa-spin"></i>
+              <span>Đang tạo mã QR thử nghiệm...</span>
+            </div>
+            <div class="bank-qr-preview" id="bankQRPreview" style="display:none;">
+              <img id="bankTestQRImg" src="" alt="QR Test" />
+              <div class="bank-qr-info">
+                <div class="bank-qr-label" id="bankQRLabel"></div>
+                <div class="bank-qr-hint">📱 Mở app ngân hàng &rarr; Quét QR để xác nhận thông tin tài khoản đúng chưa
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: HIỂN THỊ MÃ VIETQR -->
+  <div class="modal-backdrop" id="vietQrModal">
+    <div class="modal-dialog modal-qr-dialog">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-qrcode"></i>
+          <span id="vietQrModalTitle">Mã Chuyển Khoản VietQR</span>
+        </div>
+        <button class="btn-close-modal" id="btnCloseVietQrModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body qr-modal-body">
+        <div class="qr-info-badge" id="vietQrInfoText">
+          Đang tạo mã VietQR thanh toán...
+        </div>
+        <div class="qr-image-wrapper">
+          <img id="vietQrImage" src="" alt="Mã VietQR" />
+          <div class="qr-loading" id="vietQrLoading">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <span>Đang tạo mã VietQR...</span>
+          </div>
+        </div>
+        <p class="qr-hint">Mở ứng dụng ngân hàng hoặc ví điện tử bất kỳ để quét mã thanh toán tức thì.</p>
+        <div class="modal-actions-row">
+          <a id="btnDownloadQr" href="#" download="vietqr.jpg" class="btn-modal-action secondary" target="_blank">
+            <i class="fa-solid fa-download"></i> Tải Mã QR
+          </a>
+          <button type="button" class="btn-modal-action primary" id="btnConfirmQrPaid">
+            <i class="fa-solid fa-check"></i> Đã Thu / Trả Xong
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LỊCH SỬ GIAO DỊCH VỚI ĐỐI TƯỢNG NỢ -->
+  <div class="modal-backdrop" id="personHistoryModal">
+    <div class="modal-dialog modal-dialog-wide">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span id="personHistoryModalTitle">Lịch Sử Giao Dịch</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnClosePersonHistoryModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="person-history-summary" id="personHistorySummary"></div>
+        <div class="person-history-list" id="personHistoryList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: THÔNG TIN & HỒ SƠ ĐỐI TƯỢNG (AVATAR, ĐỔI TÊN, GHI CHÚ) -->
+  <div class="modal-backdrop" id="personInfoModal">
+    <div class="modal-dialog modal-profile-dialog">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-id-badge"></i>
+          <span id="personInfoModalTitle">Hồ Sơ &amp; Thông Tin Đối Tượng</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnClosePersonInfoModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body profile-modal-body">
+        <!-- Khu vực Avatar & Tùy chọn ảnh -->
+        <div class="profile-avatar-section">
+          <div class="avatar-preview-wrap">
+            <div class="profile-avatar-preview" id="personInfoAvatarPreview">
+              <!-- Rendered via JS -->
+            </div>
+            <label class="avatar-camera-badge" for="personAvatarFileInput" title="Tải ảnh lên">
+              <i class="fa-solid fa-camera"></i>
+            </label>
+          </div>
+          <div class="avatar-controls-col">
+            <span class="avatar-section-title"><i class="fa-solid fa-image"></i> Ảnh đại diện</span>
+            <div class="avatar-buttons-grid">
+              <input type="file" id="personAvatarFileInput" accept="image/*" style="display:none;" />
+              <button type="button" class="btn-avatar-choice primary" id="btnUploadPersonAvatar">
+                <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                <span>Tải ảnh lên</span>
+              </button>
+              <button type="button" class="btn-avatar-choice" id="btnPastePersonAvatar" title="Dán ảnh từ clipboard hoặc nhấn tổ hợp phím Ctrl + V">
+                <i class="fa-solid fa-paste"></i>
+                <span>Dán ảnh (Ctrl+V)</span>
+              </button>
+            </div>
+            <div class="avatar-url-input-wrap">
+              <input type="url" id="personAvatarUrlInput" class="form-input-custom text-sm" placeholder="Hoặc dán URL ảnh (https://...)" autocomplete="off" />
+              <button type="button" id="btnApplyAvatarUrl" class="btn-sub-apply">Áp dụng</button>
+            </div>
+            <button type="button" id="btnResetPersonAvatar" class="btn-reset-avatar-link">
+              <i class="fa-solid fa-rotate-left"></i> Dùng chữ cái mặc định
+            </button>
+          </div>
+        </div>
+
+        <!-- Trạng thái số dư nợ nhanh -->
+        <div class="person-debt-mini-badge" id="personInfoDebtPill">
+          <!-- Rendered via JS -->
+        </div>
+
+        <!-- Form Đổi tên -->
+        <div class="form-group-custom">
+          <label for="personInfoNameInput">
+            <i class="fa-solid fa-user-tag"></i> Tên đối tượng:
+          </label>
+          <input type="text" id="personInfoNameInput" class="form-input-custom" placeholder="Nhập tên đối tượng..." autocomplete="off" />
+          <small class="form-help">Hệ thống sẽ tự động cập nhật tên mới trên toàn bộ khoản nợ và giao dịch liên quan.</small>
+        </div>
+
+        <!-- Form Ghi chú -->
+        <div class="form-group-custom">
+          <label for="personInfoNoteInput">
+            <i class="fa-regular fa-note-sticky"></i> Ghi chú riêng về người này:
+          </label>
+          <textarea id="personInfoNoteInput" class="form-input-custom form-textarea-custom" rows="3" placeholder="Nhập ghi chú cá nhân (VD: Bạn thời cấp 3, SĐT: 098..., STK: MBBank, lưu ý hay mượn tiền...)..."></textarea>
+        </div>
+
+        <!-- Nút hành động -->
+        <div class="modal-actions-row">
+          <button type="button" class="btn-modal-action secondary" id="btnCancelPersonInfoModal">Hủy</button>
+          <button type="button" class="btn-modal-action primary" id="btnSavePersonInfoModal">
+            <i class="fa-solid fa-check"></i> Lưu Thông Tin
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: VÒNG QUAY MAY MẮN NAJIMEZ -->
+  <div class="modal-backdrop" id="luckyWheelModal">
+    <div class="modal-dialog lucky-wheel-dialog">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-dharmachakra" style="color: #f59e0b;"></i>
+          <span>Vòng Quay May Mắn Najimez</span>
+        </div>
+        <button class="btn-close-modal" id="btnCloseLuckyWheelModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 0;">
+        <div class="lucky-wheel-layout">
+          <!-- Cột trái: Sân khấu vòng quay & Hiệu ứng -->
+          <div class="wheel-stage-col">
+            <div class="wheel-canvas-wrapper">
+              <!-- Kim chỉ ở đỉnh -->
+              <div class="wheel-pointer" id="luckyWheelPointer">
+                <svg viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M18 42L4 12C2.5 8.5 5 4 9 4H27C31 4 33.5 8.5 32 12L18 42Z" fill="url(#pointerGrad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+                  <circle cx="18" cy="14" r="5" fill="#ffffff" />
+                  <defs>
+                    <linearGradient id="pointerGrad" x1="18" y1="4" x2="18" y2="42" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#fbbf24" />
+                      <stop offset="1" stop-color="#ea580c" />
+                    </linearGradient>
+                  </defs>
+                </svg>
+              </div>
+
+              <!-- Canvas vẽ các nan quạt -->
+              <canvas id="luckyWheelCanvas" width="360" height="360"></canvas>
+
+              <!-- Nút tròn quay ở trung tâm -->
+              <button type="button" class="wheel-center-btn" id="btnWheelCenterSpin" title="Nhấn để quay ngay!">
+                QUAY
+              </button>
+
+              <!-- Canvas pháo hoa Confetti khi có kết quả -->
+              <canvas id="luckyWheelConfettiCanvas" width="360" height="360"></canvas>
+            </div>
+
+            <!-- Nút điều khiển quay & âm thanh -->
+            <div class="wheel-actions-bar">
+              <button type="button" class="btn-spin-main" id="btnWheelSpinMain">
+                <i class="fa-solid fa-dice"></i> Quay Ngay
+              </button>
+              <button type="button" class="btn-wheel-tool" id="btnWheelToggleMute" title="Bật/Tắt âm thanh">
+                <i class="fa-solid fa-volume-high"></i>
+              </button>
+            </div>
+
+            <!-- Thẻ thông báo kết quả may mắn -->
+            <div class="wheel-winner-card" id="luckyWheelWinnerCard" style="display: none;">
+              <img src="assets/najimez.jpg" alt="Najimez" class="wheel-winner-avatar" />
+              <div class="wheel-winner-info">
+                <div class="wheel-winner-label" id="luckyWheelWinnerLabel">Najimez đã chọn cho bạn:</div>
+                <div class="wheel-winner-text" id="luckyWheelWinnerText">...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cột phải: Chọn Preset & Tùy biến ô lựa chọn -->
+          <div class="wheel-control-col">
+            <!-- Nhóm danh mục Presets -->
+            <div class="wheel-control-card">
+              <div class="wheel-control-title">
+                <span><i class="fa-solid fa-wand-magic-sparkles"></i> Mẫu Gợi Ý Sẵn</span>
+              </div>
+              <div class="wheel-preset-chips">
+                <button type="button" class="btn-preset-chip active" data-preset="an_gi">
+                  <i class="fa-solid fa-bowl-food"></i> Ăn gì?
+                </button>
+                <button type="button" class="btn-preset-chip" data-preset="uong_gi">
+                  <i class="fa-solid fa-mug-hot"></i> Uống gì?
+                </button>
+                <button type="button" class="btn-preset-chip" data-preset="todos">
+                  <i class="fa-solid fa-list-check"></i> Việc To-Do
+                </button>
+                <button type="button" class="btn-preset-chip" data-preset="contacts">
+                  <i class="fa-solid fa-users"></i> Ai bao?
+                </button>
+                <button type="button" class="btn-preset-chip" data-preset="custom">
+                  <i class="fa-solid fa-pen-to-square"></i> Tùy chỉnh
+                </button>
+              </div>
+            </div>
+
+            <!-- Quản lý các ô -->
+            <div class="wheel-control-card" style="flex: 1; display: flex; flex-direction: column;">
+              <div class="wheel-control-title">
+                <span><i class="fa-solid fa-list-ol"></i> Các Ô Lựa Chọn</span>
+                <span id="wheelItemsCount" style="color: #f59e0b; font-weight: 700;">8 mục</span>
+              </div>
+
+              <!-- Thêm ô mới -->
+              <div class="wheel-add-item-form">
+                <input type="text" id="wheelAddItemInput" class="wheel-add-input" placeholder="Nhập thêm lựa chọn mới..." maxlength="40" />
+                <button type="button" class="btn-wheel-add" id="btnWheelAddItem">
+                  <i class="fa-solid fa-plus"></i> Thêm
+                </button>
+              </div>
+
+              <!-- Danh sách ô cuộn -->
+              <div class="wheel-items-list" id="wheelItemsList">
+                <!-- Được render bởi js/lucky-wheel.js -->
+              </div>
+
+              <!-- Thao tác phụ -->
+              <div class="wheel-items-actions">
+                <button type="button" class="btn-wheel-sublink" id="btnWheelResetItems">
+                  <i class="fa-solid fa-rotate-left"></i> Khôi phục mẫu
+                </button>
+                <button type="button" class="btn-wheel-sublink" id="btnWheelClearItems" style="color: #f87171;">
+                  <i class="fa-regular fa-trash-can"></i> Xóa hết
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: THÊM SỰ KIỆN / NHẮC NHỞ LỊCH -->
+  <div class="modal-backdrop" id="calendarEventModal">
+    <div class="modal-dialog" style="max-width: 480px;">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-calendar-plus" style="color: #a855f7;"></i>
+          <span id="calEventModalTitle">Thêm Sự Kiện Lịch</span>
+        </div>
+        <button class="btn-close-modal" id="btnCloseCalendarEventModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <form id="calendarEventModalForm" class="modal-body" style="padding: 18px 20px;">
+        <div class="form-group-custom">
+          <label for="calEventTitleInput">Tiêu đề sự kiện (*):</label>
+          <input type="text" id="calEventTitleInput" class="form-input-custom" placeholder="VD: Sinh nhật bạn, Họp dự án, Đi khám răng..." required autocomplete="off" />
+        </div>
+
+        <div class="form-group-custom" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label for="calEventDateInput">Ngày diễn ra (*):</label>
+            <input type="date" id="calEventDateInput" class="form-input-custom" required />
+          </div>
+          <div>
+            <label for="calEventTimeInput">Thời gian diễn ra:</label>
+            <input type="time" id="calEventTimeInput" class="form-input-custom" />
+          </div>
+        </div>
+
+        <div class="form-group-custom" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div>
+            <label for="calEventEndDateInput">Ngày kết thúc:</label>
+            <input type="date" id="calEventEndDateInput" class="form-input-custom" />
+          </div>
+          <div>
+            <label for="calEventEndTimeInput">Thời gian kết thúc:</label>
+            <input type="time" id="calEventEndTimeInput" class="form-input-custom" />
+          </div>
+        </div>
+
+        <div class="form-group-custom" style="margin-bottom: 10px;">
+          <label for="calEventRepeatCheckbox" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-size: 0.9rem; font-weight: 600; color: #f1f5f9;">
+            <input type="checkbox" id="calEventRepeatCheckbox" style="width: 17px; height: 17px; cursor: pointer; accent-color: #a855f7;" />
+            <i class="fa-solid fa-rotate" style="color: #c084fc;"></i> Lặp lại sự kiện
+          </label>
+        </div>
+
+        <!-- Khung cấu hình Mỗi X Ngày / Tuần / Tháng / Năm -->
+        <div id="calEventRepeatConfigBox" style="display: none; margin-top: -6px; margin-bottom: 14px; padding: 12px 14px; background: rgba(168, 85, 247, 0.08); border: 1px dashed rgba(168, 85, 247, 0.35); border-radius: var(--radius-sm);">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="font-size: 0.86rem; color: #f8fafc; font-weight: 700;"><i class="fa-solid fa-clock-rotate-left" style="color: #c084fc;"></i> Chu kỳ:</span>
+            <span style="font-size: 0.84rem; color: #cbd5e1;">Mỗi</span>
+            <input type="number" id="calEventRepeatIntervalInput" class="form-input-custom" min="1" max="999" value="1" style="width: 76px; text-align: center; padding: 6px 8px; font-weight: 700; color: #fff;" title="Nhập số X (VD: 1, 2, 3...)" />
+            <select id="calEventRepeatUnitSelect" class="form-input-custom form-select-custom" style="width: 115px; padding: 6px 10px; font-weight: 600;">
+              <option value="day">Ngày</option>
+              <option value="week">Tuần</option>
+              <option value="month">Tháng</option>
+              <option value="year">Năm</option>
+            </select>
+          </div>
+
+          <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+            <label for="calEventRepeatEndInput" style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; margin: 0;">
+              Kết thúc lặp:
+            </label>
+            <input type="date" id="calEventRepeatEndInput" class="form-input-custom" style="padding: 5px 10px; font-size: 0.82rem; flex: 1;" title="Để trống nếu lặp vô thời hạn" />
+          </div>
+        </div>
+
+        <div class="form-group-custom">
+          <label for="calEventCategorySelect">Phân loại sự kiện:</label>
+          <select id="calEventCategorySelect" class="form-input-custom form-select-custom">
+            <option value="Học tập">🎓 Học tập &amp; Bài vở</option>
+            <option value="Công việc">💼 Công việc &amp; Dự án</option>
+            <option value="Sự kiện">🎉 Sự kiện &amp; Giải trí</option>
+            <option value="Hẹn gặp">☕ Hẹn hò &amp; Gặp gỡ</option>
+            <option value="Sức khỏe">🏃 Thể thao &amp; Sức khỏe</option>
+            <option value="Quan trọng">⚠️ Thi cử &amp; Deadline</option>
+            <option value="Sinh nhật / Kỷ niệm">🎂 Sinh nhật &amp; Kỷ niệm</option>
+            <option value="Khác">📌 Khác</option>
+          </select>
+        </div>
+
+        <div class="form-group-custom">
+          <label>Màu sắc đánh dấu:</label>
+          <div class="color-picker-row" id="calEventColorPicker">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+
+        <div class="form-group-custom">
+          <label for="calEventNoteInput">Ghi chú thêm:</label>
+          <textarea id="calEventNoteInput" class="form-input-custom form-textarea-custom" rows="2" placeholder="Nhập địa điểm, người tham gia hoặc ghi chú thêm..."></textarea>
+        </div>
+
+        <div class="modal-actions-row" style="margin-top: 14px;">
+          <button type="button" class="btn-modal-action secondary" id="btnCancelCalendarEventModal">Hủy</button>
+          <button type="submit" class="btn-modal-action primary" id="btnSaveCalendarEvent">
+            <i class="fa-solid fa-check"></i> Lưu Sự Kiện
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: XÓA SỰ KIỆN LẶP LẠI (TÙY CHỌN 3 PHẠM VI XÓA) -->
+  <div class="modal-backdrop" id="calRepeatDeleteModal">
+    <div class="modal-dialog" style="max-width: 450px;">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-rotate" style="color: #c084fc;"></i>
+          <span>Xóa sự kiện lặp lại</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCloseCalRepeatDeleteModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding: 20px;">
+        <p style="font-size: 0.92rem; color: #e2e8f0; margin-bottom: 14px; line-height: 1.5;">
+          Bạn muốn xóa sự kiện <strong id="calRepeatDeleteTitle" style="color: #c084fc;">"..."</strong> vào ngày <span id="calRepeatDeleteDate" style="color: #fbbf24; font-weight: 700;">...</span>? Vui lòng chọn phạm vi:
+        </p>
+
+        <div class="cal-repeat-del-options">
+          <!-- 1. Chỉ sự kiện này -->
+          <label class="cal-repeat-del-card" id="repeatDelOptThis">
+            <input type="radio" name="calRepeatDeleteScope" value="this" checked />
+            <div class="cal-repeat-del-card-content">
+              <div class="cal-repeat-del-card-icon" style="color: #38bdf8;">
+                <i class="fa-regular fa-calendar-xmark"></i>
+              </div>
+              <div class="cal-repeat-del-card-text">
+                <div class="cal-repeat-del-card-title">Chỉ sự kiện này</div>
+                <div class="cal-repeat-del-card-desc">Chỉ xóa lần lặp vào ngày này, các ngày khác trong chuỗi vẫn giữ nguyên.</div>
+              </div>
+              <div class="cal-repeat-del-radio-indicator">
+                <div class="cal-repeat-del-radio-dot"></div>
+              </div>
+            </div>
+          </label>
+
+          <!-- 2. Sự kiện này và các sự kiện sau đó -->
+          <label class="cal-repeat-del-card" id="repeatDelOptFollowing">
+            <input type="radio" name="calRepeatDeleteScope" value="following" />
+            <div class="cal-repeat-del-card-content">
+              <div class="cal-repeat-del-card-icon" style="color: #f59e0b;">
+                <i class="fa-solid fa-forward-step"></i>
+              </div>
+              <div class="cal-repeat-del-card-text">
+                <div class="cal-repeat-del-card-title">Sự kiện này và các sự kiện sau đó</div>
+                <div class="cal-repeat-del-card-desc">Dừng lặp lại từ ngày này trở đi, giữ lại các ngày trước đó.</div>
+              </div>
+              <div class="cal-repeat-del-radio-indicator">
+                <div class="cal-repeat-del-radio-dot"></div>
+              </div>
+            </div>
+          </label>
+
+          <!-- 3. Tất cả sự kiện -->
+          <label class="cal-repeat-del-card" id="repeatDelOptAll">
+            <input type="radio" name="calRepeatDeleteScope" value="all" />
+            <div class="cal-repeat-del-card-content">
+              <div class="cal-repeat-del-card-icon" style="color: #fb7185;">
+                <i class="fa-solid fa-trash-can"></i>
+              </div>
+              <div class="cal-repeat-del-card-text">
+                <div class="cal-repeat-del-card-title">Tất cả các sự kiện</div>
+                <div class="cal-repeat-del-card-desc">Xóa vĩnh viễn toàn bộ chuỗi sự kiện lặp lại này khỏi lịch.</div>
+              </div>
+              <div class="cal-repeat-del-radio-indicator">
+                <div class="cal-repeat-del-radio-dot"></div>
+              </div>
+            </div>
+          </label>
+        </div>
+
+        <div class="modal-actions-row" style="margin-top: 18px;">
+          <button type="button" class="btn-modal-action secondary" id="btnCancelCalRepeatDeleteModal">Hủy</button>
+          <button type="button" class="btn-modal-action danger" id="btnConfirmCalRepeatDelete">
+            <i class="fa-solid fa-trash-can"></i> Xác nhận xóa
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: XEM & ĐÍNH KÈM ẢNH GIAO DỊCH (HÓA ĐƠN / TIỀN CƠM / BẰNG CHỨNG) -->
+  <div class="modal-backdrop" id="transactionImageModal">
+    <div class="modal-dialog" style="max-width: 520px;">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-receipt" style="color: #c084fc;"></i>
+          <span id="txImageModalTitle">Ảnh Giao Dịch</span>
+        </div>
+        <button class="btn-close-modal" id="btnCloseTxImageModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding: 20px;">
+        <!-- Khung xem ảnh hiện tại (khi giao dịch đã có ảnh) -->
+        <div id="txImageViewSection" style="display: none;">
+          <div class="tx-image-large-preview-wrap">
+            <img src="" id="txImageLargePreview" alt="Ảnh giao dịch" />
+          </div>
+          <div class="tx-image-meta-info" id="txImageMetaInfo">
+            <span id="txImageMetaTitle">Hóa đơn đính kèm</span>
+            <span id="txImageMetaDate">Hôm nay</span>
+          </div>
+          <div class="modal-actions-row" style="margin-top: 14px; gap: 8px;">
+            <a href="#" id="btnDownloadTxImage" download="anh-giao-dich.jpg" class="btn-modal-action secondary" style="flex: 1;">
+              <i class="fa-solid fa-download"></i> Tải về
+            </a>
+            <button type="button" id="btnReplaceTxImage" class="btn-modal-action secondary" style="flex: 1;">
+              <i class="fa-solid fa-rotate"></i> Đổi ảnh
+            </button>
+            <button type="button" id="btnDeleteTxImage" class="btn-modal-action danger" style="flex: 1;">
+              <i class="fa-solid fa-trash-can"></i> Xóa ảnh
+            </button>
+          </div>
+        </div>
+
+        <!-- Khung tải / dán ảnh mới -->
+        <div id="txImageEditSection" style="display: none;">
+          <div class="tx-image-dropzone" id="txImageDropzone">
+            <input type="file" id="txImageFileInput" accept="image/*" style="display: none;" />
+            <div class="dropzone-content" id="txImageDropzonePrompt">
+              <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.2rem; color: #c084fc; margin-bottom: 8px;"></i>
+              <p style="margin: 0; font-weight: 700; color: #fff;">Nhấn để chọn ảnh từ thiết bị</p>
+              <small style="color: var(--text-muted); display: block; margin-top: 4px;">Hỗ trợ ảnh món ăn, tiền cơm, hóa đơn, chuyển khoản...</small>
+            </div>
+            <div class="tx-preview-in-dropzone" id="txPreviewInDropzone" style="display: none;">
+              <img src="" id="txDropzonePreviewImg" alt="Xem trước ảnh" />
+              <button type="button" id="btnRemoveDropzonePreview" class="btn-remove-preview-badge" title="Bỏ ảnh này">&times;</button>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <button type="button" id="btnPasteTxImageClip" class="btn-form-attach-paste" style="flex: 1; justify-content: center; padding: 9px;">
+              <i class="fa-solid fa-paste"></i> Dán từ Clipboard (Ctrl + V)
+            </button>
+          </div>
+
+          <div class="avatar-url-input-wrap" style="margin-top: 10px;">
+            <input type="url" id="txImageUrlInput" class="form-input-custom text-sm" placeholder="Hoặc dán URL ảnh (https://...)" autocomplete="off" />
+            <button type="button" id="btnApplyTxImageUrl" class="btn-sub-apply">Áp dụng</button>
+          </div>
+
+          <div class="modal-actions-row" style="margin-top: 16px;">
+            <button type="button" class="btn-modal-action secondary" id="btnCancelTxImageEdit">Hủy</button>
+            <button type="button" class="btn-modal-action primary" id="btnSaveTxImage">
+              <i class="fa-solid fa-check"></i> Lưu Ảnh Giao Dịch
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CÀI ĐẶT ÂM THANH & GIỌNG ĐỌC TRỢ LÝ NAJIMEZ -->
+  <div class="modal-backdrop" id="voiceSettingsModal">
+    <div class="modal-dialog voice-settings-dialog">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-sliders" style="color: #c084fc;"></i>
+          <span>Cài Đặt Âm Thanh &amp; Giọng Đọc Najimez</span>
+        </div>
+        <button class="btn-close-modal" id="btnCloseVoiceSettingsModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body voice-settings-body">
+        <!-- PHẦN 1: GIỌNG ĐỌC AI TRỢ LÝ (TTS) -->
+        <div class="voice-config-section">
+          <div class="voice-section-header">
+            <div class="voice-section-title">
+              <i class="fa-solid fa-microphone-lines"></i>
+              <span>Công Nghệ Giọng Đọc Trợ Lý Ảo (TTS)</span>
+            </div>
+            <span class="voice-badge-tag" id="voiceEngineBadgeTag" style="background: rgba(245, 158, 11, 0.18); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35);">
+              <i class="fa-solid fa-crown"></i> ElevenLabs AI
+            </span>
+          </div>
+
+          <!-- LỰA CHỌN CÔNG NGHỆ GIỌNG ĐỌC -->
+          <div class="voice-engine-cards">
+            <!-- 1. ElevenLabs AI -->
+            <label class="voice-engine-card" id="engineCardEleven">
+              <input type="radio" name="ttsEngineType" value="elevenlabs" checked />
+              <div class="voice-engine-card-content">
+                <div class="voice-engine-card-icon" style="color: #f59e0b;"><i class="fa-solid fa-crown"></i></div>
+                <div class="voice-engine-card-text">
+                  <div class="voice-engine-card-title">ElevenLabs AI <span class="hot-pill">Người Thật 100%</span></div>
+                  <div class="voice-engine-card-desc">Cảm xúc, nhịp thở chân thực (Yêu cầu API Key từ elevenlabs.io)</div>
+                </div>
+              </div>
+            </label>
+
+            <!-- 2. Microsoft Edge Neural -->
+            <label class="voice-engine-card" id="engineCardEdge">
+              <input type="radio" name="ttsEngineType" value="edge" />
+              <div class="voice-engine-card-content">
+                <div class="voice-engine-card-icon" style="color: #38bdf8;"><i class="fa-solid fa-cloud"></i></div>
+                <div class="voice-engine-card-text">
+                  <div class="voice-engine-card-title">Microsoft Edge Neural <span class="free-pill">100% Miễn Phí</span></div>
+                  <div class="voice-engine-card-desc">Nữ Hoài My dịu dàng, phát thanh viên (Không cần API Key)</div>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <!-- BẢNG CÀI ĐẶT ELEVENLABS -->
+          <div id="elevenSettingsPanel" class="eleven-settings-panel" style="display: flex;">
+            <div class="eleven-key-row">
+              <div class="eleven-input-label">
+                <span style="font-weight: 600; color: #f8fafc;"><i class="fa-solid fa-key" style="color: #f59e0b;"></i> ElevenLabs API Key:</span>
+                <a href="https://elevenlabs.io" target="_blank" rel="noopener" class="eleven-key-link" title="Mở trang ElevenLabs để lấy key">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i> Lấy key miễn phí từ elevenlabs.io
+                </a>
+              </div>
+              <div class="eleven-key-input-wrap">
+                <input type="password" id="elevenApiKeyInput" class="form-input-custom" placeholder="Dán xi-api-key (51 ký tự) vào đây..." autocomplete="off" />
+                <button type="button" class="btn-toggle-key-visibility" id="btnToggleElevenKey" title="Hiện/Ẩn API Key">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+                <button type="button" class="btn-verify-key" id="btnVerifyElevenKey" title="Kiểm tra tính hợp lệ và xem hạn mức">
+                  <i class="fa-solid fa-plug-circle-check"></i> Kiểm tra Key
+                </button>
+              </div>
+              <div id="elevenKeyStatus" class="eleven-key-status-msg" style="display: none;"></div>
+            </div>
+
+            <!-- Chọn Model ElevenLabs -->
+            <div class="form-group-custom" style="margin-top: 6px; margin-bottom: 0;">
+              <label for="elevenModelSelect" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
+                Mô hình giọng nói AI (Model):
+              </label>
+              <select id="elevenModelSelect" class="form-input-custom form-select-custom">
+                <option value="eleven_flash_v2_5">⚡ Eleven Flash v2.5 (Siêu Tốc ~75ms, Giảm Trễ 95%, Tiết Kiệm Ký Tự) ⭐ [Khuyên Dùng]</option>
+                <option value="eleven_turbo_v2_5">🚀 Eleven Turbo v2.5 (Tốc độ cao ~250ms, đầm ấm)</option>
+                <option value="eleven_multilingual_v2">🌟 Eleven Multilingual v2 (Chất lượng phòng thu cao nhất)</option>
+              </select>
+            </div>
+
+            <!-- Chọn Giọng ElevenLabs -->
+            <div class="form-group-custom" style="margin-top: 6px; margin-bottom: 0;">
+              <label for="elevenVoiceSelect" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
+                Chọn nhân vật giọng đọc ElevenLabs:
+              </label>
+              <select id="elevenVoiceSelect" class="form-input-custom form-select-custom">
+                <option value="21m00Tcm4TlvDq8ikWAM">🌸 Rachel (Nữ dịu dàng, tự nhiên, thân mật) ⭐ [Chuẩn cho Najimez]</option>
+                <option value="EXAVITQu4vr4xnSDxMaL">🎀 Bella (Nữ trẻ trung, trong sáng, đáng yêu)</option>
+                <option value="MF3mGyEYCl7XYWbV9V6O">🌷 Elli (Nữ ấm áp, đằm thắm, tinh tế)</option>
+                <option value="AZnzlk1XvdvUeBnXmlld">👑 Domi (Nữ tự tin, sắc sảo, hiện đại)</option>
+                <option value="jsCqWAovK2LkecY7zXl4">✨ Freya (Nữ ngọt ngào, truyền cảm)</option>
+                <option value="pNInz6obpgDQGcFmaJgB">🎙️ Adam (Nam đĩnh đạc, trầm ấm, truyền cảm)</option>
+                <option value="ErXwobaYiN019PkySvjV">🎧 Antoni (Nam hiện đại, kể chuyện)</option>
+                <option value="custom">⚙️ Tự nhập Voice ID từ thư viện ElevenLabs...</option>
+              </select>
+            </div>
+
+            <!-- Ô nhập Voice ID tùy chỉnh -->
+            <div id="elevenCustomVoiceWrap" class="form-group-custom" style="display: none; margin-top: 6px; margin-bottom: 0;">
+              <label for="elevenCustomVoiceInput" style="font-size: 0.78rem; color: #f59e0b; display: block; margin-bottom: 4px;">
+                Nhập Custom Voice ID từ Voice Library:
+              </label>
+              <input type="text" id="elevenCustomVoiceInput" class="form-input-custom" placeholder="Dán Voice ID từ ElevenLabs Voice Library..." />
+            </div>
+          </div>
+
+          <!-- BẢNG CÀI ĐẶT EDGE NEURAL (MIỄN PHÍ) -->
+          <div id="edgeSettingsPanel" class="form-group-custom" style="display: none; margin-top: 6px; margin-bottom: 0;">
+            <label for="edgeVoiceSelect" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
+              Chọn giọng Microsoft Edge Neural:
+            </label>
+            <select id="edgeVoiceSelect" class="form-input-custom form-select-custom">
+              <option value="edge:vi-VN-HoaiMyNeural">🌸 Nữ Hoài My (Phát thanh viên ngọt ngào, tự nhiên) ⭐ [Khuyên Dùng]</option>
+              <option value="edge:vi-VN-NamMinhNeural">🎙️ Nam Minh (Trầm ấm, đĩnh đạc, truyền cảm)</option>
+            </select>
+          </div>
+
+          <!-- Tốc độ đọc (Rate) -->
+          <div class="voice-slider-group">
+            <div class="voice-slider-label-row">
+              <span><i class="fa-solid fa-gauge-high"></i> Tốc độ đọc:</span>
+              <span class="voice-slider-val" id="voiceRateVal">1.00x</span>
+            </div>
+            <input type="range" id="voiceRateSlider" class="voice-range-slider" min="0.75" max="1.35" step="0.05" value="1.0" />
+          </div>
+
+          <!-- Âm lượng đọc (Volume) -->
+          <div class="voice-slider-group">
+            <div class="voice-slider-label-row">
+              <span><i class="fa-solid fa-volume-low"></i> Âm lượng giọng đọc:</span>
+              <span class="voice-slider-val" id="voiceVolumeVal">85%</span>
+            </div>
+            <input type="range" id="voiceVolumeSlider" class="voice-range-slider" min="10" max="100" step="5" value="85" />
+          </div>
+
+          <!-- Tự động đọc toggle -->
+          <label class="voice-switch-row" for="voiceAutoReadToggle">
+            <div class="voice-switch-info">
+              <span class="voice-switch-label">Tự động đọc phản hồi khi Najimez trả lời xong</span>
+              <span class="voice-switch-sub">Nếu tắt, bạn chỉ cần bấm nút "Đọc" trên câu trả lời</span>
+            </div>
+            <div class="switch-toggle-custom">
+              <input type="checkbox" id="voiceAutoReadToggle" />
+              <span class="switch-slider-round"></span>
+            </div>
+          </label>
+
+          <!-- Nút nghe thử giọng -->
+          <div class="voice-test-actions">
+            <button type="button" class="btn-voice-test" id="btnTestVoice">
+              <i class="fa-solid fa-play"></i> Nghe thử giọng nói
+            </button>
+          </div>
+        </div>
+
+        <!-- PHẦN 2: HIỆU ỨNG ÂM THANH TƯƠNG TÁC (SOUND FX) -->
+        <div class="voice-config-section">
+          <div class="voice-section-header">
+            <div class="voice-section-title">
+              <i class="fa-solid fa-bell"></i>
+              <span>Hiệu Ứng Âm Thanh Tương Tác</span>
+            </div>
+            <span class="voice-badge-tag" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">Web Audio API</span>
+          </div>
+
+          <!-- Bật tắt hiệu ứng âm thanh -->
+          <label class="voice-switch-row" for="voiceSfxToggle">
+            <div class="voice-switch-info">
+              <span class="voice-switch-label">Phát âm thanh khi gửi / nhận tin nhắn</span>
+              <span class="voice-switch-sub">Âm thanh êm ái, thanh thoát không giật mình</span>
+            </div>
+            <div class="switch-toggle-custom">
+              <input type="checkbox" id="voiceSfxToggle" checked />
+              <span class="switch-slider-round"></span>
+            </div>
+          </label>
+
+          <!-- Chọn kiểu âm thanh -->
+          <div class="form-group-custom" style="margin-bottom: 0;">
+            <label for="voiceSfxThemeSelect" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
+              Giai điệu âm thanh:
+            </label>
+            <select id="voiceSfxThemeSelect" class="form-input-custom form-select-custom">
+              <option value="chime">🔔 Chuông Ngân Thanh Thoát (Soft Chime - Khuyên Dùng)</option>
+              <option value="water">💧 Giọt Nước Thánh Thót (Water Drop)</option>
+              <option value="bubble">🫧 Bong Bóng Ấm Áp (Soft Bubble)</option>
+              <option value="bell">✨ Pha Lê Tinh Tế (Crystal Bell)</option>
+            </select>
+          </div>
+
+          <!-- Âm lượng hiệu ứng -->
+          <div class="voice-slider-group">
+            <div class="voice-slider-label-row">
+              <span><i class="fa-solid fa-volume-low"></i> Âm lượng hiệu ứng:</span>
+              <span class="voice-slider-val" id="voiceSfxVolumeVal">50%</span>
+            </div>
+            <input type="range" id="voiceSfxVolumeSlider" class="voice-range-slider" min="10" max="100" step="5" value="50" />
+          </div>
+
+          <!-- Nút nghe thử âm thanh hiệu ứng -->
+          <div class="voice-test-actions">
+            <button type="button" class="btn-voice-test" id="btnTestSfx" style="background: rgba(56, 189, 248, 0.14); border-color: rgba(56, 189, 248, 0.3); color: #7dd3fc;">
+              <i class="fa-solid fa-volume-high"></i> Nghe thử hiệu ứng
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions-row" style="padding: 14px 20px; border-top: 1px solid var(--border-color); background: rgba(30, 41, 59, 0.3);">
+        <button type="button" class="btn-reset-gentle" id="btnResetVoiceDefault" title="Khôi phục cấu hình chuẩn êm ái">
+          <i class="fa-solid fa-rotate-left"></i> Chuẩn Êm Dịu
+        </button>
+        <div style="flex: 1;"></div>
+        <button type="button" class="btn-modal-action secondary" id="btnCancelVoiceSettings">Hủy</button>
+        <button type="button" class="btn-modal-action primary" id="btnSaveVoiceSettings">
+          <i class="fa-solid fa-check"></i> Lưu Cài Đặt
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Các module chức năng theo chuẩn Code Modularization -->
+  <script src="js/config.js?v=3.53.0"></script>
+  <script src="js/storage.js?v=3.53.0"></script>
+  <script src="js/ui.js?v=3.53.0"></script>
+  <script src="js/vietqr.js?v=3.53.0"></script>
+  <script src="js/bill-image.js?v=3.53.0"></script>
+  <script src="js/debt.js?v=3.53.0"></script>
+  <script src="js/debt-profile.js?v=3.53.0"></script>
+  <script src="js/finance.js?v=3.53.0"></script>
+  <script src="js/todos.js?v=3.53.0"></script>
+  <script src="js/event-theme.js?v=3.53.0"></script>
+  <script src="js/calendar.js?v=3.53.0"></script>
+  <script src="js/timetable.js?v=3.53.0"></script>
+  <script src="js/lucky-wheel.js?v=3.53.0"></script>
+  <script src="js/voice-settings.js?v=3.53.0"></script>
+  <script src="js/copilot.js?v=3.53.0"></script>
+  <script src="js/stars.js?v=3.53.0"></script>
+  <!-- Entrypoint khởi động -->
+  <script src="app.js?v=3.53.0"></script>
+</body>
+
+</html>

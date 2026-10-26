@@ -1,0 +1,19 @@
+/**
+ * style.css - Điểm nhập CSS chính của Najimez (Cyber Luxury Glassmorphism)
+ * Được tổ chức dạng module hóa theo quy chuẩn Code Modularization
+ */
+
+@import url('css/variables.css?v=3.2.0');
+@import url('css/stars.css?v=3.2.0');
+@import url('css/base.css');
+@import url('css/sidebar.css');
+@import url('css/copilot.css?v=3.35.0');
+@import url('css/modal.css?v=3.53.0');
+@import url('css/finance.css?v=3.53.0');
+@import url('css/todos.css');
+@import url('css/lucky-wheel.css?v=3.18.0');
+@import url('css/calendar.css?v=3.43.0');
+@import url('css/timetable.css?v=3.43.0');
+@import url('css/bill-image.css?v=3.25.0');
+@import url('css/voice-settings.css?v=3.29.0');
+@import url('css/responsive.css');

@@ -1,0 +1,19 @@
+# Python cache & temporary files
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+.venv/
+env/
+venv/
+
+# Audio/Video cache & test files
+.cache_tts/
+test_voice.mp3
+*.mp4
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

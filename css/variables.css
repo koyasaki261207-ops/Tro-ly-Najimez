@@ -1,0 +1,82 @@
+/**
+ * css/variables.css - Biến màu sắc, font chữ và thiết lập nền tảng (:root)
+ */
+
+:root {
+  /* ========================================================================
+     BẦU TRỜI SAO (CELESTIAL STARRY SKY & CYBER LUXURY)
+     ======================================================================== */
+  --bg-dark: #060814;
+  --bg-app-ambient: radial-gradient(ellipse 65% 50% at 10% 32%, rgba(18, 65, 100, 0.22) 0%, rgba(12, 45, 75, 0.08) 45%, transparent 70%),
+    radial-gradient(ellipse 60% 55% at 90% 40%, rgba(72, 24, 96, 0.18) 0%, rgba(48, 16, 68, 0.06) 45%, transparent 70%),
+    #060814;
+  --bg-sidebar: rgba(8, 12, 26, 0.72);
+  --bg-workspace: transparent;
+  --bg-header: rgba(8, 13, 28, 0.65);
+  --bg-surface: rgba(13, 19, 40, 0.82);
+  --bg-card: rgba(14, 21, 42, 0.65);
+  --bg-card-hover: rgba(24, 35, 68, 0.78);
+  --bg-card-subtle: rgba(14, 21, 42, 0.5);
+  --bg-input: rgba(16, 25, 52, 0.85);
+  --bg-bubble: rgba(255, 255, 255, 0.045);
+  --bg-row-item: rgba(14, 21, 42, 0.58);
+  --bg-row-hover: rgba(26, 38, 72, 0.7);
+  --bg-chat-ai: rgba(14, 22, 44, 0.8);
+  --bg-code: rgba(4, 7, 18, 0.88);
+
+  --border-color: rgba(255, 255, 255, 0.09);
+  --border-color-subtle: rgba(255, 255, 255, 0.05);
+  --border-focus: rgba(99, 102, 241, 0.6);
+
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+  --primary-glow: rgba(99, 102, 241, 0.45);
+
+  --accent-purple: #a855f7;
+  --accent-cyan: #38bdf8;
+  --accent-orange: #fb923c;
+  --accent-pink: #f472b6;
+
+  --green: #34d399;
+  --green-bg: rgba(52, 211, 153, 0.12);
+  --green-border: rgba(52, 211, 153, 0.3);
+
+  --red: #fb7185;
+  --red-bg: rgba(251, 113, 133, 0.12);
+
+  --blue: #38bdf8;
+  --amber: #fbbf24;
+
+  --text-main: #f1f5f9;
+  --text-title: #ffffff;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --card-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.6), 0 0 20px rgba(99, 102, 241, 0.2);
+
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 9999px;
+
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-dark);
+  background-image: var(--bg-app-ambient);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}

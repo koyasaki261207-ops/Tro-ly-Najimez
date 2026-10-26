@@ -1,0 +1,58 @@
+/**
+ * css/stars.css - Bầu trời sao lấp lánh (Celestial Starry Sky & Galaxy Aurora)
+ * Cung cấp lớp nền vũ trụ sâu thẳm, cực quang lung linh và hiệu ứng chiều sâu
+ */
+
+.starry-sky-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 1;
+  display: block;
+}
+
+/* Lớp tinh vân êm dịu phong cách Deep Space (Muted Celestial Nebula) */
+.cosmic-nebula-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 65% 50% at 10% 32%, rgba(18, 65, 100, 0.24) 0%, rgba(12, 45, 75, 0.08) 45%, transparent 70%),
+    radial-gradient(ellipse 60% 55% at 90% 40%, rgba(72, 24, 96, 0.20) 0%, rgba(48, 16, 68, 0.06) 45%, transparent 70%);
+  opacity: 0.95;
+}
+
+/* Đảm bảo toàn bộ khung app hiển thị nổi bật trên nền trời sao */
+.omni-app {
+  position: relative;
+  z-index: 2;
+  background: transparent !important;
+}
+
+.omni-workspace {
+  background: transparent !important;
+}
+
+.omni-sidebar {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.omni-header {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.finance-card,
+.copilot-container,
+.todos-grid {
+  position: relative;
+  z-index: 2;
+}

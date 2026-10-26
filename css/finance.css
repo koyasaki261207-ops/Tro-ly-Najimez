@@ -1,0 +1,1269 @@
+/**
+ * css/finance.css - Bảng điều khiển Tài chính, Thu chi cá nhân và Sổ nợ 2 tầng
+ */
+
+.tab-pane {
+  display: none;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.tab-pane.active {
+  display: flex;
+  flex-direction: column;
+  animation: fadeInPane 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInPane {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.finance-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  padding: 22px 28px;
+  height: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+  overflow: hidden;
+}
+
+.finance-card {
+  background: rgba(17, 24, 39, 0.65);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  overflow: hidden;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+  position: relative;
+}
+
+.card-header-styled {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.card-title i {
+  color: var(--primary);
+  font-size: 1.15rem;
+}
+
+.card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-mini-add {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  color: #c7d2fe;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-mini-add:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn-mini-add.primary {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+}
+
+.btn-mini-add.primary:hover {
+  opacity: 0.92;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+}
+
+.badge-tag-count {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+}
+
+/* Thống Kê Ribbons */
+.cashflow-summary-ribbon {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(15, 23, 42, 0.65);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.cashflow-item-balance {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+
+.balance-label-group {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.3px;
+}
+
+.balance-label-group i {
+  color: #38bdf8;
+  font-size: 1.05rem;
+}
+
+.cashflow-item-balance strong {
+  font-family: var(--font-mono);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #34d399;
+  letter-spacing: -0.3px;
+  text-shadow: 0 0 16px rgba(52, 211, 153, 0.28);
+}
+
+.debt-summary-ribbon {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.65);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.debt-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.debt-stat span {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.debt-stat strong {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.debt-stat.rec strong {
+  color: #34d399;
+}
+
+.debt-stat.pay strong {
+  color: #fb7185;
+}
+
+/* Drawer Form Ghi Nhận Nhanh */
+.quick-record-box {
+  background: rgba(23, 31, 51, 0.85);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  animation: slideDownRecord 0.22s ease-out;
+  flex-shrink: 0;
+}
+
+@keyframes slideDownRecord {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.quick-record-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #c7d2fe;
+}
+
+.btn-close-record {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.btn-close-record:hover {
+  color: #fff;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 130px 1fr 1fr;
+  gap: 8px;
+}
+
+.form-ctrl {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.form-ctrl:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+}
+
+.form-actions-inline {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.btn-confirm-record {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.btn-confirm-record:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+.btn-cancel-record {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel-record:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Filter Chips Row */
+.filter-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.filter-chip,
+.filter-chip-debt {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.filter-chip:hover,
+.filter-chip-debt:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.filter-chip.active,
+.filter-chip-debt.active {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: var(--primary);
+  color: #c7d2fe;
+}
+
+/* Thanh chuyển đổi chế độ xem Sổ nợ: Người / Lịch sử giao dịch */
+.debt-view-toggle-row {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.7);
+  padding: 4px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-color);
+  gap: 4px;
+  width: fit-content;
+}
+
+.debt-view-toggle-row .filter-chip-debt {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+}
+
+.debt-view-toggle-row .filter-chip-debt:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.debt-view-toggle-row .filter-chip-debt.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(139, 92, 246, 0.35));
+  border-color: rgba(99, 102, 241, 0.55);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+}
+
+.debt-view-toggle-row .filter-chip-debt.active i {
+  color: #38bdf8;
+}
+
+/* Nút xóa từng giao dịch nợ cá nhân trong lịch sử */
+.btn-debt-item-del {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  border-radius: 8px;
+  background: rgba(244, 63, 94, 0.08);
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  color: #fb7185;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 0.85rem;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.btn-debt-item-del:hover {
+  background: rgba(244, 63, 94, 0.24);
+  border-color: #f43f5e;
+  color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.4);
+}
+
+/* Timeline Item trong mục Lịch Sử Giao Dịch */
+.history-timeline-item.all-history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: all 0.22s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.history-timeline-item.all-history-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(99, 102, 241, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+}
+
+.history-person-avatar {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.history-person-avatar.has-avatar {
+  background: transparent !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+}
+
+.history-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.history-person-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.history-person-name-link {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.history-person-name-link:hover {
+  color: #38bdf8;
+  text-decoration: underline;
+}
+
+.history-dir-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.history-dir-tag.rec {
+  background: rgba(52, 211, 153, 0.14);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.history-dir-tag.pay {
+  background: rgba(244, 63, 94, 0.14);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.3);
+}
+
+.history-dir-tag.settle-rec {
+  background: rgba(16, 185, 129, 0.16);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.history-dir-tag.settle-pay {
+  background: rgba(14, 165, 233, 0.16);
+  color: #38bdf8;
+  border: 1px solid rgba(14, 165, 233, 0.35);
+}
+
+.history-timeline-item.all-history-item.settlement-event-item {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.07), rgba(6, 182, 212, 0.04));
+  border-color: rgba(16, 185, 129, 0.28);
+}
+
+.history-timeline-item.all-history-item.settlement-event-item:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.08));
+  border-color: rgba(16, 185, 129, 0.45);
+}
+
+
+/* Danh Sách Cuộn */
+.history-list-box {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+.history-list-box::-webkit-scrollbar {
+  width: 5px;
+}
+
+.history-list-box::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+
+/* Banner Cấn Trừ Nợ 2 Chiều */
+.debt-offset-banner {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.16), rgba(139, 92, 246, 0.16));
+  border: 1px solid rgba(99, 102, 241, 0.38);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.2);
+}
+
+.offset-banner-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  min-width: 0;
+  flex: 1;
+}
+
+.offset-banner-info i {
+  color: #a78bfa;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.offset-banner-info strong {
+  color: #fff;
+}
+
+.btn-offset-action {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.btn-offset-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.5);
+  opacity: 0.95;
+}
+
+/* Hàng Giao Dịch Thu Chi */
+.expense-row-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+}
+
+.expense-row-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(99, 102, 241, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+}
+
+.expense-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.category-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.category-icon-box.exp {
+  background: rgba(244, 63, 94, 0.14);
+  border: 1px solid rgba(244, 63, 94, 0.28);
+  color: #fb7185;
+}
+
+.category-icon-box.inc {
+  background: rgba(52, 211, 153, 0.14);
+  border: 1px solid rgba(52, 211, 153, 0.28);
+  color: #34d399;
+}
+
+.expense-name-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.expense-header-line {
+  min-width: 0;
+}
+
+.expense-note-title {
+  font-size: 0.94rem;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+  line-height: 1.3;
+}
+
+.expense-sub-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+
+.cat-pill-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cat-pill-badge.inc {
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+  color: #34d399;
+}
+
+.cat-pill-badge.exp {
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  color: #fb7185;
+}
+
+.expense-name-wrap span.time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.expense-amount-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.amount-txt {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 1.02rem;
+  white-space: nowrap;
+}
+
+.amount-txt.exp {
+  color: #fb7185;
+}
+
+.amount-txt.inc {
+  color: #34d399;
+}
+
+.btn-row-del {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+  opacity: 0.6;
+}
+
+.btn-row-del:hover {
+  background: rgba(244, 63, 94, 0.15);
+  color: #fb7185;
+  opacity: 1;
+}
+
+/* ==========================================================================
+   HÀNG SỔ NỢ & ĐỐI TƯỢNG (DEBT ENTRY CARD) - PREMIUM 2-TIER DESIGN
+   ========================================================================== */
+.debt-contact-entry {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+  position: relative;
+  z-index: 1;
+}
+
+.debt-contact-entry:hover {
+  background: rgba(255, 255, 255, 0.055);
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  transform: translateY(-1px);
+  z-index: 2;
+}
+
+/* Thẻ đang mở menu Thao Tác phải nổi cao nhất, đè lên các thẻ bên dưới trong danh sách */
+.debt-contact-entry.menu-open,
+.debt-contact-entry:has(.debt-menu-popup.show) {
+  z-index: 100 !important;
+}
+
+.debt-contact-entry.paid {
+  opacity: 0.65;
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.015);
+}
+
+/* Avatar người dùng to bản, đặt chính giữa bên trái */
+.avatar-initial {
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.85rem;
+  flex-shrink: 0;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.avatar-initial.has-avatar {
+  background: transparent !important;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(99, 102, 241, 0.3);
+}
+
+.avatar-contact-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+
+.debt-person-meta-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.debt-person-custom-note {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+.debt-person-custom-note i {
+  color: #818cf8;
+  font-size: 0.7rem;
+}
+
+.debt-entry-main,
+.debt-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.debt-header-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+  width: 100%;
+}
+
+.debt-person-name {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  color: #fff;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+}
+
+.debt-amount-val {
+  font-family: var(--font-mono);
+  font-weight: 800;
+  font-size: 1.2rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.debt-amount-val.they_owe_me {
+  color: #34d399;
+}
+
+.debt-amount-val.i_owe_them {
+  color: #fb7185;
+}
+
+.debt-amount-val.paid {
+  color: #94a3b8;
+  text-decoration: line-through;
+}
+
+.debt-sub-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.debt-sub-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  min-width: 0;
+  flex: 1;
+}
+
+.direction-badge {
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1.2;
+  flex-shrink: 0;
+}
+
+.direction-badge.they_owe_me {
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  color: #34d399;
+}
+
+.direction-badge.i_owe_them {
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.35);
+  color: #fb7185;
+}
+
+.direction-badge.paid {
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  color: #94a3b8;
+}
+
+.debt-note-txt {
+  color: rgba(226, 232, 240, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.debt-time-txt {
+  white-space: nowrap;
+}
+
+.debt-sub-line .sep {
+  opacity: 0.4;
+  font-size: 0.85rem;
+}
+
+/* ==========================================================================
+   TIER 2: CỤM NÚT LỊCH SỬ & THAO TÁC (ACTIONS GROUP)
+   ========================================================================== */
+.debt-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Nút Lịch sử giao dịch */
+.btn-debt-history {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.btn-debt-history i {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  transition: color 0.2s;
+}
+
+.btn-debt-history:hover,
+.btn-debt-history:focus-visible {
+  background: rgba(56, 189, 248, 0.16);
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn-debt-history>*,
+.btn-debt-menu-trigger>* {
+  pointer-events: none;
+}
+
+.btn-debt-history:hover i {
+  color: #38bdf8;
+}
+
+.debt-menu-wrapper {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  z-index: 105;
+}
+
+/* Nút mới bên góc phải dưới */
+.btn-debt-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.btn-debt-menu-trigger i {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  transition: color 0.2s;
+}
+
+.btn-debt-menu-trigger:hover,
+.btn-debt-menu-trigger:focus-visible {
+  background: rgba(99, 102, 241, 0.16);
+  border-color: rgba(99, 102, 241, 0.45);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.btn-debt-menu-trigger:hover i {
+  color: var(--accent-cyan);
+}
+
+/* Menu Dropdown Popup chứa 3 nút */
+.debt-menu-popup {
+  position: absolute;
+  right: 0;
+  min-width: 175px;
+  background: #0d1527;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.75), 0 0 18px rgba(99, 102, 241, 0.22);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(6px) scale(0.96);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+}
+
+/* Hướng mở lên trên (Drop-up) */
+.debt-menu-popup.drop-up {
+  bottom: calc(100% + 6px);
+  top: auto;
+  transform-origin: bottom right;
+}
+
+/* Hướng mở xuống dưới (Drop-down) */
+.debt-menu-popup.drop-down {
+  top: calc(100% + 6px);
+  bottom: auto;
+  transform-origin: top right;
+}
+
+.debt-menu-popup.show {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+/* Từng nút thao tác bên trong menu */
+.debt-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.debt-menu-item>* {
+  pointer-events: none;
+}
+
+.debt-menu-item i {
+  font-size: 0.9rem;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* Nút Thông tin */
+.debt-menu-item.info {
+  color: #a78bfa;
+}
+
+.debt-menu-item.info:hover {
+  background: rgba(167, 139, 250, 0.16);
+  color: #fff;
+  transform: translateX(2px);
+}
+
+.debt-menu-item.info i {
+  color: #a78bfa;
+}
+
+/* Nút Tạo mã VietQR */
+.debt-menu-item.qr {
+  color: #38bdf8;
+}
+
+.debt-menu-item.qr:hover {
+  background: rgba(56, 189, 248, 0.16);
+  color: #fff;
+  transform: translateX(2px);
+}
+
+.debt-menu-item.qr i {
+  color: #38bdf8;
+}
+
+/* Nút Đã thu nợ / Đã trả nợ */
+.debt-menu-item.check {
+  color: #34d399;
+}
+
+.debt-menu-item.check:hover {
+  background: rgba(52, 211, 153, 0.16);
+  color: #fff;
+  transform: translateX(2px);
+}
+
+.debt-menu-item.check i {
+  color: #34d399;
+}
+
+.debt-menu-item.check.is-paid {
+  color: #94a3b8;
+}
+
+.debt-menu-item.check.is-paid:hover {
+  background: rgba(148, 163, 184, 0.16);
+  color: #fff;
+}
+
+/* Đường gạch phân cách */
+.debt-menu-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 3px 0;
+}
+
+/* Nút Xóa */
+.debt-menu-item.del {
+  color: #fb7185;
+}
+
+.debt-menu-item.del:hover {
+  background: rgba(244, 63, 94, 0.16);
+  color: #fff;
+  transform: translateX(2px);
+}
+
+.debt-menu-item.del i {
+  color: #fb7185;
+}
+
+/* Empty State Box */
+.empty-state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 36px 16px;
+  color: var(--text-muted);
+  gap: 10px;
+}
+
+.empty-state-box i {
+  font-size: 2rem;
+  opacity: 0.35;
+  color: var(--primary);
+}
+
+.empty-state-box p {
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.empty-state-box small {
+  font-size: 0.76rem;
+  color: rgba(148, 163, 184, 0.7);
+}

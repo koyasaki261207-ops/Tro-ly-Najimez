@@ -1,0 +1,147 @@
+/**
+ * css/base.css - Khung bố cục ứng dụng chính (Shell Layout & Header)
+ */
+
+.omni-app {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.omni-workspace {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--bg-workspace);
+}
+
+.omni-header {
+  height: 72px;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-header);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  z-index: 20;
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.btn-sidebar-toggle {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.05rem;
+  transition: all 0.2s;
+}
+
+.btn-sidebar-toggle:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.header-greeting h2 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.header-sub {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.header-quick-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-bubble {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.stat-bubble i {
+  font-size: 1.1rem;
+}
+
+.stat-bubble.green {
+  border-color: var(--green-border);
+  background: var(--green-bg);
+}
+
+.stat-bubble.green i {
+  color: var(--green);
+}
+
+.stat-bubble.green strong {
+  color: #34d399;
+  font-family: var(--font-mono);
+}
+
+.stat-bubble.purple {
+  border-color: rgba(139, 92, 246, 0.25);
+  background: rgba(139, 92, 246, 0.12);
+}
+
+.stat-bubble.purple i {
+  color: #a855f7;
+}
+
+.stat-bubble.purple strong {
+  color: #c084fc;
+  font-family: var(--font-mono);
+}
+
+.bubble-title {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.btn-clear-all {
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  color: #fb7185;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.btn-clear-all:hover {
+  background: var(--red);
+  color: #fff;
+}
