@@ -32,25 +32,59 @@
     overflow-x: hidden;
   }
 
-  /* Sidebar trượt từ bên trái với hiệu ứng Off-canvas */
+  /* Sidebar trượt từ bên trái với hiệu ứng Off-canvas - Mặc định ẩn hoàn toàn */
   .omni-sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    height: 100vh;
-    height: 100dvh;
-    z-index: 120;
-    transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease;
-    box-shadow: none;
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 280px !important;
+    max-width: 84vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    z-index: 120 !important;
+    transform: translateX(-105%) !important;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s ease !important;
+    box-shadow: none !important;
     margin-left: 0 !important;
   }
 
   /* Khi mở Sidebar trên mobile */
   .omni-sidebar.mobile-open {
-    transform: translateX(0);
-    box-shadow: 15px 0 45px rgba(0, 0, 0, 0.85);
+    transform: translateX(0) !important;
+    box-shadow: 15px 0 45px rgba(0, 0, 0, 0.85) !important;
+  }
+
+  /* Nút thu gọn / đóng Sidebar góc trên */
+  .btn-sidebar-close .mobile-icon {
+    display: inline-block !important;
+  }
+  .btn-sidebar-close .desktop-icon {
+    display: none !important;
+  }
+
+  .btn-sidebar-close {
+    width: 36px !important;
+    height: 36px !important;
+    background: rgba(244, 63, 94, 0.16) !important;
+    border: 1px solid rgba(244, 63, 94, 0.35) !important;
+    color: #fb7185 !important;
+  }
+
+  .btn-sidebar-close:hover {
+    background: rgba(244, 63, 94, 0.32) !important;
+    color: #ffffff !important;
+  }
+
+  /* Nút Hamburger mở Sidebar trên Header di động */
+  .btn-sidebar-toggle {
+    width: 38px !important;
+    height: 38px !important;
+    flex-shrink: 0 !important;
+    background: rgba(99, 102, 241, 0.2) !important;
+    border: 1px solid rgba(129, 140, 248, 0.45) !important;
+    color: #c7d2fe !important;
+    box-shadow: 0 0 12px rgba(99, 102, 241, 0.28) !important;
   }
 
   /* Lớp phủ mờ tối nền khi mở menu */

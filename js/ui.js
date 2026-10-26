@@ -27,6 +27,7 @@ function initClock() {
 
 function initSidebar() {
   const btnToggle = document.getElementById('btnToggleSidebar');
+  const btnClose = document.getElementById('btnCloseSidebar');
   const sidebar = document.getElementById('omniSidebar');
   const backdrop = document.getElementById('sidebarBackdrop');
 
@@ -49,12 +50,54 @@ function initSidebar() {
   }
 
   if (btnToggle) {
-    btnToggle.addEventListener('click', () => toggleSidebar());
+    btnToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleSidebar();
+    });
+  }
+
+  if (btnClose) {
+    btnClose.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isMobile = window.innerWidth <= 860;
+      if (isMobile) {
+        closeMobileSidebar();
+      } else {
+        toggleSidebar(false);
+      }
+    });
   }
 
   if (backdrop) {
     backdrop.addEventListener('click', closeMobileSidebar);
   }
+
+  // Hỗ trợ thao tác vuốt sang trái để đóng sidebar trên màn hình cảm ứng
+  let touchStartX = 0;
+  let touchStartY = 0;
+  if (sidebar) {
+    sidebar.addEventListener('touchstart', (e) => {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+    }, { passive: true });
+
+    sidebar.addEventListener('touchend', (e) => {
+      const touchEndX = e.changedTouches[0].clientX;
+      const touchEndY = Math.abs(touchStartY - e.changedTouches[0].clientY);
+      const diffX = touchStartX - touchEndX;
+      // Vuốt tay sang trái hơn 40px và không phải cuộn dọc
+      if (diffX > 40 && diffX > touchEndY) {
+        closeMobileSidebar();
+      }
+    }, { passive: true });
+  }
+
+  // Đóng sidebar khi nhấn phím Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar && sidebar.classList.contains('mobile-open')) {
+      closeMobileSidebar();
+    }
+  });
 }
 
 function initTabNavigation() {

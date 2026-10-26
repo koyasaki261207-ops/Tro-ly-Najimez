@@ -6,7 +6,7 @@
 @import url('css/variables.css?v=3.2.0');
 @import url('css/stars.css?v=3.2.0');
 @import url('css/base.css');
-@import url('css/sidebar.css');
+@import url('css/sidebar.css?v=3.55.0');
 @import url('css/copilot.css?v=3.35.0');
 @import url('css/modal.css?v=3.53.0');
 @import url('css/finance.css?v=3.53.0');
@@ -17,4 +17,4 @@
 @import url('css/bill-image.css?v=3.25.0');
 @import url('css/voice-settings.css?v=3.29.0');
 @import url('css/firebase-sync.css?v=3.54.0');
-@import url('css/responsive.css');
+@import url('css/responsive.css?v=3.55.0');
