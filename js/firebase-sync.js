@@ -501,8 +501,15 @@ function initFirebaseSyncModule() {
   }
 
   if (btnPullCloud) {
-    btnPullCloud.addEventListener('click', () => {
-      if (confirm('Bạn có chắc muốn tải dữ liệu từ Đám mây về đè lên máy không?')) {
+    btnPullCloud.addEventListener('click', async () => {
+      const confirmed = typeof showAppConfirm === 'function'
+        ? await showAppConfirm('Bạn có chắc muốn tải dữ liệu từ Đám mây về để đồng bộ và cập nhật với máy không?', {
+            title: 'Tải dữ liệu Đám mây',
+            btnText: 'Tải về',
+            btnIcon: 'fa-solid fa-cloud-arrow-down'
+          })
+        : confirm('Bạn có chắc muốn tải dữ liệu từ Đám mây về đè lên máy không?');
+      if (confirmed) {
         pullLedgerFromFirebase();
       }
     });

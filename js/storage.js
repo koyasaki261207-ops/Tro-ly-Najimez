@@ -233,8 +233,8 @@ function getLedgerData() {
     ],
     bank: {
       bankId: 'MB',
-      accountNo: '0987654321',
-      accountName: 'CHỦ TÀI KHOẢN'
+      accountNo: '',
+      accountName: ''
     },
     contacts: {},
     calendarEvents: []
@@ -290,18 +290,29 @@ function formatCurrency(amount) {
 
 function formatRelativeTime(ts) {
   if (!ts) return 'Gần đây';
-  const now = Date.now();
-  const diff = now - ts;
+  const now = new Date();
   const d = new Date(ts);
   const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-  if (diff < 86400000 && d.getDate() === new Date().getDate()) {
+
+  const isToday = d.getDate() === now.getDate() &&
+                  d.getMonth() === now.getMonth() &&
+                  d.getFullYear() === now.getFullYear();
+  if (isToday) {
     return `Hôm nay, ${timeStr}`;
   }
-  const yesterday = new Date(now - 86400000);
-  if (d.getDate() === yesterday.getDate() && d.getMonth() === yesterday.getMonth()) {
+
+  const yesterday = new Date(now.getTime() - 86400000);
+  const isYesterday = d.getDate() === yesterday.getDate() &&
+                      d.getMonth() === yesterday.getMonth() &&
+                      d.getFullYear() === yesterday.getFullYear();
+  if (isYesterday) {
     return `Hôm qua, ${timeStr}`;
   }
-  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+
+  if (d.getFullYear() === now.getFullYear()) {
+    return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+  }
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 }
 
 function getCategoryIcon(cat, type) {

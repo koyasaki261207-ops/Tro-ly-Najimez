@@ -179,10 +179,10 @@ function openVietQrModal(debt) {
   if (!modal) return;
 
   const data = getLedgerData();
-  const bank = data.bank || { bankId: 'MB', accountNo: '0987654321', accountName: 'NGUYEN VAN A' };
+  const bank = data.bank || { bankId: 'MB', accountNo: '', accountName: '' };
   const bankId = bank.bankId || 'MB';
-  const accountNo = bank.accountNo || '0987654321';
-  const accountName = bank.accountName || 'CHỦ TÀI KHOẢN';
+  const accountNo = bank.accountNo || '';
+  const accountName = bank.accountName || '';
 
   const isTheyOwe = debt.direction === 'they_owe_me';
   if (titleEl) {
@@ -193,7 +193,22 @@ function openVietQrModal(debt) {
     infoEl.innerHTML = `<strong>${escapeHTML(debt.person)}</strong>: ${formatCurrency(debt.amount)}<br/><small>${escapeHTML(debt.note || 'Thanh toan VietQR')}</small>`;
   }
 
-  if (loadingEl) loadingEl.style.display = 'flex';
+  if (!accountNo) {
+    if (loadingEl) {
+      loadingEl.innerHTML = '<span style="color:#fb7185;text-align:center;padding:12px;line-height:1.5;">Chưa có số tài khoản nhận tiền.<br/>Vui lòng vào <strong>Cài STK VietQR</strong> ở thanh điều hướng để nhập tài khoản của bạn nha!</span>';
+      loadingEl.style.display = 'flex';
+    }
+    if (imgEl) imgEl.style.display = 'none';
+    if (downloadBtn) downloadBtn.style.display = 'none';
+    modal.classList.add('active');
+    return;
+  }
+
+  if (downloadBtn) downloadBtn.style.display = 'inline-flex';
+  if (loadingEl) {
+    loadingEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Đang tạo mã VietQR chuẩn NAPAS...</span>';
+    loadingEl.style.display = 'flex';
+  }
   if (imgEl) imgEl.style.display = 'none';
 
   const desc = encodeURIComponent(`${debt.person} tra tien ${debt.note || ''}`.trim());

@@ -150,7 +150,14 @@ async function loginWithGoogle() {
 // Đăng xuất Google
 async function logoutGoogleUser() {
   if (typeof firebase === 'undefined' || !firebase.auth) return;
-  if (!confirm('Bạn có chắc muốn đăng xuất khỏi tài khoản Google này?')) return;
+  const confirmed = typeof showAppConfirm === 'function'
+    ? await showAppConfirm('Bạn có chắc muốn đăng xuất khỏi tài khoản Google này?', {
+        title: 'Đăng xuất tài khoản',
+        btnText: 'Đăng xuất',
+        btnIcon: 'fa-solid fa-arrow-right-from-bracket'
+      })
+    : confirm('Bạn có chắc muốn đăng xuất khỏi tài khoản Google này?');
+  if (!confirmed) return;
 
   try {
     await firebase.auth().signOut();
