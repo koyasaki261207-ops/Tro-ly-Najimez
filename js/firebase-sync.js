@@ -23,6 +23,7 @@ let cloudSyncUnsubscribe = null;
 let isCloudSyncing = false;
 let isApplyingRemoteUpdate = false;
 let autoSyncTimer = null;
+let pendingSyncData = null;
 
 // Lấy mã đồng bộ hiện tại (Chỉ đồng bộ khi đã đăng nhập tài khoản Google với UID hợp lệ)
 function getFirebaseSyncKey() {
@@ -135,14 +136,41 @@ function subscribeToCloudChanges() {
   });
 }
 
-// Trả về định danh phiên trình duyệt hiện tại
+// Trả về định danh phiên trình duyệt hiện tại (Lưu vào localStorage thay vì sessionStorage)
 function getClientSourceId() {
-  let id = sessionStorage.getItem('najimez_client_source_id');
+  let id = localStorage.getItem('najimez_client_source_id');
   if (!id) {
     id = 'src-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now();
-    sessionStorage.setItem('najimez_client_source_id', id);
+    localStorage.setItem('najimez_client_source_id', id);
   }
   return id;
+}
+
+// Hàm gộp danh sách bản ghi theo ID và timestamp/updatedAt (ưu tiên bản ghi mới nhất)
+function mergeArrayByIdAndTime(localArr = [], cloudArr = []) {
+  const map = new Map();
+
+  (localArr || []).forEach(item => {
+    if (item && item.id) {
+      map.set(item.id, item);
+    }
+  });
+
+  (cloudArr || []).forEach(cloudItem => {
+    if (!cloudItem || !cloudItem.id) return;
+    if (!map.has(cloudItem.id)) {
+      map.set(cloudItem.id, cloudItem);
+    } else {
+      const localItem = map.get(cloudItem.id);
+      const localTime = Number(localItem.updatedAt || localItem.timestamp || localItem.settledAt || 0);
+      const cloudTime = Number(cloudItem.updatedAt || cloudItem.timestamp || cloudItem.settledAt || 0);
+      if (cloudTime >= localTime) {
+        map.set(cloudItem.id, { ...localItem, ...cloudItem });
+      }
+    }
+  });
+
+  return Array.from(map.values());
 }
 
 // Cập nhật dữ liệu từ đám mây vào LocalStorage và làm mới giao diện
@@ -152,18 +180,21 @@ function applyRemoteCloudData(cloudData) {
     isApplyingRemoteUpdate = true;
     const currentLocal = typeof getLedgerData === 'function' ? getLedgerData() : {};
 
-    // Hợp nhất dữ liệu thông minh
+    // Hợp nhất dữ liệu thông minh theo id + updatedAt/timestamp thay vì ghi đè toàn bộ
     const mergedData = {
-      transactions: Array.isArray(cloudData.transactions) ? cloudData.transactions : (currentLocal.transactions || []),
-      debts: Array.isArray(cloudData.debts) ? cloudData.debts : (currentLocal.debts || []),
-      tasks: Array.isArray(cloudData.tasks) ? cloudData.tasks : (currentLocal.tasks || []),
-      calendarEvents: Array.isArray(cloudData.calendarEvents) ? cloudData.calendarEvents : (currentLocal.calendarEvents || []),
-      bank: cloudData.bank || currentLocal.bank || {},
-      contacts: cloudData.contacts || currentLocal.contacts || {}
+      transactions: mergeArrayByIdAndTime(currentLocal.transactions, cloudData.transactions),
+      debts: mergeArrayByIdAndTime(currentLocal.debts, cloudData.debts),
+      tasks: mergeArrayByIdAndTime(currentLocal.tasks, cloudData.tasks),
+      calendarEvents: mergeArrayByIdAndTime(currentLocal.calendarEvents, cloudData.calendarEvents),
+      bank: { ...(currentLocal.bank || {}), ...(cloudData.bank || {}) },
+      contacts: { ...(currentLocal.contacts || {}), ...(cloudData.contacts || {}) }
     };
 
+    const beforeHealStr = JSON.stringify(mergedData);
     // Tự động chuẩn hóa dữ liệu
     const healed = typeof healLedgerData === 'function' ? healLedgerData(mergedData) : mergedData;
+    const afterHealStr = JSON.stringify(healed);
+    const hasHealedChanges = beforeHealStr !== afterHealStr;
 
     // Lưu vào LocalStorage riêng biệt theo tài khoản
     const targetKey = typeof getCurrentLedgerKey === 'function' ? getCurrentLedgerKey() : APP_CONFIG.ledgerKey;
@@ -179,6 +210,13 @@ function applyRemoteCloudData(cloudData) {
 
     updateSyncStatusUI('online', 'Đã đồng bộ từ Cloud');
     updateModalStatsUI();
+
+    // Sau healLedgerData nếu có thay đổi thì đẩy lại lên cloud
+    if (hasHealedChanges) {
+      setTimeout(() => {
+        syncLedgerToFirebase(healed, false);
+      }, 500);
+    }
   } catch (e) {
     console.error('[Firebase] Lỗi áp dụng dữ liệu đám mây:', e);
   } finally {
@@ -188,7 +226,7 @@ function applyRemoteCloudData(cloudData) {
   }
 }
 
-// Đẩy dữ liệu Sổ cái lên Firebase Cloud Firestore (có Debounce)
+// Đẩy dữ liệu Sổ cái lên Firebase Cloud Firestore (có Debounce & Pending queue)
 function syncLedgerToFirebase(data, isManual = false) {
   if (isApplyingRemoteUpdate) return;
   if (!firestoreDb) return;
@@ -202,13 +240,22 @@ function syncLedgerToFirebase(data, isManual = false) {
     return;
   }
 
+  // Nếu đang trong tiến trình đồng bộ, đặt cờ pending để đẩy lại sau khi xong (không bỏ qua)
+  if (isCloudSyncing) {
+    pendingSyncData = { data, isManual: isManual || (pendingSyncData && pendingSyncData.isManual) };
+    return;
+  }
+
   if (autoSyncTimer) {
     clearTimeout(autoSyncTimer);
     autoSyncTimer = null;
   }
 
   const doPush = async () => {
-    if (isCloudSyncing) return;
+    if (isCloudSyncing) {
+      pendingSyncData = { data, isManual: isManual || (pendingSyncData && pendingSyncData.isManual) };
+      return;
+    }
     try {
       isCloudSyncing = true;
       updateSyncStatusUI('syncing', 'Đang tải lên Đám mây...');
@@ -252,6 +299,12 @@ function syncLedgerToFirebase(data, isManual = false) {
       }
     } finally {
       isCloudSyncing = false;
+      // Nếu có thay đổi mới trong lúc đang sync, đẩy lại ngay
+      if (pendingSyncData) {
+        const next = pendingSyncData;
+        pendingSyncData = null;
+        syncLedgerToFirebase(next.data, next.isManual);
+      }
     }
   };
 
