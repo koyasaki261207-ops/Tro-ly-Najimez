@@ -1138,6 +1138,9 @@ function executeAction(action, data) {
       timestamp: Date.now()
     };
     data.transactions.unshift(tx);
+    if (typeof autoFetchAndAssignWebImageForItem === 'function') {
+      autoFetchAndAssignWebImageForItem(tx);
+    }
 
     // Tự động đồng bộ gạch nợ trong Sổ Nợ nếu đây là giao dịch trả nợ hoặc thu nợ
     const isPayDebt = tx.type === 'expense' && (/(?:trả\s+nợ|thanh\s+toán\s+nợ)/i.test(tx.category || '') || /(?:trả\s+nợ|thanh\s+toán\s+nợ|trả\s+tiền\s+cho)/i.test(tx.note || ''));
@@ -1386,6 +1389,9 @@ function executeAction(action, data) {
       timestamp: Date.now()
     };
     data.debts.unshift(debt);
+    if (typeof autoFetchAndAssignWebImageForItem === 'function') {
+      autoFetchAndAssignWebImageForItem(debt);
+    }
 
     // Tự động ghi nhận vào Sổ Thu Chi Cá Nhân
     const isTheyOwe = debt.direction === 'they_owe_me';

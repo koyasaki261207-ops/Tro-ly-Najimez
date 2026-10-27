@@ -175,6 +175,9 @@ function initFinanceTab() {
       };
 
       data.transactions.unshift(newTx);
+      if (!attachedImg && typeof autoFetchAndAssignWebImageForItem === 'function') {
+        autoFetchAndAssignWebImageForItem(newTx);
+      }
 
       // Tự động đồng bộ gạch nợ trong Sổ Nợ nếu là trả nợ hoặc thu nợ
       const isPayDebt = type === 'expense' && (/(?:trả\s+nợ|thanh\s+toán\s+nợ)/i.test(newTx.category || '') || /(?:trả\s+nợ|thanh\s+toán\s+nợ|trả\s+tiền\s+cho)/i.test(newTx.note || ''));
@@ -271,6 +274,9 @@ function initFinanceTab() {
       };
 
       data.debts.unshift(newDebt);
+      if (!attachedImg && typeof autoFetchAndAssignWebImageForItem === 'function') {
+        autoFetchAndAssignWebImageForItem(newDebt);
+      }
 
       // Tự động ghi nhận vào Sổ Thu Chi Cá Nhân
       const isTheyOwe = direction === 'they_owe_me';

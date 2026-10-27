@@ -625,10 +625,57 @@ function matchAutoImage(rawText) {
   return AUTO_SMART_VISUALS.default_money;
 }
 
+const WEB_IMAGE_CACHE_KEY = 'NAJIMEZ_WEB_IMAGE_CACHE_V2';
+let webImageMemoryCache = null;
+const pendingWebImageFetches = new Set();
+
+function getWebImageCache() {
+  if (webImageMemoryCache) return webImageMemoryCache;
+  try {
+    const raw = localStorage.getItem(WEB_IMAGE_CACHE_KEY);
+    webImageMemoryCache = raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    webImageMemoryCache = {};
+  }
+  return webImageMemoryCache;
+}
+
+function getCachedWebImageUrl(keyword) {
+  if (!keyword) return null;
+  const cache = getWebImageCache();
+  const key = keyword.toLowerCase().trim();
+  return cache[key] || null;
+}
+
+function setCachedWebImageUrl(keyword, url) {
+  if (!keyword || !url) return;
+  const cache = getWebImageCache();
+  const key = keyword.toLowerCase().trim();
+  cache[key] = url;
+  try {
+    localStorage.setItem(WEB_IMAGE_CACHE_KEY, JSON.stringify(cache));
+  } catch (e) { }
+}
+
+/**
+ * Tạo huy hiệu vector SVG mang đúng tên món hoặc khoản chi (KHÔNG bao giờ đoán mò từ khóa sai lệch)
+ */
+function createDishOrExpenseFallbackSvg(rawText) {
+  const clean = (rawText || 'Giao dịch').trim();
+  const upper = clean.substring(0, 16).toUpperCase();
+  const isMoney = /(?:tiền|nợ|chuyển|vay|mượn|lương|thưởng|thu|chi)/i.test(clean);
+  const icon = isMoney ? '💵' : '🍲';
+  const c1 = isMoney ? '#0d9488' : '#7c3aed';
+  const c2 = isMoney ? '#042f2e' : '#4c1d95';
+  return createAutoSvg(c1, c2, icon, upper);
+}
+
 /**
  * Trả về thông tin hình ảnh của một giao dịch hoặc khoản nợ:
- * - Nếu người dùng tải ảnh riêng (item.image), dùng ảnh đó.
- * - Nếu không, TỰ ĐỘNG nhận diện nội dung và gán hình ảnh đẹp mắt tương ứng.
+ * - ƯU TIÊN #1 TUYỆT ĐỐI: Ảnh thực tế từ Web (tự động tìm kiếm & gán luôn từ Wikipedia/Commons).
+ * - Nếu đã có item.image (từ Web hoặc người dùng gán), hiển thị ngay lập tức.
+ * - Nếu chưa có item.image, kích hoạt tìm kiếm ảnh trên Web ngầm và tự động cập nhật vào sổ cái.
+ * - Loại bỏ hoàn toàn việc nhận diện từ khóa cứng nhắc đoán bừa (như đoán bánh cuốn thành bánh mì).
  */
 function resolveTransactionImage(item) {
   if (!item) {
@@ -640,31 +687,181 @@ function resolveTransactionImage(item) {
     };
   }
 
-  // 1. Ảnh tùy chỉnh do người dùng tự tải lên
+  // 1. Ảnh đã có (Ảnh từ Web được tự động gán hoặc ảnh do người dùng chọn)
   if (item.image && typeof item.image === 'string' && item.image.trim().length > 0) {
     return {
       src: item.image,
-      label: item.note || 'Ảnh giao dịch',
+      label: item.note || 'Ảnh thực tế từ Web',
       key: 'custom',
       isAuto: false
     };
   }
 
-  // 2. Tự động nhận diện từ ghi chú, lý do, danh mục (TUYỆT ĐỐI KHÔNG dùng tên người để tránh nhầm lẫn)
-  const combinedText = [
-    item.note || '',
-    item.reason || '',
-    item.category || ''
-  ].join(' ').trim();
+  const rawNote = (item.note || item.reason || '').trim();
+  const personName = item.person || '';
+  const itemId = item.id;
 
-  const visual = matchAutoImage(combinedText);
+  // 2. Tự động kiểm tra Local Cache (nếu từ khóa này từng tìm thấy ảnh trước đó, dùng ngay trong 0ms!)
+  const clean = cleanQueryForImageSearch(rawNote, personName);
+  if (clean) {
+    const cachedUrl = getCachedWebImageUrl(clean);
+    if (cachedUrl) {
+      item.image = cachedUrl;
+      setTimeout(() => applyFetchedImageToLedger(itemId, cachedUrl), 0);
+      return {
+        src: cachedUrl,
+        label: rawNote,
+        key: 'custom',
+        isAuto: false
+      };
+    }
 
+    // 3. TỰ ĐỘNG TÌM KIẾM ẢNH TRÊN WEB VÀ GÁN LUÔN
+    if (itemId && !pendingWebImageFetches.has(String(itemId))) {
+      setTimeout(() => autoFetchAndAssignWebImageForItem(item), 20);
+    }
+  }
+
+  // 4. Trong khi chờ ảnh Web tải về hoặc nếu offline, tạo SVG vector mang đúng tên món (KHÔNG đoán bừa từ khóa)
+  const fallbackSvg = createDishOrExpenseFallbackSvg(rawNote || item.category || 'Giao dịch');
   return {
-    src: visual.url,
-    label: visual.label,
-    key: visual.key,
+    src: fallbackSvg,
+    label: rawNote || 'Giao dịch',
+    key: 'web_pending',
     isAuto: true
   };
+}
+
+/**
+ * Cập nhật DOM của thumbnail đang hiển thị mà không làm giật màn hình
+ */
+function updateThumbnailsInDom(itemId, imageUrl) {
+  if (!itemId || !imageUrl) return;
+
+  const selectors = [
+    `[data-action="view-debt-img"][data-id="${itemId}"] img`,
+    `[data-action="view-tx-img"][data-id="${itemId}"] img`,
+    `[data-id="${itemId}"] .history-item-thumb`,
+    `#row-debt-${itemId} img`,
+    `#row-tx-${itemId} img`
+  ];
+  selectors.forEach(sel => {
+    document.querySelectorAll(sel).forEach(img => {
+      img.src = imageUrl;
+    });
+  });
+
+  // Nếu Modal xem ảnh đang mở đúng item này, cập nhật preview lớn luôn
+  if (currentModalTargetId && String(currentModalTargetId) === String(itemId)) {
+    const largeImg = document.getElementById('txImageLargePreview');
+    if (largeImg) largeImg.src = imageUrl;
+    const metaTitle = document.getElementById('txImageMetaTitle');
+    if (metaTitle) {
+      metaTitle.innerHTML = `<span style="font-size:0.75rem; color:#38bdf8;">🌐 Ảnh thực tế từ Web</span>`;
+    }
+  }
+}
+
+/**
+ * Lưu ảnh tìm được từ Web vào sổ cái (debts và transactions)
+ */
+function applyFetchedImageToLedger(itemId, imageUrl) {
+  if (!itemId || !imageUrl) return;
+  const data = getLedgerData();
+  let changed = false;
+
+  // Cập nhật debts
+  (data.debts || []).forEach(d => {
+    if (String(d.id) === String(itemId) && !d.image) {
+      d.image = imageUrl;
+      changed = true;
+    }
+  });
+
+  // Cập nhật transactions
+  (data.transactions || []).forEach(t => {
+    if ((String(t.id) === String(itemId) || String(t.debtId) === String(itemId) || String(t.id) === 'tx-debt-' + itemId) && !t.image) {
+      t.image = imageUrl;
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    saveLedgerData(data);
+    updateThumbnailsInDom(itemId, imageUrl);
+  }
+}
+
+/**
+ * Tự động tìm kiếm ảnh trên Web cho một item và gán luôn
+ */
+async function autoFetchAndAssignWebImageForItem(item) {
+  if (!item || !item.id) return;
+  const rawNote = (item.note || item.reason || '').trim();
+  const personName = item.person || '';
+  const clean = cleanQueryForImageSearch(rawNote, personName);
+  if (!clean) return;
+
+  const itemId = String(item.id);
+  if (pendingWebImageFetches.has(itemId)) return;
+  pendingWebImageFetches.add(itemId);
+
+  // 1. Kiểm tra cache
+  const cachedUrl = getCachedWebImageUrl(clean);
+  if (cachedUrl) {
+    applyFetchedImageToLedger(itemId, cachedUrl);
+    return;
+  }
+
+  // 2. Tìm kiếm trên Web qua API Wikipedia / Commons
+  try {
+    const results = await searchWebImages(clean);
+    if (results && results.length > 0) {
+      const best = results[0];
+      setCachedWebImageUrl(clean, best.url);
+      applyFetchedImageToLedger(itemId, best.url);
+    }
+  } catch (err) {
+    console.warn('[AutoWebImage] Lỗi tự động tải ảnh mạng cho:', clean, err);
+  }
+}
+
+/**
+ * Tự động quét toàn bộ sổ nợ và giao dịch chưa có ảnh:
+ * Tự động tìm kiếm ảnh trên Web cho từng món và chọn gán luôn!
+ */
+async function scanAndAutoFillAllWebImages() {
+  const data = getLedgerData();
+  const itemsToFetch = [];
+
+  // 1. Quét các khoản nợ
+  (data.debts || []).forEach(d => {
+    if (d && !d.image && d.note) {
+      const clean = cleanQueryForImageSearch(d.note, d.person);
+      if (clean && clean.length > 1) {
+        itemsToFetch.push({ id: d.id, note: d.note, person: d.person });
+      }
+    }
+  });
+
+  // 2. Quét các giao dịch
+  (data.transactions || []).forEach(t => {
+    if (t && !t.image && t.note) {
+      const clean = cleanQueryForImageSearch(t.note);
+      if (clean && clean.length > 1 && !itemsToFetch.some(x => x.id === t.id)) {
+        itemsToFetch.push({ id: t.id, note: t.note });
+      }
+    }
+  });
+
+  if (itemsToFetch.length === 0) return;
+
+  // Fetch ngầm lần lượt
+  for (const item of itemsToFetch.slice(0, 20)) {
+    await autoFetchAndAssignWebImageForItem(item);
+  }
+
+  if (typeof renderFinanceTab === 'function') renderFinanceTab();
 }
 
 // ============================================================================
@@ -782,9 +979,9 @@ function openViewImageModal(imageUrl, targetId, targetType = 'debt', title = '',
 
   if (targetItem) {
     const noteText = targetItem.note || (targetType === 'debt' ? (targetItem.person ? `Khoản nợ với ${targetItem.person}` : 'Khoản nợ') : 'Giao dịch thu chi');
-    const badgeText = info && info.isAuto ? `✨ Tự động nhận diện: ${info.label}` : '📷 Ảnh tùy chỉnh';
+    const badgeText = targetItem.image ? '🌐 Ảnh thực tế từ Web' : '📷 Ảnh đại diện';
     if (metaTitle) {
-      metaTitle.innerHTML = `<strong>${safeEscape(noteText)}</strong> <span style="font-size:0.75rem; color:#c084fc; margin-left:8px;">${badgeText}</span>`;
+      metaTitle.innerHTML = `<strong>${safeEscape(noteText)}</strong> <span style="font-size:0.75rem; color:#38bdf8; margin-left:8px;">${badgeText}</span>`;
     }
     if (metaDate) metaDate.textContent = targetItem.timestamp ? new Date(targetItem.timestamp).toLocaleDateString('vi-VN') : 'Gần đây';
   } else if (info) {
@@ -843,17 +1040,84 @@ function renderModalPresetChips() {
 /**
  * Làm sạch tên món/nội dung giao dịch để tìm kiếm ảnh trên mạng chính xác nhất
  */
-function cleanQueryForImageSearch(rawText) {
+function cleanQueryForImageSearch(rawText, personName = '') {
   if (!rawText || typeof rawText !== 'string') return '';
   let s = rawText.trim();
-  // Bỏ các từ nợ nần, tiền nong, mượn trả dư thừa
+
+  // 1. Nếu có dấu hai chấm (vd: "Cho Nam mượn tiền: bánh cuốn"), lấy phần sau dấu hai chấm
+  if (s.includes(':')) {
+    const afterColon = s.split(':').slice(1).join(':').trim();
+    if (afterColon.length > 0) {
+      s = afterColon;
+    }
+  }
+
+  // 2. Bỏ tên người nợ nếu được truyền vào để tránh tìm nhầm tên người
+  if (personName && typeof personName === 'string') {
+    const p = personName.trim();
+    if (p.length > 1) {
+      const escaped = p.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const regP = new RegExp('\\b' + escaped + '\\b', 'gi');
+      s = s.replace(regP, ' ');
+    }
+  }
+
+  // 3. Bỏ các từ nợ nần, tiền nong, mượn trả dư thừa
   s = s.replace(/\b(?:khoản nợ|khoan no|nợ tiền|no tien|trả nợ|tra no|trả tiền|tra tien|mượn tiền|muon tien|vay tiền|vay tien|nợ|no|mượn|muon|tiền|tien)\b/gi, ' ');
-  // Bỏ tiền tố hành động
-  s = s.replace(/\b(?:thanh toán|chi trả|mua|ăn|uống|đi|uong|thanh toan)\b/gi, ' ');
-  // Bỏ "với [Tên]" nếu có
+  // 4. Bỏ tiền tố hành động
+  s = s.replace(/\b(?:thanh toán|chi trả|mua|ăn|uống|đi|uong|thanh toan|cho|vay)\b/gi, ' ');
+  // 5. Bỏ "với [Tên]" nếu có
   s = s.replace(/\bvới\s+[^\s,]+/gi, ' ');
+  // 6. Bỏ dấu câu linh tinh
+  s = s.replace(/[;,\-–—]+/g, ' ');
   s = s.replace(/\s+/g, ' ').trim();
   return s || rawText.trim();
+}
+
+/**
+ * Tính điểm mức độ phù hợp giữa tiêu đề bài viết/ảnh và từ khóa tìm kiếm
+ */
+function calculateWebImageScore(title, cleanQuery) {
+  if (!title || !cleanQuery) return 0;
+  const t = title.toLowerCase().trim();
+  const q = cleanQuery.toLowerCase().trim();
+
+  // 1. Khớp hoàn hảo tuyệt đối
+  if (t === q) return 100;
+
+  // 2. Bắt đầu hoặc chứa trọn vẹn cụm từ
+  if (t.startsWith(q)) return 85;
+  if (t.includes(q)) return 75;
+  if (q.includes(t) && t.length > 3) return 70;
+
+  // 3. Xử lý đồng nghĩa phổ biến (ví dụ: hột vịt lộn <-> trứng vịt lộn)
+  const normT = t.replace(/trứng/g, 'hột');
+  const normQ = q.replace(/trứng/g, 'hột');
+  if (normT.includes(normQ) || normQ.includes(normT)) return 80;
+
+  // 4. Khớp không dấu (cho Commons tiếng Anh hoặc tên file không dấu)
+  const noMarkT = normalizeVisualText(t);
+  const noMarkQ = normalizeVisualText(q);
+  if (noMarkT === noMarkQ) return 85;
+  if (noMarkT.includes(noMarkQ)) return 65;
+
+  // 5. Trùng lặp từng từ
+  const qWords = q.split(/\s+/).filter(w => w.length > 1);
+  if (qWords.length === 0) return 10;
+  let matchCount = 0;
+  qWords.forEach(w => {
+    if (t.includes(w) || noMarkT.includes(normalizeVisualText(w))) matchCount++;
+  });
+  const ratio = matchCount / qWords.length;
+  if (ratio === 1) return 60;
+  if (ratio >= 0.5) return 40;
+
+  // Trừ điểm các bài viết phong cảnh, địa danh, bản đồ hành chính
+  if (/(?:bản đồ|hành chính|vị trí|quang cảnh|dân số|tỉnh|huyện|xã|chợ nổi)/i.test(t)) {
+    return 5;
+  }
+
+  return 10;
 }
 
 /**
@@ -865,7 +1129,6 @@ async function searchWebImages(rawQuery) {
 
   const results = [];
   const seenUrls = new Set();
-  const cleanLower = clean.toLowerCase();
 
   // 1. Tìm trên Wikipedia Tiếng Việt (chất lượng cao nhất về ẩm thực & đời sống Việt Nam)
   const p1 = (async () => {
@@ -892,14 +1155,13 @@ async function searchWebImages(rawQuery) {
         const title = p.title || '';
         if (targetUrl && !seenUrls.has(targetUrl)) {
           seenUrls.add(targetUrl);
-          const titleLower = title.toLowerCase();
-          const isExact = titleLower.includes(cleanLower) || cleanLower.includes(titleLower);
+          const baseScore = calculateWebImageScore(title, clean);
           results.push({
             title: title,
             url: targetUrl,
             thumb: thumbUrl,
             source: 'Wikipedia VN',
-            score: isExact ? 10 : 5
+            score: baseScore + 5 // Ưu tiên bài viết tiếng Việt
           });
         }
       }
@@ -932,14 +1194,13 @@ async function searchWebImages(rawQuery) {
           const lower = url.toLowerCase();
           if (lower.endsWith('.pdf') || lower.endsWith('.svg') || lower.endsWith('.tif') || lower.endsWith('.djvu')) continue;
           seenUrls.add(url);
-          const titleLower = title.toLowerCase();
-          const isExact = titleLower.includes(cleanLower);
+          const baseScore = calculateWebImageScore(title, clean);
           results.push({
             title: title,
             url: url,
             thumb: url,
             source: 'Wikimedia Commons',
-            score: isExact ? 8 : 3
+            score: baseScore
           });
         }
       }
@@ -948,7 +1209,7 @@ async function searchWebImages(rawQuery) {
 
   await Promise.allSettled([p1, p2]);
 
-  // Sắp xếp theo mức độ phù hợp cao nhất
+  // Sắp xếp theo mức độ phù hợp cao nhất (ưu tiên ảnh khớp chính xác món ăn nhất)
   results.sort((a, b) => b.score - a.score);
   return results;
 }
@@ -1510,6 +1771,13 @@ function initBillImageModule() {
       return;
     }
   });
+
+  // Tự động quét và tìm kiếm ảnh Web cho toàn bộ giao dịch / sổ nợ chưa có ảnh
+  setTimeout(() => {
+    if (typeof scanAndAutoFillAllWebImages === 'function') {
+      scanAndAutoFillAllWebImages();
+    }
+  }, 600);
 }
 
 function initDrawerAttachmentHandlers() {
@@ -1643,3 +1911,5 @@ window.resetFormAttachedDebtImage = resetFormAttachedDebtImage;
 window.searchWebImages = searchWebImages;
 window.autoSearchAndApplyWebImage = autoSearchAndApplyWebImage;
 window.cleanQueryForImageSearch = cleanQueryForImageSearch;
+window.autoFetchAndAssignWebImageForItem = autoFetchAndAssignWebImageForItem;
+window.scanAndAutoFillAllWebImages = scanAndAutoFillAllWebImages;
