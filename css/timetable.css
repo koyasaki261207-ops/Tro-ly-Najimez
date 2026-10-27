@@ -212,7 +212,6 @@
   box-shadow: var(--shadow-glass);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   position: relative;
 }
 
@@ -225,6 +224,8 @@
   position: relative;
   height: 100%;
   overflow: hidden;
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
 }
 
 .tt-time-axis,
@@ -278,15 +279,24 @@
   flex: none !important;
 }
 
-/* Hàng tiêu đề 7 cột ngày */
+/* Hàng tiêu đề 7 cột ngày (Ghim cố định ở đỉnh khi cuộn xem các khung giờ bên dưới) */
 .timetable-col-headers {
   display: grid;
   grid-template-columns: 60px repeat(7, 1fr);
-  background: rgba(15, 23, 42, 0.95);
+  background: rgba(10, 14, 32, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
-  z-index: 20;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  margin-top: -1px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
   flex-shrink: 0;
   user-select: none;
+  border-top-left-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-md);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
 }
 
 .tt-time-corner {
@@ -298,8 +308,9 @@
   font-weight: 700;
   color: var(--text-muted);
   border-right: 1px solid var(--border-color);
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(15, 23, 42, 0.85);
   padding: 8px 2px;
+  border-top-left-radius: var(--radius-md);
 }
 
 .tt-time-corner i {
@@ -322,6 +333,7 @@
 
 .tt-col-header-cell:last-child {
   border-right: none;
+  border-top-right-radius: var(--radius-md);
 }
 
 .tt-col-header-cell.weekend .tt-day-name {

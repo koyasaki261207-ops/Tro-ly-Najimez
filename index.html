@@ -123,6 +123,10 @@
           <i class="fa-solid fa-dharmachakra"></i>
           <span>Vòng Quay May Mắn</span>
         </button>
+        <button class="nav-item" id="btnSidebarImageGen" type="button" title="Sáng tạo hình ảnh AI cùng Najimez">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+          <span>Tạo Ảnh AI Najimez</span>
+        </button>
       </nav>
 
       <!-- Tiện ích nhanh ở chân Sidebar: Thẻ Google, Đồng hồ & Cài đặt STK VietQR -->
@@ -267,6 +271,10 @@
                 <button type="button" class="btn-attach-image" id="btnCopilotAttachImg"
                   title="Gửi hình ảnh cho Najimez (chọn ảnh, chụp ảnh hoặc dán Ctrl+V)">
                   <i class="fa-regular fa-image"></i>
+                </button>
+                <button type="button" class="btn-create-image" id="btnOpenImageGenModal"
+                  title="Sáng tạo hình ảnh AI cùng Najimez (Vẽ tranh theo ý muốn)">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
                 </button>
                 <div class="input-inner-wrap">
                   <input type="text" id="copilotInput"
@@ -1331,6 +1339,9 @@
             <a href="#" id="btnDownloadTxImage" download="anh-giao-dich.jpg" class="btn-modal-action secondary" style="flex: 1;">
               <i class="fa-solid fa-download"></i> Tải về
             </a>
+            <button type="button" id="btnGenerateAITxImage" class="btn-modal-action primary" style="flex: 1.2; background: linear-gradient(135deg, #a855f7, #6366f1); border-color: #c084fc;" title="Dùng AI sáng tạo bức ảnh chân thực cho món này">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> AI Vẽ Món Này
+            </button>
             <button type="button" id="btnReplaceTxImage" class="btn-modal-action secondary" style="flex: 1;">
               <i class="fa-solid fa-rotate"></i> Đổi ảnh
             </button>
@@ -1364,6 +1375,14 @@
           <div class="avatar-url-input-wrap" style="margin-top: 10px;">
             <input type="url" id="txImageUrlInput" class="form-input-custom text-sm" placeholder="Hoặc dán URL ảnh (https://...)" autocomplete="off" />
             <button type="button" id="btnApplyTxImageUrl" class="btn-sub-apply">Áp dụng</button>
+          </div>
+
+          <!-- Gợi ý ảnh theo chủ đề (Chọn nhanh 1 chạm) -->
+          <div class="tx-preset-chips-wrap">
+            <div class="tx-preset-chips-title">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> Gợi ý theo chủ đề (Chọn nhanh 1 chạm):
+            </div>
+            <div class="tx-preset-chips-list" id="txModalPresetChipsList"></div>
           </div>
 
           <div class="modal-actions-row" style="margin-top: 16px;">
@@ -1604,6 +1623,145 @@
     </div>
   </div>
 
+  <!-- MODAL: STUDIO SÁNG TẠO HÌNH ẢNH AI NAJIMEZ -->
+  <div class="image-studio-modal" id="imageStudioModal">
+    <div class="studio-modal-box">
+      <div class="studio-modal-header">
+        <div class="studio-title-wrap">
+          <div class="studio-header-icon">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div>
+            <h3>Studio Sáng Tạo Hình Ảnh AI</h3>
+            <div class="studio-header-sub">Họa sĩ ảo Najimez &bull; Hỗ trợ Pollinations Flux &amp; Google Imagen 3</div>
+          </div>
+        </div>
+        <button type="button" class="btn-studio-close" id="btnCloseImageStudioModal" title="Đóng (ESC)">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="studio-modal-body">
+        <!-- Cột trái: Điều khiển & Cấu hình -->
+        <div class="studio-controls-col">
+          <!-- Nhập mô tả tranh (Prompt) -->
+          <div class="studio-field-group">
+            <div class="studio-field-label">
+              <span><i class="fa-solid fa-pen-nib"></i> Ý tưởng bức tranh:</span>
+              <span style="font-size: 0.72rem; color: var(--text-dim);">Hỗ trợ tiếng Việt &amp; tiếng Anh</span>
+            </div>
+            <textarea id="studioPromptInput" class="studio-prompt-textarea" rows="3"
+              placeholder="Ví dụ: Một chú mèo phi hành gia bồng bềnh ngoài không gian, ngắm nhìn Trái Đất rực rỡ..."></textarea>
+            
+            <div class="studio-prompt-actions-row">
+              <button type="button" class="btn-prompt-helper" id="btnStudioEnhancePrompt" title="Dùng AI tối ưu từ khóa nghệ thuật">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ Phù phép Prompt
+              </button>
+              <button type="button" class="btn-prompt-helper btn-surprise" id="btnStudioSurprise" title="Gợi ý một chủ đề ngẫu nhiên cực đẹp">
+                <i class="fa-solid fa-shuffle"></i> 🎲 Ý tưởng ngẫu nhiên
+              </button>
+            </div>
+          </div>
+
+          <!-- Chọn phong cách nghệ thuật -->
+          <div class="studio-field-group">
+            <div class="studio-field-label">
+              <span><i class="fa-solid fa-palette"></i> Phong cách nghệ thuật:</span>
+            </div>
+            <div class="studio-style-grid">
+              <div class="studio-style-card active" data-style="anime">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                <span class="style-card-name">Anime</span>
+              </div>
+              <div class="studio-style-card" data-style="najimez">
+                <i class="fa-solid fa-heart"></i>
+                <span class="style-card-name">Najimez Tóc Tím</span>
+              </div>
+              <div class="studio-style-card" data-style="photorealistic">
+                <i class="fa-solid fa-camera"></i>
+                <span class="style-card-name">Ảnh Chụp 8K</span>
+              </div>
+              <div class="studio-style-card" data-style="cyberpunk">
+                <i class="fa-solid fa-city"></i>
+                <span class="style-card-name">Cyberpunk</span>
+              </div>
+              <div class="studio-style-card" data-style="fantasy">
+                <i class="fa-solid fa-dragon"></i>
+                <span class="style-card-name">Epic Fantasy</span>
+              </div>
+              <div class="studio-style-card" data-style="oil_painting">
+                <i class="fa-solid fa-palette"></i>
+                <span class="style-card-name">Sơn Dầu</span>
+              </div>
+              <div class="studio-style-card" data-style="3d_render">
+                <i class="fa-solid fa-cube"></i>
+                <span class="style-card-name">3D Pixar</span>
+              </div>
+              <div class="studio-style-card" data-style="watercolor">
+                <i class="fa-solid fa-paintbrush"></i>
+                <span class="style-card-name">Màu Nước</span>
+              </div>
+              <div class="studio-style-card" data-style="general">
+                <i class="fa-solid fa-sparkles"></i>
+                <span class="style-card-name">Tự Nhiên</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chọn tỷ lệ khung hình -->
+          <div class="studio-field-group">
+            <div class="studio-field-label">
+              <span><i class="fa-solid fa-crop-simple"></i> Tỷ lệ khung hình:</span>
+            </div>
+            <div class="studio-ratio-row">
+              <button type="button" class="studio-ratio-btn active" data-ratio="1:1">
+                <i class="fa-solid fa-square"></i> 1:1
+              </button>
+              <button type="button" class="studio-ratio-btn" data-ratio="16:9">
+                <i class="fa-solid fa-tv"></i> 16:9
+              </button>
+              <button type="button" class="studio-ratio-btn" data-ratio="9:16">
+                <i class="fa-solid fa-mobile-screen"></i> 9:16
+              </button>
+              <button type="button" class="studio-ratio-btn" data-ratio="4:3">
+                <i class="fa-solid fa-window-maximize"></i> 4:3
+              </button>
+              <button type="button" class="studio-ratio-btn" data-ratio="3:4">
+                <i class="fa-solid fa-file-image"></i> 3:4
+              </button>
+            </div>
+          </div>
+
+          <!-- Nút bắt đầu tạo ảnh -->
+          <button type="button" class="btn-studio-generate-main" id="btnStudioGenerate">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>Bắt Đầu Sáng Tạo Tác Phẩm</span>
+          </button>
+        </div>
+
+        <!-- Cột phải: Xem trước kết quả & Bộ sưu tập gần đây -->
+        <div class="studio-preview-col">
+          <div class="studio-preview-box" id="studioPreviewArea">
+            <div class="studio-empty-state">
+              <i class="fa-solid fa-palette"></i>
+              <p>Nhập mô tả ý tưởng và nhấn nút tạo ảnh để chiêm ngưỡng tác phẩm do Najimez vẽ nhé!</p>
+            </div>
+          </div>
+
+          <!-- Bộ sưu tập ảnh gần đây -->
+          <div class="studio-recent-section">
+            <div class="studio-recent-title">
+              <span><i class="fa-regular fa-clock"></i> Tác phẩm gần đây:</span>
+            </div>
+            <div class="studio-recent-gallery" id="studioRecentGallery">
+              <!-- Render tự động bởi image-gen.js -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: XEM PHÓNG TO ẢNH TRÒ CHUYỆN COPILOT (LIGHTBOX) -->
   <div class="copilot-img-lightbox-modal" id="copilotImgLightboxModal">
     <div class="lightbox-content-box">
@@ -1640,7 +1798,7 @@
   <script src="js/storage.js?v=3.55.0"></script>
   <script src="js/ui.js?v=3.55.0"></script>
   <script src="js/vietqr.js?v=3.55.0"></script>
-  <script src="js/bill-image.js?v=3.55.0"></script>
+  <script src="js/bill-image.js?v=3.55.2"></script>
   <script src="js/debt.js?v=3.55.0"></script>
   <script src="js/debt-profile.js?v=3.55.0"></script>
   <script src="js/finance.js?v=3.55.0"></script>
@@ -1651,6 +1809,7 @@
   <script src="js/timetable-timeline.js?v=3.58.4"></script>
   <script src="js/lucky-wheel.js?v=3.55.0"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
+  <script src="js/image-gen.js?v=3.61.1"></script>
   <script src="js/copilot-image.js?v=3.60.1"></script>
   <script src="js/copilot.js?v=3.60.1"></script>
   <script src="js/stars.js?v=3.55.0"></script>

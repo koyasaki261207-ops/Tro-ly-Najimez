@@ -37,107 +37,215 @@ function createAutoSvg(bgColor1, bgColor2, emojiOrIcon, title) {
 
 // Từ điển hình ảnh tương ứng theo chủ đề
 const AUTO_SMART_VISUALS = {
+  // 1. Hột vịt lộn / Trứng vịt lộn / Trứng cút lộn / Các món trứng
+  hot_vit_lon: {
+    key: 'hot_vit_lon',
+    label: 'Hột vịt lộn',
+    url: 'https://upload.wikimedia.org/wikipedia/commons/e/eb/Hotvitlon.jpg',
+    fallbackSvg: createAutoSvg('#f59e0b', '#d97706', '🥚', 'HỘT VỊT LỘN')
+  },
+  // 2. Tiền cơm / Cơm tấm / Cơm bình dân
   com: {
     key: 'com',
     label: 'Tiền cơm',
     url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#f97316', '#ea580c', '🍚', 'TIỀN CƠM')
   },
+  // 3. Bún đậu mắm tôm
   bun_dau: {
     key: 'bun_dau',
     label: 'Bún đậu',
     url: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#84cc16', '#65a30d', '🥢', 'BÚN ĐẬU')
   },
+  // 4. Hải sản / Ốc / Nghêu sò
+  hai_san_oc: {
+    key: 'hai_san_oc',
+    label: 'Hải sản / Ốc',
+    url: 'https://images.unsplash.com/photo-1559742811-822873691df8?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#ea580c', '#c2410c', '🦪', 'HẢI SẢN / ỐC')
+  },
+  // 5. Cá viên chiên / Ăn vặt đường phố
+  ca_vien_chien: {
+    key: 'ca_vien_chien',
+    label: 'Cá viên / Xiên que',
+    url: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#f97316', '#ea580c', '🍢', 'CÁ VIÊN CHIÊN')
+  },
+  // 6. Gà rán / Fast food / Pizza / Burger
+  ga_ran: {
+    key: 'ga_ran',
+    label: 'Gà rán / Fast food',
+    url: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#ea580c', '#b91c1c', '🍗', 'GÀ RÁN')
+  },
+  // 7. Bida / Billiards
+  bida: {
+    key: 'bida',
+    label: 'Bida / Billiards',
+    url: 'https://images.unsplash.com/photo-1588636142475-a62d56692870?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#0f172a', '#334155', '🎱', 'BIDA')
+  },
+  // 8. Thể thao / Cầu lông / Bóng đá / Gym
+  the_thao: {
+    key: 'the_thao',
+    label: 'Thể thao / Cầu lông',
+    url: 'https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#10b981', '#059669', '🏸', 'THỂ THAO')
+  },
+  // 9. Quán net / Gaming
   net: {
     key: 'net',
     label: 'Quán net',
     url: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#6366f1', '#a855f7', '🖥️', 'QUÁN NET')
   },
+  // 10. Ăn vặt, bánh tráng, snack
   an_vat: {
     key: 'an_vat',
     label: 'Ăn vặt',
     url: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#ec4899', '#f43f5e', '🍟', 'ĂN VẶT')
   },
-  tien: {
-    key: 'tien',
-    label: 'Mượn tiền',
-    url: 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?auto=format&fit=crop&w=400&q=80',
-    fallbackSvg: createAutoSvg('#10b981', '#059669', '💵', 'TIỀN MẶT')
-  },
+  // 11. Trà sữa
   tra_sua: {
     key: 'tra_sua',
     label: 'Trà sữa',
     url: 'https://images.unsplash.com/photo-1558857563-b37cf05d8a58?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#f59e0b', '#d97706', '🧋', 'TRÀ SỮA')
   },
+  // 12. Cà phê
   ca_phe: {
     key: 'ca_phe',
     label: 'Cà phê',
     url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#78350f', '#451a03', '☕', 'CÀ PHÊ')
   },
+  // 13. Trà chanh / Nước mía / Nước ép
+  tra_chanh: {
+    key: 'tra_chanh',
+    label: 'Trà chanh / Nước mía',
+    url: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#84cc16', '#4d7c0f', '🍹', 'TRÀ CHANH')
+  },
+  // 14. Phở / Mì / Hủ tiếu / Bún
   pho_mi: {
     key: 'pho_mi',
-    label: 'Phở / Mì',
+    label: 'Phở / Mì / Bún',
     url: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#ef4444', '#dc2626', '🍜', 'PHỞ / MÌ')
   },
+  // 15. Lẩu nướng
   lau_nuong: {
     key: 'lau_nuong',
     label: 'Lẩu nướng',
     url: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#f97316', '#dc2626', '🍲', 'LẨU NƯỚNG')
   },
+  // 16. Bánh mì / Xôi / Điểm tâm
   banh_mi: {
     key: 'banh_mi',
     label: 'Bánh mì',
     url: 'https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#eab308', '#ca8a04', '🥖', 'BÁNH MÌ')
   },
+  // 17. Chè / Kem / Đồ ngọt
+  che_kem: {
+    key: 'che_kem',
+    label: 'Chè / Kem / Tráng miệng',
+    url: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#ec4899', '#db2777', '🍧', 'CHÈ / KEM')
+  },
+  // 18. Quán nhậu / Bia / Rượu
+  bia_nhau: {
+    key: 'bia_nhau',
+    label: 'Quán nhậu / Bia',
+    url: 'https://images.unsplash.com/photo-1518099074172-bd5730dc0ff9?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#f59e0b', '#d97706', '🍻', 'QUÁN NHẬU')
+  },
+  // 19. Đi chợ / Siêu thị
+  di_cho: {
+    key: 'di_cho',
+    label: 'Đi chợ / Siêu thị',
+    url: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#10b981', '#047857', '🛒', 'ĐI CHỢ')
+  },
+  // 20. Xăng xe / Đi lại
   xang_xe: {
     key: 'xang_xe',
     label: 'Xăng xe',
     url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#0ea5e9', '#0284c7', '⛽', 'XĂNG XE')
   },
+  // 21. Cắt tóc / Làm đẹp / Spa
+  lam_dep: {
+    key: 'lam_dep',
+    label: 'Cắt tóc / Làm đẹp',
+    url: 'https://images.unsplash.com/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#8b5cf6', '#6d28d9', '💇', 'LÀM ĐẸP')
+  },
+  // 22. Mua sắm
   shopping: {
     key: 'shopping',
     label: 'Mua sắm',
     url: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#ec4899', '#8b5cf6', '🛍️', 'MUA SẮM')
   },
+  // 23. Nhà trọ
   nha_tro: {
     key: 'nha_tro',
     label: 'Tiền trọ',
     url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#3b82f6', '#1d4ed8', '🏠', 'TIỀN TRỌ')
   },
+  // 24. Y tế / Thuốc men
+  y_te: {
+    key: 'y_te',
+    label: 'Y tế / Thuốc men',
+    url: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#0ea5e9', '#0369a1', '💊', 'THUỐC MEN')
+  },
+  // 25. Quà tặng / Tiệc mừng
+  qua_tang: {
+    key: 'qua_tang',
+    label: 'Quà tặng / Mừng cưới',
+    url: 'https://images.unsplash.com/photo-1513151233558-d860c5398176?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#f43f5e', '#be123c', '🎁', 'QUÀ TẶNG')
+  },
+  // 26. Học tập
   hoc_tap: {
     key: 'hoc_tap',
     label: 'Học tập',
     url: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#8b5cf6', '#6d28d9', '📚', 'HỌC TẬP')
   },
+  // 27. Xem phim
   xem_phim: {
     key: 'xem_phim',
     label: 'Xem phim',
     url: 'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#8b5cf6', '#ec4899', '🎬', 'XEM PHIM')
   },
+  // 28. Lương / Thưởng
   luong: {
     key: 'luong',
     label: 'Lương / Thưởng',
     url: 'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&w=400&q=80',
     fallbackSvg: createAutoSvg('#10b981', '#3b82f6', '💰', 'LƯƠNG / THƯỞNG')
   },
+  // 29. Mượn tiền / Trả nợ
+  tien: {
+    key: 'tien',
+    label: 'Mượn tiền',
+    url: 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#10b981', '#059669', '💵', 'TIỀN MẶT')
+  },
+  // 30. Mặc định (Ví tiền & tiền mặt thân thiện, không dùng ảnh laptop văn phòng)
   default_money: {
     key: 'default_money',
-    label: 'Giao dịch',
-    url: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?auto=format&fit=crop&w=400&q=80',
-    fallbackSvg: createAutoSvg('#6366f1', '#4f46e5', '💸', 'GIAO DỊCH')
+    label: 'Khoản tiền / Sổ nợ',
+    url: 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?auto=format&fit=crop&w=400&q=80',
+    fallbackSvg: createAutoSvg('#10b981', '#059669', '💵', 'KHOẢN TIỀN')
   }
 };
 
@@ -178,68 +286,340 @@ function handleAutoImgError(imgEl, key) {
 function matchAutoImage(rawText) {
   const norm = normalizeVisualText(rawText);
 
-  // 1. Tiền cơm, cơm tấm, cơm chiên, dĩa cơm...
-  if (norm.includes('com') || norm.includes('dia com') || norm.includes('suat com')) {
-    return AUTO_SMART_VISUALS.com;
+  // 1. Hột vịt lộn / Trứng vịt lộn / Trứng cút lộn / Các món trứng
+  if (
+    norm.includes('hot vit lon') || norm.includes('trung vit lon') ||
+    norm.includes('hot vit') || norm.includes('trung cut lon') ||
+    norm.includes('trung lon') || norm.includes('vit lon') ||
+    norm.includes('trung cut') || norm.includes('trung ga') ||
+    norm.includes('trung vit') || norm.includes('trung op la') ||
+    norm.includes('trung chien') || norm.includes('trung ') ||
+    norm.endsWith('trung') || norm === 'trung'
+  ) {
+    return AUTO_SMART_VISUALS.hot_vit_lon;
   }
-  // 2. Bún đậu
+
+  // 2. Bún đậu mắm tôm
   if (norm.includes('bun dau') || norm.includes('mam tom')) {
     return AUTO_SMART_VISUALS.bun_dau;
   }
-  // 3. Quán net, cyber, gaming, chơi net
-  if (norm.includes('net') || norm.includes('cyber') || norm.includes('gaming') || norm.includes('quan net') || norm.includes('choi net') || norm.includes('nap net') || norm.includes('game')) {
+
+  // 3. Tiền cơm, cơm tấm, cơm chiên, dĩa cơm, cơm sườn, cơm gà...
+  if (
+    norm.includes('com tam') || norm.includes('com suon') || norm.includes('com ga') ||
+    norm.includes('com rang') || norm.includes('com chien') || norm.includes('dia com') ||
+    norm.includes('suat com') || norm.includes('com binh dan') || norm.includes('com ') ||
+    norm.endsWith('com') || norm === 'com'
+  ) {
+    return AUTO_SMART_VISUALS.com;
+  }
+
+  // 4. Hải sản / Ốc / Nghêu sò
+  if (
+    norm.includes('hai san') || norm.includes('oc ') || norm.endsWith('oc') ||
+    norm.includes('ngheu') || norm.includes('so ') || norm.includes('cua ') ||
+    norm.includes('tom ') || norm.includes('muc ') || norm.includes('hau ') ||
+    norm.includes('oc huong') || norm.includes('oc buou') || norm.includes('oc len') ||
+    norm.includes('so diep') || norm.includes('so huyet') || norm.includes('ghe ')
+  ) {
+    return AUTO_SMART_VISUALS.hai_san_oc;
+  }
+
+  // 5. Cá viên chiên / Bò viên / Xiên que / Ăn vặt
+  if (
+    norm.includes('ca vien') || norm.includes('bo vien') || norm.includes('xien que') ||
+    norm.includes('xien ban') || norm.includes('bap xao') || norm.includes('banh trang tron') ||
+    norm.includes('banh trang nuong') || norm.includes('ho lo') || norm.includes('xuc xich') ||
+    norm.includes('pho mai que')
+  ) {
+    return AUTO_SMART_VISUALS.ca_vien_chien;
+  }
+
+  // 6. Gà rán / Fast food / Pizza / Burger
+  if (
+    norm.includes('ga ran') || norm.includes('kfc') || norm.includes('jollibee') ||
+    norm.includes('lotteria') || norm.includes('pizza') || norm.includes('burger') ||
+    norm.includes('hamburger') || norm.includes('mcdonald') || norm.includes('ga sot')
+  ) {
+    return AUTO_SMART_VISUALS.ga_ran;
+  }
+
+  // 7. Bida / Billiards
+  if (
+    norm.includes('bida') || norm.includes('bi da') || norm.includes('bi-a') ||
+    norm.includes('billiard') || norm.includes('billiards') || norm.includes('danh bida')
+  ) {
+    return AUTO_SMART_VISUALS.bida;
+  }
+
+  // 8. Thể thao / Cầu lông / Bóng đá / Gym
+  if (
+    norm.includes('cau long') || norm.includes('da banh') || norm.includes('da bong') ||
+    norm.includes('bong da') || norm.includes('gym') || norm.includes('san banh') ||
+    norm.includes('tien san') || norm.includes('pickleball') || norm.includes('tennis') ||
+    norm.includes('boi loi') || norm.includes('chay bo') || norm.includes('tap gym')
+  ) {
+    return AUTO_SMART_VISUALS.the_thao;
+  }
+
+  // 9. Quán net, cyber, gaming, chơi game
+  if (
+    norm.includes('net') || norm.includes('cyber') || norm.includes('gaming') ||
+    norm.includes('quan net') || norm.includes('choi net') || norm.includes('nap net') ||
+    norm.includes('game')
+  ) {
     return AUTO_SMART_VISUALS.net;
   }
-  // 4. Ăn vặt, bánh tráng, snack, khoai tây chiên, nem...
-  if (norm.includes('an vat') || norm.includes('banh trang') || norm.includes('snack') || norm.includes('bim bim') || norm.includes('khoai tay') || norm.includes('nem chua') || norm.includes('xuc xich') || norm.includes('trai cay')) {
-    return AUTO_SMART_VISUALS.an_vat;
-  }
-  // 5. Trà sữa, nước ngọt, sinh tố
-  if (norm.includes('tra sua') || norm.includes('tra dao') || norm.includes('tra vai') || norm.includes('toco') || norm.includes('gongcha') || norm.includes('koi') || norm.includes('sting') || norm.includes('coca') || norm.includes('pepsi') || norm.includes('bo huc') || norm.includes('nuoc ngot')) {
+
+  // 10. Trà sữa, tocotoco, gongcha, koi, nước ngọt
+  if (
+    norm.includes('tra sua') || norm.includes('tra dao') || norm.includes('tra vai') ||
+    norm.includes('toco') || norm.includes('gongcha') || norm.includes('koi') ||
+    norm.includes('sting') || norm.includes('coca') || norm.includes('pepsi') ||
+    norm.includes('bo huc') || norm.includes('redbull')
+  ) {
     return AUTO_SMART_VISUALS.tra_sua;
   }
-  // 6. Cà phê
-  if (norm.includes('ca phe') || norm.includes('cafe') || norm.includes('coffee') || norm.includes('bac xiu') || norm.includes('highland') || norm.includes('starbuck') || norm.includes('den da') || norm.includes('sua da')) {
+
+  // 11. Cà phê, cafe, coffee
+  if (
+    norm.includes('ca phe') || norm.includes('cafe') || norm.includes('coffee') ||
+    norm.includes('bac xiu') || norm.includes('highland') || norm.includes('starbuck') ||
+    norm.includes('den da') || norm.includes('sua da')
+  ) {
     return AUTO_SMART_VISUALS.ca_phe;
   }
-  // 7. Phở, mì, bún bò, hủ tiếu
-  if (norm.includes('pho') || norm.includes('bun bo') || norm.includes('hu tieu') || norm.includes('mi tom') || norm.includes('mi cay') || norm.includes('ramen') || norm.includes('mi quang')) {
+
+  // 12. Trà chanh / Nước mía / Sinh tố / Nước ép
+  if (
+    norm.includes('tra chanh') || norm.includes('tra tac') || norm.includes('nuoc mia') ||
+    norm.includes('nuoc dua') || norm.includes('dua tuoi') || norm.includes('sinh to') ||
+    norm.includes('nuoc ep') || norm.includes('rau ma') || norm.includes('tra mang cau')
+  ) {
+    return AUTO_SMART_VISUALS.tra_chanh;
+  }
+
+  // 13. Phở, bún, mì, hủ tiếu, ramen
+  if (
+    norm.includes('pho') || norm.includes('bun bo') || norm.includes('hu tieu') ||
+    norm.includes('mi tom') || norm.includes('mi cay') || norm.includes('ramen') ||
+    norm.includes('mi quang') || norm.includes('bun rieu') || norm.includes('bun cha') ||
+    norm.includes('bun thit nuong') || norm.includes('bun moc')
+  ) {
     return AUTO_SMART_VISUALS.pho_mi;
   }
-  // 8. Lẩu, nướng, bia, nhậu
-  if (norm.includes('lau') || norm.includes('nuong') || norm.includes('bbq') || norm.includes('nhau') || norm.includes('bia') || norm.includes('ruou') || norm.includes('tiger') || norm.includes('heineken')) {
+
+  // 14. Lẩu, nướng, bbq
+  if (norm.includes('lau') || norm.includes('nuong') || norm.includes('bbq')) {
     return AUTO_SMART_VISUALS.lau_nuong;
   }
-  // 9. Bánh mì, ăn sáng, xôi
-  if (norm.includes('banh mi') || norm.includes('xoi') || norm.includes('an sang') || norm.includes('diem tam')) {
+
+  // 15. Quán nhậu, bia, rượu
+  if (
+    norm.includes('nhau') || norm.includes('quan nhau') || norm.includes('bia') ||
+    norm.includes('moi nhau') || norm.includes('ruou') || norm.includes('tiger') ||
+    norm.includes('heineken') || norm.includes('sai gon') || norm.includes('beer') ||
+    norm.includes('lai rai')
+  ) {
+    return AUTO_SMART_VISUALS.bia_nhau;
+  }
+
+  // 16. Bánh mì, ăn sáng, xôi, bánh bao
+  if (
+    norm.includes('banh mi') || norm.includes('xoi') || norm.includes('an sang') ||
+    norm.includes('diem tam') || norm.includes('banh bao') || norm.includes('banh cuon') ||
+    norm.includes('banh xeo')
+  ) {
     return AUTO_SMART_VISUALS.banh_mi;
   }
-  // 10. Xăng xe, xe cộ, grab, taxi
-  if (norm.includes('xang') || norm.includes('xe') || norm.includes('grab') || norm.includes('be ') || norm.includes('taxi') || norm.includes('gui xe') || norm.includes('rua xe')) {
+
+  // 17. Chè, kem, sữa chua, đồ ngọt
+  if (
+    norm.includes('che ') || norm.endsWith('che') || norm.includes('kem ') || norm.endsWith('kem') ||
+    norm.includes('sua chua') || norm.includes('tau hu') || norm.includes('bingsoo') ||
+    norm.includes('bingsu') || norm.includes('flan') || norm.includes('pudding') ||
+    norm.includes('banh ngot') || norm.includes('banh kem')
+  ) {
+    return AUTO_SMART_VISUALS.che_kem;
+  }
+
+  // 18. Ăn vặt chung, bánh tráng, snack & Fastfood quốc tế (Pizza, Burger, Tokbokki, Sushi...)
+  if (
+    norm.includes('an vat') || norm.includes('banh trang') || norm.includes('snack') ||
+    norm.includes('bim bim') || norm.includes('khoai tay') || norm.includes('nem chua') ||
+    norm.includes('trai cay') || norm.includes('tokbokki') || norm.includes('topokki') ||
+    norm.includes('banh gao') || norm.includes('kimbap') || norm.includes('sushi') ||
+    norm.includes('sashimi') || norm.includes('pizza') || norm.includes('burger') ||
+    norm.includes('hamburger') || norm.includes('hotdog') || norm.includes('dimsum') ||
+    norm.includes('ha cao') || norm.includes('sui cao') || norm.includes('mi y') ||
+    norm.includes('spaghetti') || norm.includes('pasta') || norm.includes('steak') ||
+    norm.includes('bo bit tet')
+  ) {
+    if (norm.includes('pizza') || norm.includes('burger') || norm.includes('hamburger') || norm.includes('hotdog')) {
+      return {
+        ...AUTO_SMART_VISUALS.an_vat,
+        label: rawText.trim() ? `Món ăn: ${rawText.trim()}` : 'Pizza / Burger',
+        fallbackSvg: createAutoSvg('#f59e0b', '#d97706', '🍕', (rawText.trim().substring(0, 16)).toUpperCase())
+      };
+    }
+    if (norm.includes('sushi') || norm.includes('sashimi') || norm.includes('kimbap')) {
+      return {
+        ...AUTO_SMART_VISUALS.an_vat,
+        label: rawText.trim() ? `Món ăn: ${rawText.trim()}` : 'Sushi / Kimbap',
+        fallbackSvg: createAutoSvg('#ef4444', '#dc2626', '🍣', (rawText.trim().substring(0, 16)).toUpperCase())
+      };
+    }
+    return AUTO_SMART_VISUALS.an_vat;
+  }
+
+  // 19. Cắt tóc / Làm đẹp / Nail / Spa
+  if (
+    norm.includes('cat toc') || norm.includes('barber') || norm.includes('salon') ||
+    norm.includes('nail') || norm.includes('spa') || norm.includes('lam mong') ||
+    norm.includes('uon toc') || norm.includes('nhuom toc') || norm.includes('goi dau')
+  ) {
+    return AUTO_SMART_VISUALS.lam_dep;
+  }
+
+  // 20. Đi chợ, siêu thị, bách hóa, tạp hóa
+  if (
+    norm.includes('di cho') || norm.includes('tien cho') || norm.includes('sieu thi') ||
+    norm.includes('bach hoa') || norm.includes('tap hoa') || norm.includes('winmart') ||
+    norm.includes('coopmart') || norm.includes('big c') || norm.includes('go!') ||
+    norm.includes('thuc pham')
+  ) {
+    return AUTO_SMART_VISUALS.di_cho;
+  }
+
+  // 21. Y tế, thuốc, khám bệnh
+  if (
+    norm.includes('thuoc') || norm.includes('nha thuoc') || norm.includes('tiem thuoc') ||
+    norm.includes('kham benh') || norm.includes('benh vien') || norm.includes('bac si') ||
+    norm.includes('panadol') || norm.includes('khau trang')
+  ) {
+    return AUTO_SMART_VISUALS.y_te;
+  }
+
+  // 22. Quà tặng, tiệc mừng, sinh nhật, đám cưới
+  if (
+    norm.includes('sinh nhat') || norm.includes('dam cuoi') || norm.includes('mung cuoi') ||
+    norm.includes('thiep cuoi') || norm.includes('qua tang') || norm.includes('tang qua') ||
+    norm.includes('li xi') || norm.includes('thoi noi') || norm.includes('day thang')
+  ) {
+    return AUTO_SMART_VISUALS.qua_tang;
+  }
+
+  // 23. Xăng xe, xe cộ, grab, taxi
+  if (
+    norm.includes('xang') || norm.includes('xe') || norm.includes('grab') ||
+    norm.includes('be ') || norm.includes('taxi') || norm.includes('gui xe') ||
+    norm.includes('rua xe')
+  ) {
     return AUTO_SMART_VISUALS.xang_xe;
   }
-  // 11. Mua sắm, áo quần, shopee, mỹ phẩm
-  if (norm.includes('shopee') || norm.includes('lazada') || norm.includes('tiki') || norm.includes('mua sam') || norm.includes('quan ao') || norm.includes('giay') || norm.includes('my pham') || norm.includes('son ')) {
+
+  // 24. Mua sắm, áo quần, shopee, mỹ phẩm
+  if (
+    norm.includes('shopee') || norm.includes('lazada') || norm.includes('tiki') ||
+    norm.includes('mua sam') || norm.includes('quan ao') || norm.includes('giay') ||
+    norm.includes('my pham') || norm.includes('son ')
+  ) {
     return AUTO_SMART_VISUALS.shopping;
   }
-  // 12. Nhà trọ, tiền phòng, điện nước
-  if (norm.includes('nha tro') || norm.includes('phong tro') || norm.includes('tien tro') || norm.includes('dien nuoc') || norm.includes('wifi') || norm.includes('internet')) {
+
+  // 25. Nhà trọ, tiền phòng, điện nước
+  if (
+    norm.includes('nha tro') || norm.includes('phong tro') || norm.includes('tien tro') ||
+    norm.includes('dien nuoc') || norm.includes('wifi') || norm.includes('internet')
+  ) {
     return AUTO_SMART_VISUALS.nha_tro;
   }
-  // 13. Học tập, sách vở, học phí
-  if (norm.includes('hoc phi') || norm.includes('sach') || norm.includes('vo ') || norm.includes('tai lieu') || norm.includes('khoa hoc')) {
+
+  // 26. Học tập, sách vở, học phí
+  if (
+    norm.includes('hoc phi') || norm.includes('sach') || norm.includes('vo ') ||
+    norm.includes('tai lieu') || norm.includes('khoa hoc')
+  ) {
     return AUTO_SMART_VISUALS.hoc_tap;
   }
-  // 14. Xem phim, cgv, cinema
-  if (norm.includes('xem phim') || norm.includes('cgv') || norm.includes('cinema') || norm.includes('bhd') || norm.includes('lotte')) {
+
+  // 27. Xem phim, cgv, cinema
+  if (
+    norm.includes('xem phim') || norm.includes('cgv') || norm.includes('cinema') ||
+    norm.includes('bhd') || norm.includes('lotte')
+  ) {
     return AUTO_SMART_VISUALS.xem_phim;
   }
-  // 15. Lương, thưởng, thu nhập
-  if (norm.includes('luong') || norm.includes('thuong') || norm.includes('bonus') || norm.includes('thu nhap')) {
+
+  // 28. Lương, thưởng, thu nhập
+  if (
+    norm.includes('luong') || norm.includes('thuong') || norm.includes('bonus') ||
+    norm.includes('thu nhap')
+  ) {
     return AUTO_SMART_VISUALS.luong;
   }
-  // 16. Mượn tiền, vay tiền, trả nợ
-  if (norm.includes('muon tien') || norm.includes('vay tien') || norm.includes('tien mat') || norm.includes('chuyen khoan') || norm.includes('muon') || norm.includes('vay') || norm.includes('no tien') || norm.includes('tien')) {
+
+  // 29. Tự động nhận diện nhóm Ăn Uống Chung (khi không rõ tên món cụ thể)
+  if (
+    norm.includes('do an') || norm.includes('mon an') || norm.includes('bua an') ||
+    norm.includes('bua com') || norm.includes('an trua') || norm.includes('an toi') ||
+    norm.includes('an sang') || norm.includes('an dem') || norm.includes('tien an') ||
+    norm.includes('doi bung') || norm.includes('thuc an') || norm.includes('an uong')
+  ) {
+    return AUTO_SMART_VISUALS.com;
+  }
+
+  if (
+    norm.includes('do uong') || norm.includes('giai khat') || norm.includes('nuoc uong') ||
+    norm.includes('tien nuoc') || norm.includes('mua nuoc')
+  ) {
+    return AUTO_SMART_VISUALS.tra_sua;
+  }
+
+  // 30. Tiền tố món ăn Việt Nam tổng quát (dành cho mọi món ăn chưa có trong từ điển cụ thể)
+  // Ví dụ: cháo lòng, bánh đúc, bánh xèo, gỏi cuốn, nem nướng, chả lụa, tré trộn, đậu phụ, nấm xào, phá lấu, canh chua, cá kho, thịt luộc, bò né...
+  const foodPrefixRegex = /(?:\bchao\b|\bbanh\b|\bgoi\b|\bnem\b|\bcha\b|\btre\b|\bnam\b|\bdau\b|\btrung\b|\bpha lau\b|\bcao lau\b|\blau\b|\bcanh\b|\bsup\b|\bsoup\b|\bxoi\b|\bthit\b|\bca\b|\bga\b|\bvit\b|\bbo\b|\bheo\b|\bmuc\b|\btom\b|\boc\b|\bxao\b|\bnuong\b|\bchien\b|\bkho\b|\bhap\b|\bluoc\b|\bbo kho\b|\bbo ne\b|\bbanh canh\b|\bgoi cuon\b|\bbuffet\b|\bdac san\b|\bquan an\b|\bquan com\b|\bmon ngon\b)/;
+  if (foodPrefixRegex.test(norm)) {
+    // Món nước (cháo, canh, súp, bánh canh)
+    if (/\b(?:chao|canh|sup|soup|banh canh)\b/.test(norm)) {
+      return {
+        ...AUTO_SMART_VISUALS.pho_mi,
+        label: rawText.trim() ? `Món ăn: ${rawText.trim()}` : 'Món nước / Cháo',
+        fallbackSvg: createAutoSvg('#ea580c', '#c2410c', '🍲', (rawText.trim().substring(0, 16)).toUpperCase())
+      };
+    }
+    // Món bánh truyền thống (bánh xèo, bánh đúc, bánh bèo, bánh ướt...)
+    if (/\bbanh\b/.test(norm)) {
+      return {
+        ...AUTO_SMART_VISUALS.banh_mi,
+        label: rawText.trim() ? `Món ăn: ${rawText.trim()}` : 'Món bánh',
+        fallbackSvg: createAutoSvg('#eab308', '#ca8a04', '🥟', (rawText.trim().substring(0, 16)).toUpperCase())
+      };
+    }
+    // Món mặn tổng quát (gỏi, nem, thịt, cá, xào, nướng, kho...)
+    return {
+      ...AUTO_SMART_VISUALS.com,
+      label: rawText.trim() ? `Món ăn: ${rawText.trim()}` : 'Món ăn',
+      fallbackSvg: createAutoSvg('#f97316', '#ea580c', '🥘', (rawText.trim().substring(0, 16)).toUpperCase())
+    };
+  }
+
+  // 31. Tiền tố thức uống tổng quát (trà dâu, trà ô long, nước sâm, sữa tươi, cà phê muối, matcha...)
+  const drinkPrefixRegex = /(?:\btra\b|\bnuoc\b|\bsua\b|\bsinh to\b|\bnuoc ep\b|\bca phe\b|\bcafe\b|\bche\b|\bo long\b|\bmatcha\b|\blatte\b|\bsmoothie\b)/;
+  if (drinkPrefixRegex.test(norm)) {
+    return {
+      ...AUTO_SMART_VISUALS.tra_sua,
+      label: rawText.trim() ? `Thức uống: ${rawText.trim()}` : 'Thức uống',
+      fallbackSvg: createAutoSvg('#f59e0b', '#d97706', '🧋', (rawText.trim().substring(0, 16)).toUpperCase())
+    };
+  }
+
+  // 32. Mượn tiền, vay tiền, trả nợ
+  if (
+    norm.includes('muon tien') || norm.includes('vay tien') || norm.includes('tien mat') ||
+    norm.includes('chuyen khoan') || norm.includes('muon') || norm.includes('vay') ||
+    norm.includes('no tien') || norm.includes('tien') || norm.includes('tra no')
+  ) {
     return AUTO_SMART_VISUALS.tien;
   }
 
@@ -419,6 +799,49 @@ function openViewImageModal(imageUrl, targetId, targetType = 'debt', title = '',
   modal.classList.add('active');
 }
 
+function renderModalPresetChips() {
+  const container = document.getElementById('txModalPresetChipsList');
+  if (!container) return;
+
+  const presets = [
+    { key: 'hot_vit_lon', label: '🥚 Hột vịt lộn' },
+    { key: 'com', label: '🍚 Tiền cơm' },
+    { key: 'bun_dau', label: '🥢 Bún đậu' },
+    { key: 'pho_mi', label: '🍜 Phở / Bún' },
+    { key: 'hai_san_oc', label: '🦪 Hải sản / Ốc' },
+    { key: 'ca_vien_chien', label: '🍢 Cá viên chiên' },
+    { key: 'ga_ran', label: '🍗 Gà rán' },
+    { key: 'banh_mi', label: '🥖 Bánh mì' },
+    { key: 'lau_nuong', label: '🍲 Lẩu nướng' },
+    { key: 'tra_sua', label: '🧋 Trà sữa' },
+    { key: 'ca_phe', label: '☕ Cà phê' },
+    { key: 'tra_chanh', label: '🍹 Trà chanh' },
+    { key: 'che_kem', label: '🍧 Chè / Kem' },
+    { key: 'bia_nhau', label: '🍻 Quán nhậu' },
+    { key: 'bida', label: '🎱 Bida' },
+    { key: 'the_thao', label: '🏸 Cầu lông' },
+    { key: 'net', label: '🖥️ Quán net' },
+    { key: 'di_cho', label: '🛒 Đi chợ' },
+    { key: 'tien', label: '💵 Tiền mặt' },
+  ];
+
+  container.innerHTML = presets.map(p => `
+    <button type="button" class="tx-preset-chip" data-key="${p.key}">
+      ${p.label}
+    </button>
+  `).join('');
+
+  container.querySelectorAll('.tx-preset-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const k = btn.dataset.key;
+      const v = AUTO_SMART_VISUALS[k];
+      if (v) {
+        setModalPendingPreview(v.url);
+      }
+    });
+  });
+}
+
 /**
  * Mở modal ở chế độ THAY ĐỔI ẢNH TÙY CHỌN
  */
@@ -448,6 +871,8 @@ function openAttachImageModal(targetId, targetType = 'debt') {
   if (previewImg) previewImg.src = '';
   if (urlInput) urlInput.value = '';
   if (fileInput) fileInput.value = '';
+
+  renderModalPresetChips();
 
   modal.classList.add('active');
 }
@@ -518,6 +943,28 @@ function initBillImageModule() {
       }
     });
   }
+
+  const btnGenAI = document.getElementById('btnGenerateAITxImage');
+  if (btnGenAI) {
+    btnGenAI.addEventListener('click', () => {
+      const data = getLedgerData();
+      let targetItem = null;
+      if (currentModalTargetType === 'debt') {
+        targetItem = (data.debts || []).find(d => String(d.id) === String(currentModalTargetId));
+      } else {
+        targetItem = (data.transactions || []).find(t => String(t.id) === String(currentModalTargetId));
+      }
+      const rawNote = targetItem && (targetItem.note || (targetItem.category ? targetItem.category : '')) || '';
+      const promptText = rawNote.trim() ? rawNote.trim() : 'Món ăn Việt Nam';
+      closeTransactionImageModal();
+      if (typeof openImageGenModal === 'function') {
+        openImageGenModal(`Chụp ảnh món ${promptText} thơm ngon bày trên đĩa, phong cách ẩm thực cao cấp, ánh sáng tự nhiên chân thực, sắc nét 8k`, 'photorealistic', '1:1');
+      } else {
+        alert(`Bạn có thể dùng tính năng Tạo Ảnh AI để vẽ món: ${promptText}`);
+      }
+    });
+  }
+
 
   if (btnDelete) {
     btnDelete.addEventListener('click', async () => {

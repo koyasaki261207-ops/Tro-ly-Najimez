@@ -531,6 +531,10 @@ Khi người dùng yêu cầu hành động, hãy giải thích chu đáo và đ
       <!--NAJIMEZ_ACTION:{"type":"calendar_event","title":"Thi Python","oldDate":"2026-10-25","date":"2026-11-25","time":"13:00","endTime":"15:00","category":"Học tập"}-->
     - Cách 3: Xuất đồng thời cả 2 thẻ delete_calendar_event cho ngày cũ và calendar_event cho ngày mới.
     TUYỆT ĐỐI KHÔNG CHỈ TẠO LỊCH MỚI MÀ QUÊN XÓA NGÀY CŨ!
+13. SÁNG TẠO HÌNH ẢNH / VẼ TRANH AI:
+    Khi người dùng bảo bạn "vẽ cho tôi...", "tạo ảnh...", "vẽ tranh...", "hãy vẽ...", "vẽ hình...", "vẽ Najimez", "generate image...":
+    BẠN BẮT BUỘC ĐÍNH KÈM THẺ TẠO ẢNH với prompt tiếng Anh chi tiết, sống động:
+    <!--NAJIMEZ_ACTION:{"type":"generate_image","prompt":"<detailed artistic English prompt>","title":"<tiêu đề tiếng Việt ngắn gọn>","style":"anime|najimez|photorealistic|cyberpunk|fantasy|oil_painting|3d_render|watercolor|general","aspectRatio":"1:1|16:9|9:16|4:3|3:4"}-->
 
 ============================================================
 QUY TẮC BẢO VỆ TÍNH TOÀN VẸN & ĐỐI CHIẾU XUNG ĐỘT LOGIC SỔ NỢ (CRITICAL LOGIC VALIDATION):
@@ -2130,12 +2134,43 @@ function executeAction(action, data) {
     }
   }
 
+  // 13. Sáng tạo hình ảnh AI (generate_image)
+  if (action.type === 'generate_image') {
+    if (typeof renderImageGenCard === 'function') {
+      return renderImageGenCard(action);
+    }
+  }
+
   return null;
 }
 
 function getNaturalAIResponse(userText) {
   const raw = userText.trim();
   const lower = raw.toLowerCase().trim();
+
+  // Sáng tạo hình ảnh AI / Vẽ tranh
+  if (
+    /(?:vẽ\s+(?:cho\s+)?(?:tôi|mình|em|anh|giúp)|tạo\s+(?:hình\s+)?ảnh|vẽ\s+tranh|vẽ\s+hình|hãy\s+vẽ|generate\s+image|vẽ\s+najimez)/i.test(lower)
+  ) {
+    let cleanPrompt = raw
+      .replace(/^(?:hãy\s+)?(?:vẽ\s+(?:cho\s+)?(?:tôi|mình|em|anh|giúp|nhé)?|tạo\s+(?:hình\s+)?ảnh(?:\s+cho\s+tôi)?|generate\s+image|draw)\s*/i, '')
+      .trim();
+    if (!cleanPrompt) cleanPrompt = 'bức tranh nghệ thuật tuyệt đẹp';
+
+    let detectedStyle = 'anime';
+    if (/najimez/i.test(cleanPrompt)) detectedStyle = 'najimez';
+    else if (/siêu\s+thực|chụp\s+ảnh|8k|chân\s+dung/i.test(cleanPrompt)) detectedStyle = 'photorealistic';
+    else if (/cyberpunk|tương\s+lai|neon/i.test(cleanPrompt)) detectedStyle = 'cyberpunk';
+    else if (/fantasy|huyền\s+ảo|phép\s+thuật/i.test(cleanPrompt)) detectedStyle = 'fantasy';
+    else if (/sơn\s+dầu/i.test(cleanPrompt)) detectedStyle = 'oil_painting';
+    else if (/3d|pixar|hoạt\s+hình/i.test(cleanPrompt)) detectedStyle = '3d_render';
+    else if (/màu\s+nước/i.test(cleanPrompt)) detectedStyle = 'watercolor';
+
+    const safeTitle = cleanPrompt.substring(0, 45);
+    return {
+      text: `Dạ được chứ! Ý tưởng bức tranh **"${escapeHTML(safeTitle)}"** của bạn thật tuyệt vời. Najimez sẽ vẽ bức tranh này cho bạn ngay đây nhé! 🥰\n\n<!--NAJIMEZ_ACTION:{"type":"generate_image","prompt":"${escapeHTML(cleanPrompt)}","title":"${escapeHTML(safeTitle)}","style":"${detectedStyle}","aspectRatio":"1:1"}-->`
+    };
+  }
 
   // Tra cứu: Ai đang nợ tôi / Ai nợ nhiều nhất
   if (/(?:ai\s+(?:đang\s+)?nợ\s+tôi|ai\s+nợ\s+(?:tôi\s+)?nhiều\s+nhất|danh\s+sách\s+(?:người\s+)?nợ)/i.test(lower)) {
@@ -2429,6 +2464,7 @@ function getNaturalAIResponse(userText) {
           <button type="button" class="action-chip chip-green" data-action="debts">💛 Sổ nợ &amp; VietQR</button>
           <button type="button" class="action-chip chip-pink" data-action="schedule">📅 Lên lịch trình To-Do</button>
           <button type="button" class="action-chip chip-orange" data-action="study">💡 Giải đáp thắc mắc &amp; Code</button>
+          <button type="button" class="action-chip chip-purple" data-action="draw">🎨 Sáng tạo ảnh AI</button>
           <button type="button" class="action-chip chip-cyan" data-action="chat">💬 Đàm thoại cùng Gemini</button>
         </div>
         <p class="copilot-footer">Gõ trực tiếp các khoản thu chi, sổ nợ hoặc câu hỏi để tương tác ngay nhé!</p>
@@ -2806,6 +2842,9 @@ function initChatEngine() {
             break;
           case 'study':
             reply = `**💡 Giải đáp thắc mắc & Lập trình:**\n\nBạn có thể hỏi mọi thắc mắc học thuật, giải bài tập hoặc nhờ tôi viết và gỡ lỗi code: HTML, CSS, JavaScript, Python, C++, v.v.`;
+            break;
+          case 'draw':
+            reply = `**🎨 Sáng tạo hình ảnh AI cùng Najimez:**\n\nBạn có thể yêu cầu tôi vẽ bất kỳ bức tranh nào bạn muốn, ví dụ:\n- *"Vẽ cho mình chú mèo phi hành gia trong không gian"*\n- *"Vẽ Najimez phong cách anime tóc tím cài hoa lung linh"*\n- *"Tạo ảnh thành phố cyberpunk mưa đêm rực rỡ ánh đèn neon"*\n- *"Vẽ tranh phong cảnh hoàng hôn trên biển"* \n\nHoặc bạn hãy bấm vào biểu tượng cây đũa thần ✨ trên thanh chat để mở **Studio Sáng Tạo Ảnh AI** chuyên nghiệp nhé!`;
             break;
           case 'chat':
             reply = `**💬 Đàm thoại cùng Gemini:**\n\nTôi luôn ở đây để lắng nghe, trao đổi tri thức và chia sẻ cùng bạn mọi ý tưởng trong công việc và cuộc sống.`;
