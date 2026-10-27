@@ -25,8 +25,8 @@
   <!-- Favicon Najimez -->
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
-  <link rel="stylesheet" href="style.css?v=3.58.0">
-  <link rel="stylesheet" href="css/responsive.css?v=3.58.0">
+  <link rel="stylesheet" href="style.css?v=3.66.0">
+  <link rel="stylesheet" href="css/responsive.css?v=3.66.0">
 
   <!-- Style cốt lõi chống cache @import trên trình duyệt di động -->
   <style>
@@ -593,7 +593,11 @@
                 </button>
 
                 <button type="button" class="btn-tt-toggle-night" id="btnTtToggleNight" title="Bật/tắt thu gọn khung giờ ngủ (00:00 - 06:00)">
-                  <i class="fa-solid fa-moon"></i> <span id="ttToggleNightText">6h – 24h (Gọn)</span>
+                  <i class="fa-solid fa-sun" style="color: #fbbf24;"></i> <span id="ttToggleNightText">0h – 24h (Đầy đủ)</span>
+                </button>
+
+                <button type="button" class="btn-tt-scroll-nav" id="btnTtScrollToGrid" title="Cuộn xuống Thời khóa biểu tuần toàn màn hình">
+                  <i class="fa-solid fa-arrow-down"></i> <span>Xem TKB Tuần</span>
                 </button>
 
                 <button type="button" class="btn-add-event-primary" id="btnTtAddEvent">
@@ -1767,6 +1771,19 @@
             </div>
           </div>
 
+          <!-- Cấu hình nâng cao: Pollen Key VIP (Tùy chọn) -->
+          <div class="studio-field-group" style="margin-bottom: 8px;">
+            <div class="studio-field-label">
+              <span><i class="fa-solid fa-key"></i> Pollen Key VIP (Tùy chọn):</span>
+              <a href="https://enter.pollinations.ai" target="_blank" style="font-size: 0.72rem; color: #c084fc; text-decoration: underline;" title="Lấy key miễn phí">Lấy key miễn phí</a>
+            </div>
+            <div style="position: relative; display: flex; align-items: center;">
+              <input type="password" id="studioPollenKeyInput" class="studio-key-input"
+                placeholder="sk_... (Để trống nếu dùng mặc định)"
+                style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(168,85,247,0.25); border-radius: 8px; color: #f8fafc; font-size: 0.8rem; font-family: monospace;" />
+            </div>
+          </div>
+
           <!-- Nút bắt đầu tạo ảnh -->
           <button type="button" class="btn-studio-generate-main" id="btnStudioGenerate">
             <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -1840,11 +1857,11 @@
   <script src="js/todos.js?v=3.55.0"></script>
   <script src="js/event-theme.js?v=3.55.0"></script>
   <script src="js/calendar.js?v=3.55.0"></script>
-  <script src="js/timetable.js?v=3.58.1"></script>
-  <script src="js/timetable-timeline.js?v=3.58.4"></script>
+  <script src="js/timetable.js?v=3.66.0"></script>
+  <script src="js/timetable-timeline.js?v=3.66.0"></script>
   <script src="js/lucky-wheel.js?v=3.55.0"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
-  <script src="js/image-gen.js?v=3.61.1"></script>
+  <script src="js/image-gen.js?v=3.62.0"></script>
   <script src="js/copilot-image.js?v=3.60.1"></script>
   <script src="js/copilot.js?v=3.62.0"></script>
   <script src="js/stars.js?v=3.55.0"></script>

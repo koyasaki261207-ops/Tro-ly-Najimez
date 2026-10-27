@@ -5,8 +5,15 @@
 
 let timetableSelectedDate = new Date();
 let timetableRealtimeTimer = null;
-let timetableNightCollapsed = localStorage.getItem('najimez_tt_night_collapsed') !== '0'; // Mặc định thu gọn ban đêm
-let timetableScrollMode = localStorage.getItem('najimez_tt_scroll_mode') === '1'; // Chế độ cuộn thoải mái (56px/giờ)
+// Thiết lập mặc định chế độ 24 giờ vừa khít 1 màn hình theo yêu cầu người dùng
+if (localStorage.getItem('najimez_tt_default_24h') !== '2') {
+  localStorage.setItem('najimez_tt_default_24h', '2');
+  localStorage.setItem('najimez_tt_night_collapsed', '0');
+  localStorage.setItem('najimez_tt_scroll_mode', '0');
+}
+
+let timetableNightCollapsed = localStorage.getItem('najimez_tt_night_collapsed') === '1'; // Mặc định false = 24 giờ đầy đủ
+let timetableScrollMode = localStorage.getItem('najimez_tt_scroll_mode') === '1'; // Mặc định false = 1 Màn Hình (Fit-screen)
 
 /**
  * Tìm ngày Thứ Hai của tuần chứa ngày d (chuẩn ISO / Việt Nam)
@@ -169,7 +176,7 @@ function renderTimetableTab() {
   if (gridCard) {
     gridCard.classList.toggle('mode-scroll', timetableScrollMode);
     gridCard.style.setProperty('--tt-active-hours', timetableNightCollapsed ? 18 : 24);
-    gridCard.style.setProperty('--tt-slot-height', '56px');
+    gridCard.style.setProperty('--tt-slot-height', '52px');
   }
 
   // 2. Lấy dữ liệu sự kiện từ Storage
@@ -263,17 +270,28 @@ function renderTimetableTab() {
 
       headersHtml += `
         <div class="tt-col-header-cell ${day.isWeekend ? 'weekend' : ''} ${day.isToday ? 'is-today' : ''}" data-date="${day.dateKey}">
-          <span class="tt-day-name">${day.shortName}</span>
+          <div class="tt-col-header-top">
+            <span class="tt-day-name">${day.shortName}</span>
+            ${day.isToday ? `<span class="tt-today-pill">Hôm nay</span>` : ''}
+          </div>
           <div class="tt-day-date-wrap">
             <span class="tt-day-number">${day.dayNum}</span>
             ${lunarStr ? `<span class="tt-day-lunar">${lunarStr}</span>` : ''}
           </div>
-          ${day.isToday ? `<span class="tt-today-pill">Hôm nay</span>` : ''}
         </div>
       `;
     });
 
     colHeadersContainer.innerHTML = headersHtml;
+
+    const timeCorner = colHeadersContainer.querySelector('.tt-time-corner');
+    if (timeCorner) {
+      timeCorner.title = 'Bấm để cuộn lên trên cùng / Timeline Ngày';
+      timeCorner.addEventListener('click', () => {
+        const layout = document.querySelector('.timetable-workspace-layout');
+        if (layout) layout.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    }
 
     colHeadersContainer.querySelectorAll('.tt-col-header-cell').forEach(cell => {
       cell.addEventListener('click', () => {
@@ -759,19 +777,24 @@ function initTimetable() {
   }
 
   // Nút cuộn nhanh giữa Timeline Ngày và Thời khóa biểu Tuần
-  const btnScrollToWeek = document.getElementById('btnTtScrollToWeek');
+  const btnScrollToWeek = document.getElementById('btnTtScrollToGrid') || document.getElementById('btnTtScrollToWeek');
   if (btnScrollToWeek) {
     btnScrollToWeek.addEventListener('click', () => {
       const section = document.getElementById('ttWeeklySection');
-      if (section) section.scrollIntoView({ behavior: 'smooth' });
+      const layout = document.querySelector('.timetable-workspace-layout');
+      if (section && layout) {
+        layout.scrollTo({ top: section.offsetTop - 8, behavior: 'smooth' });
+      } else if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
     });
   }
 
   const btnScrollToTimeline = document.getElementById('btnTtScrollToTimeline');
   if (btnScrollToTimeline) {
     btnScrollToTimeline.addEventListener('click', () => {
-      const card = document.getElementById('ttDayTimelineCard');
-      if (card) card.scrollIntoView({ behavior: 'smooth' });
+      const layout = document.querySelector('.timetable-workspace-layout');
+      if (layout) layout.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
 
@@ -786,7 +809,9 @@ function initTimetable() {
 
   // Render lần đầu
   renderTimetableTab();
-  setTimeout(autoScrollTimetableToCurrentTime, 120);
+  if (timetableScrollMode) {
+    setTimeout(autoScrollTimetableToCurrentTime, 120);
+  }
 }
 
 window.initTimetable = initTimetable;

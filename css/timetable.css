@@ -12,10 +12,11 @@
   gap: 14px;
   height: 100%;
   padding: 12px 18px 24px;
-  overflow-y: auto !important; /* THANH CUỘN BÊN NGOÀI */
+  overflow-y: auto !important; /* GIỮ NGUYÊN THANH CUỘN DỌC */
   overflow-x: hidden;
   box-sizing: border-box;
   scroll-behavior: smooth;
+  scroll-snap-type: y proximity;
   scrollbar-width: thin;
   scrollbar-color: rgba(168, 85, 247, 0.45) rgba(15, 23, 42, 0.6);
 }
@@ -189,22 +190,25 @@
 }
 
 /* ==========================================================================
-   2. KHUNG BAO TOÀN BỘ THỜI KHÓA BIỂU TUẦN 100% KHI CUỘN XUỐNG
+   2. KHUNG BAO TOÀN BỘ THỜI KHÓA BIỂU TUẦN 100% RỘNG TOÀN MÀN HÌNH (KHI CUỘN XUỐNG)
    ========================================================================== */
 .timetable-weekly-section {
+  flex-shrink: 0;
+  width: 100%;
+  height: calc(100vh - 92px);
+  min-height: calc(100vh - 92px);
+  max-height: calc(100vh - 92px);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  height: calc(100vh - 28px);
-  min-height: calc(100vh - 28px);
-  flex-shrink: 0;
   box-sizing: border-box;
+  overflow: hidden;
   scroll-snap-align: start;
 }
 
 .timetable-grid-card {
   flex: 1;
   min-height: 0;
+  height: 100%;
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -213,122 +217,74 @@
   display: flex;
   flex-direction: column;
   position: relative;
-}
-
-/* Thân lưới hiển thị các khung giờ (Không có cuộn dọc bên trong ở chế độ 1 Màn Hình - 100% Vừa Khít như hình 1) */
-.timetable-grid-body {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 60px repeat(7, 1fr);
-  position: relative;
-  height: 100%;
   overflow: hidden;
-  border-bottom-left-radius: var(--radius-md);
-  border-bottom-right-radius: var(--radius-md);
 }
 
-.tt-time-axis,
-.tt-days-columns {
-  height: 100% !important;
-  min-height: 0 !important;
-}
-
-.tt-hour-slot,
-.tt-time-axis-hour {
-  flex: 1 !important;
-  min-height: 0 !important;
-  height: auto !important;
-}
-
-/* Chế độ Cuộn Thoải Mái (Scroll Mode - 56px/giờ nếu bật) */
-.timetable-grid-card.mode-scroll .timetable-grid-body {
-  overflow-y: auto !important;
-  overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(168, 85, 247, 0.45) rgba(15, 23, 42, 0.6);
-}
-
-.timetable-grid-card.mode-scroll .timetable-grid-body::-webkit-scrollbar {
-  width: 6px;
-}
-
-.timetable-grid-card.mode-scroll .timetable-grid-body::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.6);
-}
-
-.timetable-grid-card.mode-scroll .timetable-grid-body::-webkit-scrollbar-thumb {
-  background: rgba(168, 85, 247, 0.45);
-  border-radius: 4px;
-}
-
-.timetable-grid-card.mode-scroll .timetable-grid-body::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 85, 247, 0.75);
-}
-
-.timetable-grid-card.mode-scroll .tt-time-axis,
-.timetable-grid-card.mode-scroll .tt-days-columns {
-  height: calc(var(--tt-slot-height, 56px) * var(--tt-active-hours, 18)) !important;
-  min-height: calc(var(--tt-slot-height, 56px) * var(--tt-active-hours, 18)) !important;
-}
-
-.timetable-grid-card.mode-scroll .tt-hour-slot,
-.timetable-grid-card.mode-scroll .tt-time-axis-hour {
-  height: var(--tt-slot-height, 56px) !important;
-  min-height: var(--tt-slot-height, 56px) !important;
-  flex: none !important;
-}
-
-/* Hàng tiêu đề 7 cột ngày (Ghim cố định ở đỉnh khi cuộn xem các khung giờ bên dưới) */
+/* Hàng tiêu đề 7 cột ngày */
 .timetable-col-headers {
   display: grid;
-  grid-template-columns: 60px repeat(7, 1fr);
+  grid-template-columns: 54px repeat(7, 1fr);
   background: rgba(10, 14, 32, 0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-color);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  margin-top: -1px;
-  position: sticky;
-  top: 0;
-  z-index: 50;
   flex-shrink: 0;
+  height: 46px;
+  min-height: 46px;
   user-select: none;
   border-top-left-radius: var(--radius-md);
   border-top-right-radius: var(--radius-md);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
+  box-sizing: border-box;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .tt-time-corner {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--text-muted);
+  gap: 2px;
   border-right: 1px solid var(--border-color);
   background: rgba(15, 23, 42, 0.85);
-  padding: 8px 2px;
+  padding: 4px 2px;
   border-top-left-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.tt-time-corner:hover {
+  background: rgba(168, 85, 247, 0.22);
+  color: #ffffff;
 }
 
 .tt-time-corner i {
   color: #c084fc;
-  font-size: 0.8rem;
+  font-size: 0.82rem;
+}
+
+.tt-time-corner span {
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .tt-col-header-cell {
-  padding: 6px 4px;
+  padding: 4px 4px;
   text-align: center;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1px;
+  gap: 2px;
   position: relative;
   transition: background 0.2s;
+  overflow: hidden;
 }
 
 .tt-col-header-cell:last-child {
@@ -355,25 +311,51 @@
   box-shadow: 0 0 10px #a855f7;
 }
 
+.tt-col-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  width: 100%;
+  line-height: 1;
+}
+
 .tt-day-name {
-  font-size: 0.76rem;
+  font-size: 0.74rem;
   font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
+  line-height: 1;
+}
+
+.tt-today-pill {
+  font-size: 0.54rem;
+  font-weight: 800;
+  color: #ffffff;
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  padding: 1px 5px;
+  height: 13px;
+  line-height: 13px;
+  border-radius: 6px;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.4);
+  white-space: nowrap;
+  letter-spacing: 0.2px;
 }
 
 .tt-day-date-wrap {
   display: flex;
   align-items: baseline;
-  gap: 5px;
+  justify-content: center;
+  gap: 4px;
+  line-height: 1;
 }
 
 .tt-day-number {
-  font-size: 1.05rem;
+  font-size: 0.98rem;
   font-weight: 800;
   color: #f8fafc;
-  line-height: 1.15;
+  line-height: 1;
 }
 
 .tt-col-header-cell.is-today .tt-day-number {
@@ -382,31 +364,22 @@
 }
 
 .tt-day-lunar {
-  font-size: 0.64rem;
+  font-size: 0.62rem;
   color: var(--text-dim);
   font-weight: 500;
-}
-
-.tt-today-pill {
-  font-size: 0.58rem;
-  font-weight: 800;
-  color: #ffffff;
-  background: linear-gradient(135deg, #a855f7, #6366f1);
-  padding: 1px 5px;
-  border-radius: 8px;
-  margin-top: 1px;
-  box-shadow: 0 0 8px rgba(168, 85, 247, 0.5);
+  line-height: 1;
 }
 
 /* Hàng sự kiện Cả Ngày (All-Day Row) */
 .timetable-allday-row {
   display: grid;
-  grid-template-columns: 60px repeat(7, 1fr);
+  grid-template-columns: 54px repeat(7, 1fr);
   border-bottom: 1px solid var(--border-color);
   background: rgba(30, 41, 59, 0.35);
   font-size: 0.72rem;
   z-index: 15;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 .tt-allday-label {
@@ -462,12 +435,15 @@
    ========================================================================== */
 .timetable-night-strip-row {
   display: grid;
-  grid-template-columns: 60px repeat(7, 1fr);
+  grid-template-columns: 54px repeat(7, 1fr);
   border-bottom: 1px dashed rgba(168, 85, 247, 0.3);
-  background: rgba(15, 23, 42, 0.85);
-  height: 28px;
+  background: rgba(15, 23, 42, 0.92);
+  height: 26px;
+  min-height: 26px;
   z-index: 14;
   flex-shrink: 0;
+  box-sizing: border-box;
+  align-items: center;
 }
 
 .tt-night-label {
@@ -481,6 +457,7 @@
   border-right: 1px solid var(--border-color);
   padding: 0 2px;
   user-select: none;
+  height: 100%;
 }
 
 .tt-night-label i {
@@ -498,9 +475,11 @@
   border-right: 1px solid rgba(255, 255, 255, 0.04);
   display: flex;
   align-items: center;
-  padding: 2px 4px;
+  padding: 2px 6px;
   gap: 4px;
   overflow: hidden;
+  height: 100%;
+  box-sizing: border-box;
   cursor: default;
 }
 
@@ -512,8 +491,10 @@
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  padding: 1px 6px;
-  border-radius: 10px;
+  padding: 0 6px;
+  height: 18px;
+  line-height: 18px;
+  border-radius: 9px;
   font-size: 0.64rem;
   font-weight: 700;
   color: #ffffff;
@@ -524,6 +505,7 @@
   border: 1px solid rgba(255, 255, 255, 0.2);
   cursor: pointer;
   transition: transform 0.15s;
+  box-sizing: border-box;
 }
 
 .tt-night-event-capsule:hover {
@@ -531,22 +513,27 @@
 }
 
 /* ==========================================================================
-   4. THÂN LƯỚI KHUNG GIỜ HOẠT ĐỘNG (CÓ THANH CUỘN RỘNG RÃI)
+   4. THÂN LƯỚI KHUNG GIỜ HOẠT ĐỘNG (100% VỪA KHÍT MÀN HÌNH CẢ 24 KHUNG GIỜ)
    ========================================================================== */
 .timetable-grid-body {
   flex: 1;
   min-height: 0;
-  display: grid;
-  grid-template-columns: 60px repeat(7, 1fr);
-  position: relative;
   height: 100%;
+  display: grid;
+  grid-template-columns: 54px repeat(7, 1fr);
+  position: relative;
+  overflow: hidden;
+  border-bottom-left-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-md);
 }
 
 /* Cột mốc giờ bên trái */
 .tt-time-axis {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
   border-right: 1px solid var(--border-color);
   background: rgba(15, 23, 42, 0.65);
   user-select: none;
@@ -554,20 +541,26 @@
 }
 
 .tt-time-axis-hour {
+  flex: 1 1 0px !important;
+  min-height: 0 !important;
+  height: 0 !important;
+  max-height: none !important;
+  overflow: hidden !important;
   position: relative;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  padding-top: 2px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   box-sizing: border-box;
 }
 
 .tt-time-label {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
+  line-height: 1;
   font-family: 'JetBrains Mono', monospace;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-muted);
+  user-select: none;
 }
 
 /* 7 Cột Ngày */
@@ -575,12 +568,16 @@
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   grid-column: 2 / -1;
-  height: 100%;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
   position: relative;
 }
 
 .tt-day-col {
-  height: 100%;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -599,11 +596,56 @@
 
 /* Ô giờ bên trong cột (đường kẻ lưới tĩnh) */
 .tt-hour-slot {
+  flex: 1 1 0px !important;
+  min-height: 0 !important;
+  height: 0 !important;
+  max-height: none !important;
+  overflow: hidden !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
   cursor: default;
   pointer-events: none;
   box-sizing: border-box;
+}
+
+/* Chế độ Cuộn Thoải Mái (Scroll Mode - nếu người dùng chủ động bật) */
+.timetable-grid-card.mode-scroll .timetable-grid-body {
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.45) rgba(15, 23, 42, 0.6);
+}
+
+.timetable-grid-card.mode-scroll .timetable-grid-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.timetable-grid-card.mode-scroll .timetable-grid-body::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.timetable-grid-card.mode-scroll .timetable-grid-body::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.45);
+  border-radius: 4px;
+}
+
+.timetable-grid-card.mode-scroll .timetable-grid-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.75);
+}
+
+.timetable-grid-card.mode-scroll .tt-time-axis,
+.timetable-grid-card.mode-scroll .tt-days-columns,
+.timetable-grid-card.mode-scroll .tt-day-col {
+  height: calc(var(--tt-slot-height, 50px) * var(--tt-active-hours, 24)) !important;
+  min-height: calc(var(--tt-slot-height, 50px) * var(--tt-active-hours, 24)) !important;
+  overflow: visible !important;
+}
+
+.timetable-grid-card.mode-scroll .tt-hour-slot,
+.timetable-grid-card.mode-scroll .tt-time-axis-hour {
+  flex: none !important;
+  height: var(--tt-slot-height, 50px) !important;
+  min-height: var(--tt-slot-height, 50px) !important;
 }
 
 /* ==========================================================================
@@ -612,7 +654,7 @@
 .tt-event-block {
   position: absolute;
   border-radius: 6px;
-  padding: 3px 6px;
+  padding: 2px 6px;
   overflow: hidden;
   cursor: pointer;
   z-index: 5;
@@ -620,12 +662,13 @@
   box-shadow: 0 3px 12px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  justify-content: center;
+  gap: 1px;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   user-select: none;
   box-sizing: border-box;
-  min-height: 22px;
+  min-height: 18px;
 }
 
 .tt-event-block:hover {
@@ -644,10 +687,10 @@
 }
 
 .tt-event-title {
-  font-size: 0.78rem;
-  font-weight: 800;
+  font-size: 0.74rem;
+  font-weight: 700;
   color: #ffffff;
-  line-height: 1.2;
+  line-height: 1.15;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

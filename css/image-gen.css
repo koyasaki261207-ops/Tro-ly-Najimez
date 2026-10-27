@@ -136,7 +136,55 @@
   border-radius: 999px;
   font-size: 0.7rem;
   font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
+
+.badge-style.fallback-badge {
+  background: rgba(16, 185, 129, 0.18);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+.image-gen-fallback-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: var(--radius-sm);
+  font-size: 0.76rem;
+  color: #a7f3d0;
+  margin-top: 4px;
+}
+
+.image-gen-fallback-banner button.btn-card-action-retry-ai {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(236, 72, 153, 0.35));
+  border: 1px solid rgba(168, 85, 247, 0.5);
+  color: #f3e8ff;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.image-gen-fallback-banner button.btn-card-action-retry-ai:hover {
+  background: linear-gradient(135deg, #a855f7, #ec4899);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.4);
+  transform: translateY(-1px);
+}
+
 
 .image-gen-quick-actions {
   display: flex;
