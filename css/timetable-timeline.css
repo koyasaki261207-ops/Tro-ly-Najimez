@@ -1,0 +1,712 @@
+/**
+ * css/timetable-timeline.css - Giao diện Thanh Timeline Chạy Ngang 24 Khung Giờ của Ngày
+ * Cyber Luxury Glassmorphism • Hiển thị 24 mốc giờ, sự kiện theo tỉ lệ %, kim thời gian thực.
+ */
+
+/* ==========================================================================
+   1. CARD CHỨA THANH TIMELINE 24 GIỜ
+   ========================================================================== */
+.timetable-day-timeline-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 6px 14px 8px;
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow-glass);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+  transition: all 0.25s ease;
+  user-select: none;
+  overflow: hidden;
+}
+
+.timetable-day-timeline-card:hover {
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(168, 85, 247, 0.12);
+}
+
+/* Khi thu gọn */
+.timetable-day-timeline-card.is-collapsed .tt-dtl-track-container,
+.timetable-day-timeline-card.is-collapsed .tt-dtl-allday-row {
+  display: none !important;
+}
+
+/* ==========================================================================
+   2. HEADER THANH TIMELINE 24 GIỜ
+   ========================================================================== */
+.tt-dtl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.tt-dtl-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.tt-dtl-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.22), rgba(168, 85, 247, 0.22));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.88rem;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+  flex-shrink: 0;
+}
+
+.tt-dtl-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.tt-dtl-title-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.tt-dtl-title {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.2px;
+}
+
+.tt-dtl-badge-today {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  padding: 1px 6px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.tt-dtl-events-count {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #c084fc;
+  background: rgba(168, 85, 247, 0.14);
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.tt-dtl-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+/* Bộ nút chọn nhanh 7 ngày trong tuần */
+.tt-dtl-days-picker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 3px 4px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.btn-dtl-day-pill {
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.18s ease;
+  user-select: none;
+}
+
+.btn-dtl-day-pill:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #f1f5f9;
+}
+
+.btn-dtl-day-pill.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.35), rgba(56, 189, 248, 0.35));
+  border-color: rgba(56, 189, 248, 0.45);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+.btn-dtl-day-pill.is-today .dtl-pill-name {
+  color: #38bdf8;
+}
+
+.btn-dtl-day-pill.weekend .dtl-pill-name {
+  color: #f43f5e;
+}
+
+.dtl-pill-num {
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+/* Cụm điều khiển bên phải header */
+.tt-dtl-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tt-dtl-live-clock {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.5px;
+}
+
+.tt-dtl-live-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px #34d399;
+  animation: dtlPulse 1.8s infinite;
+}
+
+@keyframes dtlPulse {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px #34d399; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+.btn-tt-dtl-add {
+  padding: 0 10px;
+  height: 30px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.25));
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-tt-dtl-add:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.4), rgba(168, 85, 247, 0.4));
+  color: #ffffff;
+  border-color: #c084fc;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.35);
+}
+
+.btn-tt-dtl-toggle-night {
+  padding: 0 9px;
+  height: 30px;
+  border-radius: 7px;
+  background: rgba(30, 27, 75, 0.45);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #c084fc;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-tt-dtl-toggle-night:hover {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: #c084fc;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.35);
+}
+
+.btn-tt-dtl-toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-tt-dtl-toggle:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ==========================================================================
+   3. HÀNG SỰ KIỆN CẢ NGÀY (NẾU CÓ)
+   ========================================================================== */
+.tt-dtl-allday-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 7px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  overflow-x: auto;
+}
+
+.tt-dtl-allday-label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #fbbf24;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tt-dtl-allday-pill {
+  padding: 2px 8px;
+  border-radius: 5px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.tt-dtl-allday-pill:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.15);
+}
+
+/* ==========================================================================
+   4. THÂN TIMELINE 24 KHUNG GIỜ (24-HOUR TRACK)
+   ========================================================================== */
+.tt-dtl-track-container {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+  overflow-x: clip;
+  overflow-y: visible;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  padding-top: 14px;
+  padding-bottom: 2px;
+}
+
+.tt-dtl-track-container::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.tt-dtl-track-wrapper {
+  width: 100%;
+  min-width: 0 !important; /* Vừa vặn 100% bề ngang, không ép tối thiểu 860px */
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  position: relative;
+  padding-right: 14px; /* Dành khoảng trống cho mốc 24:00 ở ngoài cùng không bị tràn */
+  box-sizing: border-box;
+}
+
+/* Hàng mốc giờ 00:00 -> 23:00 và 24:00 (Mặc định 24 cột hoặc 19 cột khi thu gọn ban đêm) */
+.tt-dtl-hours-axis {
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  position: relative;
+  height: 18px;
+  user-select: none;
+}
+
+.tt-dtl-hours-axis.is-night-collapsed {
+  grid-template-columns: repeat(19, 1fr);
+}
+
+.tt-dtl-hour-mark {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  font-size: 0.63rem;
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: -0.2px;
+}
+
+.tt-dtl-hour-mark.is-night-mark {
+  color: #c084fc;
+  font-weight: 700;
+}
+
+.tt-dtl-hour-mark.is-night-mark span {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #c084fc;
+}
+
+.tt-dtl-hour-mark.is-night-mark::before {
+  height: 7px;
+  background: rgba(192, 132, 252, 0.6);
+}
+
+.tt-dtl-hour-mark::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 0;
+  width: 1px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.tt-dtl-hour-mark.is-major-hour {
+  color: #94a3b8;
+  font-weight: 700;
+}
+
+.tt-dtl-hour-mark.is-major-hour::before {
+  height: 7px;
+  background: rgba(56, 189, 248, 0.45);
+}
+
+/* Mốc 24:00 ở góc phải cùng */
+.tt-dtl-hour-end-mark {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 0.63rem;
+  font-family: var(--font-mono, monospace);
+  font-weight: 600;
+  color: #64748b;
+  transform: translateX(50%);
+}
+
+.tt-dtl-hour-end-mark::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 50%;
+  width: 1px;
+  height: 7px;
+  background: rgba(56, 189, 248, 0.45);
+}
+
+/* Khung đường chạy timeline 24 giờ */
+.tt-dtl-track-body {
+  position: relative;
+  height: 38px;
+  background: rgba(10, 15, 30, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow: visible;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+/* Các ô giờ nền (Slots Background) */
+.tt-dtl-slots-layer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(24, 1fr);
+  z-index: 1;
+}
+
+.tt-dtl-slots-layer.is-night-collapsed {
+  grid-template-columns: repeat(19, 1fr);
+}
+
+.tt-dtl-slot {
+  position: relative;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: default;
+  transition: background 0.18s ease;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 2px;
+}
+
+.tt-dtl-slot:last-child {
+  border-right: none;
+}
+
+.tt-dtl-slot:hover {
+  background: rgba(56, 189, 248, 0.06);
+}
+
+/* Ô thu gọn ban đêm 0h-6h */
+.tt-dtl-slot.is-night-collapsed {
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.55), rgba(15, 23, 42, 0.45));
+  border-right: 1px dashed rgba(168, 85, 247, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+}
+
+.tt-dtl-slot.is-night-collapsed:hover {
+  background: linear-gradient(135deg, rgba(88, 28, 135, 0.25), rgba(168, 85, 247, 0.12));
+  border-right-color: rgba(168, 85, 247, 0.6);
+}
+
+.tt-dtl-night-collapsed-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #c084fc;
+  font-size: 0.65rem;
+  font-weight: 700;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+.tt-dtl-night-moon-icon {
+  font-size: 0.62rem;
+  color: #c084fc;
+  filter: drop-shadow(0 0 4px rgba(192, 132, 252, 0.6));
+}
+
+.tt-dtl-night-collapsed-tag {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.62rem;
+}
+
+/* Phân chia thời kỳ trong ngày */
+.tt-dtl-slot.is-night {
+  background: rgba(30, 27, 75, 0.22);
+}
+
+.tt-dtl-slot.is-morning {
+  background: rgba(15, 23, 42, 0.1);
+}
+
+.tt-dtl-slot.is-afternoon {
+  background: rgba(14, 30, 50, 0.18);
+}
+
+.tt-dtl-slot.is-evening {
+  background: rgba(40, 20, 60, 0.18);
+}
+
+.tt-dtl-period-icon {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 0.58rem;
+  opacity: 0.35;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* Dải tiến độ thời gian đã qua trong ngày (Past Progress Fill) */
+.tt-dtl-past-progress {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  background: linear-gradient(90deg, rgba(99, 102, 241, 0.06) 0%, rgba(56, 189, 248, 0.1) 85%, rgba(244, 63, 94, 0.16) 100%);
+  border-right: 1px solid rgba(244, 63, 94, 0.4);
+  pointer-events: none;
+  z-index: 2;
+  transition: width 0.3s ease;
+}
+
+/* Lớp chứa các thẻ sự kiện ngang */
+.tt-dtl-events-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.tt-dtl-event-capsule {
+  position: absolute;
+  pointer-events: auto;
+  border-radius: 6px;
+  padding: 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.tt-dtl-event-capsule:hover {
+  transform: translateY(-1.5px) scale(1.01);
+  filter: brightness(1.2);
+  z-index: 10;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+}
+
+.tt-dtl-event-capsule.is-night-event {
+  border-style: dashed !important;
+  padding: 0 4px;
+}
+
+.tt-dtl-event-capsule.is-night-event .tt-dtl-event-title {
+  font-size: 0.68rem;
+}
+
+.tt-dtl-event-icon {
+  font-size: 0.68rem;
+  flex-shrink: 0;
+}
+
+.tt-dtl-event-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tt-dtl-event-time {
+  font-size: 0.65rem;
+  font-weight: 600;
+  opacity: 0.85;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: var(--font-mono, monospace);
+  flex-shrink: 0;
+}
+
+/* Vạch kim thời gian thực hiện tại (Realtime needle running horizontally) */
+.tt-dtl-now-needle {
+  position: absolute;
+  top: -10px;
+  bottom: 0;
+  width: 2px;
+  background: #f43f5e;
+  box-shadow: 0 0 10px #f43f5e, 0 0 16px rgba(244, 63, 94, 0.6);
+  z-index: 15;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: left 0.4s ease;
+}
+
+.tt-dtl-now-badge {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  background: #f43f5e;
+  color: #ffffff;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.6);
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+  animation: dtlNeedlePulse 2s infinite ease-in-out;
+}
+
+@keyframes dtlNeedlePulse {
+  0% { box-shadow: 0 0 6px #f43f5e; }
+  50% { box-shadow: 0 0 14px #f43f5e, 0 0 20px rgba(244, 63, 94, 0.5); }
+  100% { box-shadow: 0 0 6px #f43f5e; }
+}
+
+.tt-dtl-now-needle::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1.5px solid #f43f5e;
+  transform: translate(-50%, -50%);
+  left: 50%;
+  box-shadow: 0 0 6px #f43f5e;
+}
+
+/* ==========================================================================
+   5. HIỆU ỨNG ĐỒNG BỘ CỘT NGÀY ĐANG ĐƯỢC CHỌN TRONG LƯỚI THỜI KHÓA BIỂU
+   ========================================================================== */
+.tt-col-header-cell.is-selected-day {
+  background: linear-gradient(180deg, rgba(56, 189, 248, 0.18), rgba(56, 189, 248, 0.04)) !important;
+  border-left: 1px solid rgba(56, 189, 248, 0.35);
+  border-right: 1px solid rgba(56, 189, 248, 0.35) !important;
+}
+
+.tt-col-header-cell.is-selected-day::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background: #38bdf8;
+  box-shadow: 0 0 8px #38bdf8;
+}
+
+.tt-day-col.is-selected-day {
+  background: rgba(56, 189, 248, 0.025);
+}
+
+/* ==========================================================================
+   6. RESPONSIVE
+   ========================================================================== */
+@media (max-width: 900px) {
+  .tt-dtl-days-picker {
+    order: 3;
+    width: 100%;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+  .tt-dtl-header-left {
+    min-width: auto;
+  }
+}

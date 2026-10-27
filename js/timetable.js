@@ -161,7 +161,7 @@ function renderTimetableTab() {
       toggleViewBtn.title = 'Đang ở chế độ Cuộn Thoải Mái (56px/giờ). Bấm để chuyển về Vừa Khít 1 Màn Hình';
     } else {
       toggleViewBtn.innerHTML = '<i class="fa-solid fa-table-cells" style="color: #a855f7;"></i> <span id="ttToggleViewModeText">1 Màn Hình</span>';
-      toggleViewBtn.title = 'Đang ở chế độ Vừa Khít 1 Màn Hình. Bấm để chuyển sang Cuộn Thoải Mái';
+      toggleViewBtn.title = 'Đang ở chế độ Vừa Khít 1 Màn Hình (100% không cuộn bên trong). Bấm để chuyển sang Cuộn Thoải Mái';
     }
   }
 
@@ -274,6 +274,15 @@ function renderTimetableTab() {
     });
 
     colHeadersContainer.innerHTML = headersHtml;
+
+    colHeadersContainer.querySelectorAll('.tt-col-header-cell').forEach(cell => {
+      cell.addEventListener('click', () => {
+        const dKey = cell.dataset.date;
+        if (dKey && typeof setTimelineActiveDateKey === 'function') {
+          setTimelineActiveDateKey(dKey);
+        }
+      });
+    });
   }
 
   // 4. Render hàng sự kiện Cả Ngày (All-Day Row) nếu có
@@ -536,8 +545,21 @@ function renderTimetableTab() {
         colEl.appendChild(timeLineEl);
       }
 
+      colEl.addEventListener('click', (e) => {
+        if (!e.target.closest('.tt-event-block')) {
+          if (typeof setTimelineActiveDateKey === 'function') {
+            setTimelineActiveDateKey(day.dateKey);
+          }
+        }
+      });
+
       daysColumnsContainer.appendChild(colEl);
     });
+  }
+
+  // 8. Render Thanh Timeline Chạy Ngang 24 Khung Giờ của Ngày
+  if (typeof renderTimetableDailyTimeline === 'function') {
+    renderTimetableDailyTimeline(null, weekDays);
   }
 }
 
@@ -636,6 +658,10 @@ function updateRealtimeIndicator() {
   } else {
     indicator.style.display = 'none';
   }
+
+  if (typeof updateTimelineRealtimeNeedle === 'function') {
+    updateTimelineRealtimeNeedle();
+  }
 }
 
 /**
@@ -644,7 +670,7 @@ function updateRealtimeIndicator() {
 function autoScrollTimetableToCurrentTime() {
   const gridBody = document.getElementById('ttGridBody');
   if (!gridBody) return;
-  if (!timetableScrollMode) return;
+  if (!timetableScrollMode) return; // Chế độ 1 Màn Hình đã hiển thị trọn vẹn 100% không cần cuộn bên trong
 
   const indicator = document.getElementById('ttCurrentTimeIndicator');
   if (indicator && indicator.offsetParent !== null) {
@@ -694,10 +720,11 @@ function initTimetable() {
   if (btnCurrent) {
     btnCurrent.addEventListener('click', () => {
       timetableSelectedDate = new Date();
-      renderTimetableTab();
-      if (timetableScrollMode) {
-        setTimeout(autoScrollTimetableToCurrentTime, 80);
+      if (typeof getFormattedDateKey === 'function' && typeof setTimelineActiveDateKey === 'function') {
+        setTimelineActiveDateKey(getFormattedDateKey(new Date()));
       }
+      renderTimetableTab();
+      setTimeout(autoScrollTimetableToCurrentTime, 80);
     });
   }
 
@@ -731,17 +758,44 @@ function initTimetable() {
     });
   }
 
+  // Nút cuộn nhanh giữa Timeline Ngày và Thời khóa biểu Tuần
+  const btnScrollToWeek = document.getElementById('btnTtScrollToWeek');
+  if (btnScrollToWeek) {
+    btnScrollToWeek.addEventListener('click', () => {
+      const section = document.getElementById('ttWeeklySection');
+      if (section) section.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
+  const btnScrollToTimeline = document.getElementById('btnTtScrollToTimeline');
+  if (btnScrollToTimeline) {
+    btnScrollToTimeline.addEventListener('click', () => {
+      const card = document.getElementById('ttDayTimelineCard');
+      if (card) card.scrollIntoView({ behavior: 'smooth' });
+    });
+  }
+
   // Khởi động đồng hồ thời gian thực mỗi 60 giây
   if (timetableRealtimeTimer) clearInterval(timetableRealtimeTimer);
   timetableRealtimeTimer = setInterval(updateRealtimeIndicator, 60000);
 
+  // Khởi tạo thanh timeline 24 giờ của ngày
+  if (typeof initTimetableDailyTimeline === 'function') {
+    initTimetableDailyTimeline();
+  }
+
   // Render lần đầu
   renderTimetableTab();
-  if (timetableScrollMode) {
-    setTimeout(autoScrollTimetableToCurrentTime, 120);
-  }
+  setTimeout(autoScrollTimetableToCurrentTime, 120);
 }
 
 window.initTimetable = initTimetable;
 window.renderTimetableTab = renderTimetableTab;
 window.autoScrollTimetableToCurrentTime = autoScrollTimetableToCurrentTime;
+window.getTimetableNightCollapsed = function() {
+  return timetableNightCollapsed;
+};
+window.setTimetableNightCollapsed = function(val) {
+  timetableNightCollapsed = !!val;
+  localStorage.setItem('najimez_tt_night_collapsed', timetableNightCollapsed ? '1' : '0');
+};

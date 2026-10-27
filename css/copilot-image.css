@@ -1,0 +1,360 @@
+/**
+ * css/copilot-image.css - Phong cách Cyber Luxury cho tính năng gửi & xem ảnh Najimez Copilot
+ */
+
+/* 1. Nút đính kèm ảnh trên thanh nhập lệnh */
+.btn-attach-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  font-size: 1.05rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+
+.btn-attach-image:hover {
+  background: rgba(168, 85, 247, 0.3);
+  border-color: #c084fc;
+  color: #ffffff;
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 16px rgba(168, 85, 247, 0.4);
+}
+
+.btn-attach-image:active {
+  transform: translateY(0) scale(0.95);
+}
+
+/* Khi đang có ảnh được đính kèm */
+.btn-attach-image.has-image {
+  background: linear-gradient(135deg, #a855f7, #ec4899) !important;
+  border-color: #f472b6 !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 16px rgba(236, 72, 153, 0.6) !important;
+  animation: pulseAttachImg 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseAttachImg {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(236, 72, 153, 0.5); }
+  50% { transform: scale(1.06); box-shadow: 0 0 0 5px rgba(236, 72, 153, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(236, 72, 153, 0); }
+}
+
+/* 2. Khay xem trước ảnh đính kèm (Preview Tray) */
+.copilot-attach-preview-tray {
+  display: flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 14px;
+  padding: 8px 12px;
+  margin-bottom: 2px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(168, 85, 247, 0.15);
+  max-width: fit-content;
+  animation: slideUpPreviewTray 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpPreviewTray {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.copilot-attach-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.copilot-attach-thumb {
+  width: 46px;
+  height: 46px;
+  border-radius: 9px;
+  object-fit: cover;
+  border: 1.5px solid rgba(192, 132, 252, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 0.2s, border-color 0.2s;
+  background: #0f172a;
+}
+
+.copilot-attach-thumb:hover {
+  transform: scale(1.06);
+  border-color: #c084fc;
+}
+
+.copilot-attach-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 120px;
+  max-width: 220px;
+}
+
+.attach-filename {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attach-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: #a1a1aa;
+}
+
+.attach-badge {
+  color: #34d399;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.15);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.btn-remove-attach-img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.18);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  color: #f87171;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-left: 6px;
+}
+
+.btn-remove-attach-img:hover {
+  background: #ef4444;
+  color: #ffffff;
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+/* 3. Hiệu ứng Kéo & Thả (Drag & Drop) trên khung chat */
+.copilot-container.copilot-drag-over {
+  position: relative;
+}
+
+.copilot-container.copilot-drag-over::after {
+  content: '📸 Thả hình ảnh vào đây để gửi cho Najimez';
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 2px dashed #a855f7;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #e9d5ff;
+  font-size: 1.15rem;
+  font-weight: 700;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: inset 0 0 35px rgba(168, 85, 247, 0.35);
+  pointer-events: none;
+  animation: pulseDragDashed 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseDragDashed {
+  0% { border-color: #a855f7; box-shadow: inset 0 0 25px rgba(168, 85, 247, 0.25); }
+  50% { border-color: #ec4899; box-shadow: inset 0 0 45px rgba(236, 72, 153, 0.4); }
+  100% { border-color: #a855f7; box-shadow: inset 0 0 25px rgba(168, 85, 247, 0.25); }
+}
+
+/* 4. Hiển thị ảnh của người dùng trong bong bóng tin nhắn (User Message Bubble) */
+.chat-msg.user .msg-text-bubble.bubble-with-image {
+  background: rgba(15, 23, 42, 0.88) !important;
+  border: 1px solid rgba(139, 92, 246, 0.45) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), 0 0 12px rgba(139, 92, 246, 0.2) !important;
+  padding: 4px !important;
+  border-radius: 14px !important;
+  max-width: fit-content !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  transition: all 0.2s ease;
+}
+
+.chat-msg.user .msg-text-bubble.bubble-with-image:hover {
+  border-color: rgba(168, 85, 247, 0.6) !important;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 16px rgba(168, 85, 247, 0.3) !important;
+}
+
+.chat-msg.user .msg-text-bubble.bubble-with-image .user-msg-text {
+  margin: 6px 10px 4px !important;
+  color: #f1f5f9 !important;
+  font-size: 0.92rem !important;
+  line-height: 1.45 !important;
+  word-break: break-word;
+}
+
+.user-attached-img-wrap {
+  margin-bottom: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  max-width: 460px;
+  border: none;
+  background: #020617;
+  display: flex;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+}
+
+.user-attached-img {
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  display: block;
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  border-radius: 10px;
+}
+
+.user-attached-img:hover {
+  transform: scale(1.015);
+  filter: brightness(1.06);
+}
+
+/* 5. Modal xem ảnh phóng to sắc nét toàn màn hình (Lightbox Modal) */
+.copilot-img-lightbox-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 16, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 9999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.copilot-img-lightbox-modal.active {
+  display: flex;
+  animation: fadeInModal 0.2s ease-out;
+}
+
+.lightbox-content-box {
+  position: relative;
+  max-width: 92vw;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(168, 85, 247, 0.2);
+}
+
+.lightbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(10, 15, 30, 0.8);
+}
+
+.lightbox-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lightbox-title i {
+  color: #c084fc;
+}
+
+.lightbox-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-lightbox-action {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btn-lightbox-action:hover {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: #c084fc;
+  color: #ffffff;
+}
+
+.btn-lightbox-close {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-lightbox-close:hover {
+  background: #ef4444;
+  color: #ffffff;
+  transform: rotate(90deg);
+}
+
+.lightbox-img-wrapper {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  max-height: calc(90vh - 70px);
+}
+
+.lightbox-img-wrapper img {
+  max-width: 100%;
+  max-height: calc(85vh - 70px);
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}

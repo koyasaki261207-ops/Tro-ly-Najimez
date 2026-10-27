@@ -9,11 +9,32 @@
 .timetable-workspace-layout {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
   height: 100%;
-  padding: 12px 18px 16px;
-  overflow: hidden;
+  padding: 12px 18px 24px;
+  overflow-y: auto !important; /* THANH CUỘN BÊN NGOÀI */
+  overflow-x: hidden;
   box-sizing: border-box;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.45) rgba(15, 23, 42, 0.6);
+}
+
+.timetable-workspace-layout::-webkit-scrollbar {
+  width: 7px;
+}
+
+.timetable-workspace-layout::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.timetable-workspace-layout::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.45);
+  border-radius: 4px;
+}
+
+.timetable-workspace-layout::-webkit-scrollbar-thumb:hover {
+  background: rgba(168, 85, 247, 0.75);
 }
 
 /* Header điều khiển tuần và thông số */
@@ -142,12 +163,48 @@
   box-shadow: 0 0 12px rgba(168, 85, 247, 0.3);
 }
 
+/* Nút cuộn nhanh giữa Timeline Ngày và Thời khóa biểu Tuần */
+.btn-tt-scroll-nav {
+  padding: 0 10px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #c084fc;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.btn-tt-scroll-nav:hover {
+  background: rgba(168, 85, 247, 0.2);
+  border-color: #a855f7;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.35);
+}
+
 /* ==========================================================================
-   2. KHUNG LƯỚI VỪA KHÍT 1 MÀN HÌNH (NO SCROLL GRID) & CHẾ ĐỘ CUỘN
+   2. KHUNG BAO TOÀN BỘ THỜI KHÓA BIỂU TUẦN 100% KHI CUỘN XUỐNG
    ========================================================================== */
+.timetable-weekly-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: calc(100vh - 28px);
+  min-height: calc(100vh - 28px);
+  flex-shrink: 0;
+  box-sizing: border-box;
+  scroll-snap-align: start;
+}
+
 .timetable-grid-card {
   flex: 1;
-  min-height: 0; /* Quan trọng để flex child không tràn quá 100% màn hình */
+  min-height: 0;
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -159,7 +216,31 @@
   position: relative;
 }
 
-/* Chế độ Cuộn Thoải Mái (Scroll Mode - 56px/giờ) */
+/* Thân lưới hiển thị các khung giờ (Không có cuộn dọc bên trong ở chế độ 1 Màn Hình - 100% Vừa Khít như hình 1) */
+.timetable-grid-body {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+}
+
+.tt-time-axis,
+.tt-days-columns {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
+.tt-hour-slot,
+.tt-time-axis-hour {
+  flex: 1 !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+/* Chế độ Cuộn Thoải Mái (Scroll Mode - 56px/giờ nếu bật) */
 .timetable-grid-card.mode-scroll .timetable-grid-body {
   overflow-y: auto !important;
   overflow-x: hidden;
@@ -438,7 +519,7 @@
 }
 
 /* ==========================================================================
-   4. THÂN LƯỚI KHUNG GIỜ HOẠT ĐỘNG (100% CHIỀU CAO - KHÔNG CUỘN)
+   4. THÂN LƯỚI KHUNG GIỜ HOẠT ĐỘNG (CÓ THANH CUỘN RỘNG RÃI)
    ========================================================================== */
 .timetable-grid-body {
   flex: 1;
@@ -447,7 +528,6 @@
   grid-template-columns: 60px repeat(7, 1fr);
   position: relative;
   height: 100%;
-  overflow: hidden; /* Không có cuộn dọc, vừa khít trọn vẹn màn hình */
 }
 
 /* Cột mốc giờ bên trái */
@@ -462,14 +542,13 @@
 }
 
 .tt-time-axis-hour {
-  flex: 1;
-  min-height: 0;
   position: relative;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding-top: 1px;
+  padding-top: 2px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  box-sizing: border-box;
 }
 
 .tt-time-label {
@@ -506,14 +585,13 @@
   background: rgba(168, 85, 247, 0.035);
 }
 
-/* Ô giờ bên trong cột (chia đều bằng flex - chỉ làm đường kẻ lưới tĩnh) */
+/* Ô giờ bên trong cột (đường kẻ lưới tĩnh) */
 .tt-hour-slot {
-  flex: 1;
-  min-height: 0;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;
   cursor: default;
   pointer-events: none;
+  box-sizing: border-box;
 }
 
 /* ==========================================================================

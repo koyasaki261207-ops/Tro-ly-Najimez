@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   try {
+    if (typeof initCopilotImageAttachment === 'function') initCopilotImageAttachment();
     initChatEngine();
   } catch (err) {
     console.error('Lỗi khởi tạo Chat Engine:', err);

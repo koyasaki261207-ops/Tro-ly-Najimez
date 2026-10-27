@@ -93,14 +93,6 @@
           <span>Trợ Lý Najimez</span>
           <span class="pill-badge">AI</span>
         </button>
-        <button class="nav-item" data-tab="tab-finance">
-          <i class="fa-solid fa-wallet"></i>
-          <span>Tài Chính & Sổ Nợ</span>
-        </button>
-        <button class="nav-item" data-tab="tab-todos">
-          <i class="fa-solid fa-calendar-check"></i>
-          <span>Lịch Trình & To-Do</span>
-        </button>
         <button class="nav-item" data-tab="tab-calendar">
           <i class="fa-solid fa-calendar-days"></i>
           <span>Lịch &amp; Sự Kiện</span>
@@ -108,6 +100,14 @@
         <button class="nav-item" data-tab="tab-timetable">
           <i class="fa-solid fa-calendar-week"></i>
           <span>Thời Khóa Biểu</span>
+        </button>
+        <button class="nav-item" data-tab="tab-finance">
+          <i class="fa-solid fa-wallet"></i>
+          <span>Tài Chính & Sổ Nợ</span>
+        </button>
+        <button class="nav-item" data-tab="tab-todos">
+          <i class="fa-solid fa-calendar-check"></i>
+          <span>Lịch Trình & To-Do</span>
         </button>
         <button class="nav-item" data-tab="tab-copilot"
           data-quick-prompt="Hỏi đáp và giải bài tập Toán, Lý, Hóa, Lập trình">
@@ -237,7 +237,25 @@
 
             <!-- Khung nhập lệnh thông minh ở đáy -->
             <div class="copilot-input-bar">
+              <!-- Khay xem trước ảnh đính kèm trước khi gửi -->
+              <div class="copilot-attach-preview-tray" id="copilotAttachPreviewTray" style="display: none;">
+                <div class="copilot-attach-preview-item">
+                  <img id="copilotAttachPreviewImg" src="" alt="Ảnh đính kèm" class="copilot-attach-thumb" title="Nhấp để phóng to ảnh" />
+                  <div class="copilot-attach-info">
+                    <span class="attach-filename" id="copilotAttachFileName">anh-dinh-kem.jpg</span>
+                    <div class="attach-meta">
+                      <span class="attach-badge">Ảnh sẵn sàng</span>
+                      <span class="attach-filesize" id="copilotAttachFileSize">120 KB</span>
+                    </div>
+                  </div>
+                  <button type="button" class="btn-remove-attach-img" id="btnRemoveCopilotAttachImg" title="Bỏ ảnh này">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                </div>
+              </div>
+
               <form id="copilotForm" class="copilot-form" autocomplete="off">
+                <input type="file" id="copilotFileInput" accept="image/*" style="display: none;" />
                 <button type="button" class="btn-voice-settings" id="btnOpenVoiceSettings"
                   title="Cài đặt giọng đọc & âm thanh Najimez">
                   <i class="fa-solid fa-sliders"></i>
@@ -246,9 +264,13 @@
                   title="Nhấn để nói (Chuyển giọng nói thành văn bản tiếng Việt)">
                   <i class="fa-solid fa-microphone"></i>
                 </button>
+                <button type="button" class="btn-attach-image" id="btnCopilotAttachImg"
+                  title="Gửi hình ảnh cho Najimez (chọn ảnh, chụp ảnh hoặc dán Ctrl+V)">
+                  <i class="fa-regular fa-image"></i>
+                </button>
                 <div class="input-inner-wrap">
                   <input type="text" id="copilotInput"
-                    placeholder="Nói hoặc gõ với Najimez: trò chuyện, hỏi chức năng, ghi thu chi..."
+                    placeholder="Nói hoặc gõ với Najimez: trò chuyện, hỏi bài, gửi ảnh, ghi thu chi..."
                     autocomplete="off" />
                 </div>
                 <button type="submit" class="btn-send-cmd" id="btnSendCmd" title="Gửi lệnh">
@@ -533,7 +555,7 @@
              ================================================================= -->
         <section class="tab-pane" id="tab-timetable">
           <div class="timetable-workspace-layout">
-            <!-- Header điều khiển tuần và thông số -->
+            <!-- 1. HEADER ĐIỀU KHIỂN TUẦN VÀ THÔNG SỐ (HÀNG 1) -->
             <div class="timetable-header-card">
               <div class="tt-header-left">
                 <div class="tt-header-icon">
@@ -572,37 +594,94 @@
               </div>
             </div>
 
-            <!-- Khung Lưới Thời Gian Vừa Khít 1 Màn Hình -->
-            <div class="timetable-grid-card">
-              <!-- Hàng tiêu đề Thứ & Ngày -->
-              <div class="timetable-col-headers" id="ttColHeaders">
-                <!-- Rendered by js/timetable.js -->
-              </div>
-
-              <!-- Hàng sự kiện Cả ngày nếu có -->
-              <div class="timetable-allday-row" id="ttAllDayRow" style="display: none;">
-                <div class="tt-allday-label">Cả ngày</div>
-                <div class="tt-allday-cols" id="ttAllDayCols"></div>
-              </div>
-
-              <!-- Hàng thu gọn ban đêm (00:00 - 06:00) -->
-              <div class="timetable-night-strip-row" id="ttNightStripRow">
-                <div class="tt-night-label" title="Khung giờ nghỉ ngơi (00:00 - 06:00)">
-                  <i class="fa-solid fa-moon"></i>
-                  <span>0h - 6h</span>
+            <!-- 2. THANH TIMELINE CHẠY NGANG 24 KHUNG GIỜ CỦA NGÀY (HÀNG 2) -->
+            <div class="timetable-day-timeline-card" id="ttDayTimelineCard">
+              <div class="tt-dtl-header">
+                <div class="tt-dtl-header-left">
+                  <div class="tt-dtl-icon">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                  </div>
+                  <div class="tt-dtl-info">
+                    <div class="tt-dtl-title-row">
+                      <span class="tt-dtl-title" id="ttDtlDateTitle">Hôm nay</span>
+                      <span class="tt-dtl-badge-today" id="ttDtlTodayBadge">Hôm nay</span>
+                      <span class="tt-dtl-events-count" id="ttDtlEventsCount">0 sự kiện</span>
+                    </div>
+                    <div class="tt-dtl-sub" id="ttDtlDateSub">Dòng thời gian 24 giờ</div>
+                  </div>
                 </div>
-                <div class="tt-night-cols" id="ttNightCols">
-                  <!-- 7 ô đêm T2 -> CN chứa capsule sự kiện đêm nếu có -->
+
+                <div class="tt-dtl-header-right">
+                  <button type="button" class="btn-tt-dtl-toggle" id="btnTtDtlToggle" title="Thu gọn / Mở rộng thanh timeline 24h">
+                    <i class="fa-solid fa-chevron-up"></i>
+                  </button>
                 </div>
               </div>
 
-              <!-- Thân lưới hiển thị các khung giờ (100% chiều cao, không cuộn dọc) -->
-              <div class="timetable-grid-body" id="ttGridBody">
-                <!-- Cột bên trái: Các mốc giờ -->
-                <div class="tt-time-axis" id="ttTimeAxis"></div>
+              <!-- Hàng sự kiện Cả Ngày nếu có -->
+              <div class="tt-dtl-allday-row" id="ttDtlAllDayRow" style="display: none;"></div>
 
-                <!-- 7 Cột thời gian cho 7 ngày T2 - CN -->
-                <div class="tt-days-columns" id="ttDaysColumns"></div>
+              <!-- Thân timeline 24 giờ cuộn ngang / dàn đều -->
+              <div class="tt-dtl-track-container" id="ttDtlTrackContainer">
+                <div class="tt-dtl-track-wrapper">
+                  <!-- Hàng hiển thị 24 mốc giờ (00:00 - 23:00 và mốc 24:00) -->
+                  <div class="tt-dtl-hours-axis" id="ttDtlHoursAxis"></div>
+
+                  <!-- Khung đường chạy timeline 24 giờ -->
+                  <div class="tt-dtl-track-body" id="ttDtlTrackBody">
+                    <!-- 24 ô giờ nền (background slots 0h - 24h) -->
+                    <div class="tt-dtl-slots-layer" id="ttDtlSlotsLayer"></div>
+
+                    <!-- Dải đổ bóng thời gian đã trôi qua trong ngày (Progress fill) -->
+                    <div class="tt-dtl-past-progress" id="ttDtlPastProgress"></div>
+
+                    <!-- Lớp chứa các thẻ sự kiện ngang -->
+                    <div class="tt-dtl-events-layer" id="ttDtlEventsLayer"></div>
+
+                    <!-- Vạch kim thời gian thực hiện tại (Realtime needle indicator) -->
+                    <div class="tt-dtl-now-needle" id="ttDtlNowNeedle">
+                      <div class="tt-dtl-now-badge" id="ttDtlNowBadge">00:00</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. TOÀN BỘ GIAO DIỆN THỜI KHÓA BIỂU TUẦN 100% (KHI CUỘN XUỐNG) -->
+            <div class="timetable-weekly-section" id="ttWeeklySection">
+
+              <!-- Khung Lưới Thời Gian Vừa Khít 1 Màn Hình (100% Chiều Cao) -->
+              <div class="timetable-grid-card">
+                <!-- Hàng tiêu đề Thứ & Ngày -->
+                <div class="timetable-col-headers" id="ttColHeaders">
+                  <!-- Rendered by js/timetable.js -->
+                </div>
+
+                <!-- Hàng sự kiện Cả ngày nếu có -->
+                <div class="timetable-allday-row" id="ttAllDayRow" style="display: none;">
+                  <div class="tt-allday-label">Cả ngày</div>
+                  <div class="tt-allday-cols" id="ttAllDayCols"></div>
+                </div>
+
+                <!-- Hàng thu gọn ban đêm (00:00 - 06:00) -->
+                <div class="timetable-night-strip-row" id="ttNightStripRow">
+                  <div class="tt-night-label" title="Khung giờ nghỉ ngơi (00:00 - 06:00)">
+                    <i class="fa-solid fa-moon"></i>
+                    <span>0h - 6h</span>
+                  </div>
+                  <div class="tt-night-cols" id="ttNightCols">
+                    <!-- 7 ô đêm T2 -> CN chứa capsule sự kiện đêm nếu có -->
+                  </div>
+                </div>
+
+                <!-- Thân lưới hiển thị các khung giờ (100% chiều cao, không cuộn dọc) -->
+                <div class="timetable-grid-body" id="ttGridBody">
+                  <!-- Cột bên trái: Các mốc giờ -->
+                  <div class="tt-time-axis" id="ttTimeAxis"></div>
+
+                  <!-- 7 Cột thời gian cho 7 ngày T2 - CN -->
+                  <div class="tt-days-columns" id="ttDaysColumns"></div>
+                </div>
               </div>
             </div>
 
@@ -1525,6 +1604,30 @@
     </div>
   </div>
 
+  <!-- MODAL: XEM PHÓNG TO ẢNH TRÒ CHUYỆN COPILOT (LIGHTBOX) -->
+  <div class="copilot-img-lightbox-modal" id="copilotImgLightboxModal">
+    <div class="lightbox-content-box">
+      <div class="lightbox-header">
+        <div class="lightbox-title">
+          <i class="fa-regular fa-image"></i>
+          <span id="copilotLightboxTitle">Xem Ảnh Chi Tiết</span>
+        </div>
+        <div class="lightbox-actions">
+          <a href="#" id="btnDownloadLightboxImg" download="anh-najimez.jpg" class="btn-lightbox-action" title="Tải ảnh về máy">
+            <i class="fa-solid fa-download"></i>
+            <span>Tải về</span>
+          </a>
+          <button type="button" class="btn-lightbox-close" id="btnCloseLightboxModal" title="Đóng (ESC)">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+      <div class="lightbox-img-wrapper">
+        <img src="" id="copilotLightboxImgTag" alt="Ảnh chi tiết" />
+      </div>
+    </div>
+  </div>
+
   <!-- Firebase SDK Compat v10 (Chạy mượt mà trực tiếp không cần npm build) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
@@ -1544,10 +1647,12 @@
   <script src="js/todos.js?v=3.55.0"></script>
   <script src="js/event-theme.js?v=3.55.0"></script>
   <script src="js/calendar.js?v=3.55.0"></script>
-  <script src="js/timetable.js?v=3.55.0"></script>
+  <script src="js/timetable.js?v=3.58.1"></script>
+  <script src="js/timetable-timeline.js?v=3.58.4"></script>
   <script src="js/lucky-wheel.js?v=3.55.0"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
-  <script src="js/copilot.js?v=3.55.0"></script>
+  <script src="js/copilot-image.js?v=3.60.1"></script>
+  <script src="js/copilot.js?v=3.60.1"></script>
   <script src="js/stars.js?v=3.55.0"></script>
   <script src="js/auth.js?v=3.55.0"></script>
   <script src="js/firebase-sync.js?v=3.55.0"></script>

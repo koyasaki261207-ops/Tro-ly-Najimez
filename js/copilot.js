@@ -558,10 +558,15 @@ QUY TẮC CỐT LÕI:
   + BẠN BẮT BUỘC ĐỐI CHIẾU VỚI [0. THỜI GIAN HỆ THỐNG HIỆN TẠI] VÀ [4. TIỆN ÍCH LỊCH & SỰ KIỆN].
   + Nếu ngày đó có sự kiện hay lịch học, HÃY TRẢ LỜI ĐẦY ĐỦ, CHÍNH XÁC: Tên buổi học/sự kiện, thời gian, danh mục và ghi chú. Tuyệt đối không được nói ngày đó trống trải!
 - KHI NGƯỜI DÙNG HỎI TRỰC TIẾP về dữ liệu sổ sách (như "ai nợ tôi nhiều nhất?", "tôi nợ ai?", "còn bao nhiêu tiền?", "hôm nay tiêu gì?"), bạn hãy trả lời ngay với tên và con số cụ thể trên.
-- KHI NGƯỜI DÙNG NÓI CHUYỆN BÌNH THƯỜNG / CHÀO HỎI / TÂM SỰ / HỎI HỌC TẬP & CODE: Hãy đáp lại ngọt ngào, ấm áp, đúng chủ đề của người dùng; TUYỆT ĐỐI KHÔNG TỰ TIỆN LÔI SỔ NỢ, DANH SÁCH CON NỢ HAY SỐ DƯ TÀI CHÍNH RA BÁO CÁO!`;
+- KHI NGƯỜI DÙNG NÓI CHUYỆN BÌNH THƯỜNG / CHÀO HỎI / TÂM SỰ / HỎI HỌC TẬP & CODE: Hãy đáp lại ngọt ngào, ấm áp, đúng chủ đề của người dùng; TUYỆT ĐỐI KHÔNG TỰ TIỆN LÔI SỔ NỢ, DANH SÁCH CON NỢ HAY SỐ DƯ TÀI CHÍNH RA BÁO CÁO!
+- KHI NGƯỜI DÙNG GỬI HÌNH ẢNH (GEMINI MULTIMODAL / VISION):
+  + Nếu là bài tập / học tập (Toán, Lý, Hóa, Sinh, Lập trình, Ngoại ngữ...): Hãy đọc kỹ đề bài trên ảnh, giải chi tiết từng bước, rõ ràng, sư phạm và dễ hiểu.
+  + Nếu là hóa đơn, biên lai chuyển khoản, phiếu thanh toán, bill mua sắm: Hãy đọc tổng số tiền, tên cửa hàng/dịch vụ, ngày tháng và tự động xuất thẻ hành động thu chi (hoặc sổ nợ nếu là chuyển khoản nợ) tương ứng kèm nội dung cụ thể.
+  + Nếu là lịch trình, thời khóa biểu trên ảnh: Nhận diện ngày giờ, môn học và gợi ý hoặc tạo lịch trình.
+  + Nếu là ảnh đời thường, meme, phong cảnh: Hãy nhận xét tinh tế, vui vẻ, ấm áp theo phong cách Najimez.`;
 }
 
-async function callGeminiAPIStream(userPrompt, onChunk) {
+async function callGeminiAPIStream(userPrompt, onChunk, attachedImg = null) {
   const apiKey = getStoredApiKey();
   if (!apiKey) return null;
 
@@ -573,9 +578,26 @@ async function callGeminiAPIStream(userPrompt, onChunk) {
     ? structuredClone(conversationHistory)
     : JSON.parse(JSON.stringify(conversationHistory));
 
+  // Chuẩn bị phần nội dung (parts) của người dùng: hỗ trợ kèm ảnh base64 nếu có
+  const userParts = [];
+  if (attachedImg && attachedImg.base64) {
+    userParts.push({
+      inline_data: {
+        mime_type: attachedImg.mimeType || 'image/jpeg',
+        data: attachedImg.base64
+      }
+    });
+  }
+  const cleanPrompt = (userPrompt || '').trim();
+  const defaultPrompt = attachedImg ? 'Hãy phân tích hình ảnh này và hỗ trợ tôi nhé!' : '';
+  const finalPromptText = cleanPrompt || defaultPrompt;
+  if (finalPromptText) {
+    userParts.push({ text: finalPromptText });
+  }
+
   const payload = {
     contents: clonedHistory.concat([
-      { role: 'user', parts: [{ text: userPrompt }] }
+      { role: 'user', parts: userParts }
     ]),
     generationConfig: {
       temperature: 0.75,
@@ -592,7 +614,12 @@ async function callGeminiAPIStream(userPrompt, onChunk) {
     };
   } else {
     if (payload.contents.length > 0 && payload.contents[0].parts) {
-      payload.contents[0].parts[0].text = `[CHỈ DẪN VAI DIỄN GEMINI: ${dynamicSystemPrompt}]\n\n` + payload.contents[0].parts[0].text;
+      const firstTextPart = payload.contents[0].parts.find(p => typeof p.text === 'string');
+      if (firstTextPart) {
+        firstTextPart.text = `[CHỈ DẪN VAI DIỄN GEMINI: ${dynamicSystemPrompt}]\n\n` + firstTextPart.text;
+      } else {
+        payload.contents[0].parts.unshift({ text: `[CHỈ DẪN VAI DIỄN GEMINI: ${dynamicSystemPrompt}]` });
+      }
     }
   }
 
@@ -660,16 +687,19 @@ async function callGeminiAPIStream(userPrompt, onChunk) {
   }
 
   if (streamSucceeded && fullText.trim()) {
-    conversationHistory.push({ role: 'user', parts: [{ text: userPrompt }] });
+    const historyUserText = attachedImg 
+      ? `[Ảnh đính kèm: ${attachedImg.name || 'hình ảnh'}]\n${finalPromptText}`
+      : finalPromptText;
+    conversationHistory.push({ role: 'user', parts: [{ text: historyUserText }] });
     conversationHistory.push({ role: 'model', parts: [{ text: fullText }] });
     if (conversationHistory.length > 10) conversationHistory = conversationHistory.slice(-10);
     return fullText;
   }
 
-  return await callGeminiAPIFallback(userPrompt, modelInfo);
+  return await callGeminiAPIFallback(userPrompt, modelInfo, attachedImg);
 }
 
-async function callGeminiAPIFallback(userPrompt, modelInfo = null) {
+async function callGeminiAPIFallback(userPrompt, modelInfo = null, attachedImg = null) {
   const apiKey = getStoredApiKey();
   if (!apiKey) return null;
 
@@ -681,9 +711,26 @@ async function callGeminiAPIFallback(userPrompt, modelInfo = null) {
     ? structuredClone(conversationHistory)
     : JSON.parse(JSON.stringify(conversationHistory));
 
+  // Chuẩn bị phần nội dung (parts) của người dùng: hỗ trợ kèm ảnh base64 nếu có
+  const userParts = [];
+  if (attachedImg && attachedImg.base64) {
+    userParts.push({
+      inline_data: {
+        mime_type: attachedImg.mimeType || 'image/jpeg',
+        data: attachedImg.base64
+      }
+    });
+  }
+  const cleanPrompt = (userPrompt || '').trim();
+  const defaultPrompt = attachedImg ? 'Hãy phân tích hình ảnh này và hỗ trợ tôi nhé!' : '';
+  const finalPromptText = cleanPrompt || defaultPrompt;
+  if (finalPromptText) {
+    userParts.push({ text: finalPromptText });
+  }
+
   const payload = {
     contents: clonedHistory.concat([
-      { role: 'user', parts: [{ text: userPrompt }] }
+      { role: 'user', parts: userParts }
     ]),
     generationConfig: {
       temperature: 0.75,
@@ -697,7 +744,12 @@ async function callGeminiAPIFallback(userPrompt, modelInfo = null) {
     payload.system_instruction = { parts: [{ text: dynamicSystemPrompt }] };
   } else {
     if (payload.contents.length > 0 && payload.contents[0].parts) {
-      payload.contents[0].parts[0].text = `[CHỈ DẪN VAI DIỄN GEMINI: ${dynamicSystemPrompt}]\n\n` + payload.contents[0].parts[0].text;
+      const firstTextPart = payload.contents[0].parts.find(p => typeof p.text === 'string');
+      if (firstTextPart) {
+        firstTextPart.text = `[CHỈ DẪN VAI DIỄN GEMINI: ${dynamicSystemPrompt}]\n\n` + firstTextPart.text;
+      } else {
+        payload.contents[0].parts.unshift({ text: `[CHỈ DẪN VAI DIỄN GEMINI: ${dynamicSystemPrompt}]` });
+      }
     }
   }
 
@@ -726,7 +778,10 @@ async function callGeminiAPIFallback(userPrompt, modelInfo = null) {
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
     if (text) {
-      conversationHistory.push({ role: 'user', parts: [{ text: userPrompt }] });
+      const historyUserText = attachedImg 
+        ? `[Ảnh đính kèm: ${attachedImg.name || 'hình ảnh'}]\n${finalPromptText}`
+        : finalPromptText;
+      conversationHistory.push({ role: 'user', parts: [{ text: historyUserText }] });
       conversationHistory.push({ role: 'model', parts: [{ text: text }] });
       if (conversationHistory.length > 10) conversationHistory = conversationHistory.slice(-10);
       return text;
@@ -2599,12 +2654,23 @@ function initChatEngine() {
     feed.scrollTop = feed.scrollHeight;
   }
 
-  function addUserMessage(text) {
+  function addUserMessage(text, attachedImg = null) {
     const msg = document.createElement('div');
     msg.className = 'chat-msg user';
     const userPhoto = (typeof getUserAvatarUrl === 'function' ? getUserAvatarUrl() : null)
       || (window.currentUser && window.currentUser.photoURL)
       || null;
+
+    let imgHtml = '';
+    if (attachedImg && attachedImg.dataUrl) {
+      imgHtml = `
+        <div class="user-attached-img-wrap">
+          <img src="${escapeHTML(attachedImg.dataUrl)}" alt="Ảnh đính kèm" class="user-attached-img" onclick="if(window.openImageViewerModal) window.openImageViewerModal(this.src, 'Ảnh bạn đã gửi');" title="Nhấp để xem ảnh phóng to" />
+        </div>
+      `;
+    }
+
+    const textHtml = text ? `<p class="user-msg-text">${escapeHTML(text)}</p>` : '';
 
     msg.innerHTML = `
       <div class="msg-avt">
@@ -2614,7 +2680,10 @@ function initChatEngine() {
           <i class="fa-solid fa-user"></i>
         `}
       </div>
-      <div class="msg-text-bubble"><p>${escapeHTML(text)}</p></div>
+      <div class="msg-text-bubble ${attachedImg ? 'bubble-with-image' : ''}">
+        ${imgHtml}
+        ${textHtml}
+      </div>
     `;
     feed.appendChild(msg);
     scrollToBottom();
@@ -2704,17 +2773,17 @@ function initChatEngine() {
     });
   }
 
-  async function handleUserTurn(text, specificAction = null) {
-    if (!text || !text.trim()) return;
-    const cleanText = text.trim();
-    lastUserPrompt = cleanText;
+  async function handleUserTurn(text, specificAction = null, attachedImg = null) {
+    const cleanText = (text || '').trim();
+    if (!cleanText && !attachedImg) return;
+    lastUserPrompt = cleanText || (attachedImg ? 'Phân tích hình ảnh' : '');
 
     // Tự động dừng âm thanh cũ ngay khi gửi tin nhắn mới
     if (typeof stopSpeakingAssistant === 'function') {
       stopSpeakingAssistant();
     }
 
-    addUserMessage(cleanText);
+    addUserMessage(cleanText, attachedImg);
     input.value = '';
 
     if (typeof playAssistantSound === 'function') {
@@ -2756,7 +2825,7 @@ function initChatEngine() {
       try {
         const fullResult = await callGeminiAPIStream(cleanText, (streamedText) => {
           bubble.updateStream(streamedText);
-        });
+        }, attachedImg);
         if (fullResult) {
           bubble.finalize(fullResult);
           return;
@@ -2766,6 +2835,13 @@ function initChatEngine() {
         bubble.finalize(`⚠️ **Không thể kết nối với Google Gemini API**\n\n> **Nguyên nhân:** ${err.message || 'Mã API Key không hợp lệ hoặc đã hết hạn mức.'}\n\n💡 *Cách khắc phục:* Bạn hãy nhấp vào nút chìa khóa 🔑 ở góc trên để kiểm tra hoặc dán lại mã API Key chính xác từ [Google AI Studio](https://aistudio.google.com/app/apikey).`);
         return;
       }
+    }
+
+    if (attachedImg) {
+      setTimeout(() => {
+        bubble.finalize(`📸 **Najimez đã nhận được hình ảnh: "${escapeHTML(attachedImg.name || 'ảnh đính kèm')}"!**\n\n> Để Najimez có thể dùng "mắt thần" AI đọc và giải bài tập trên ảnh, nhận diện hóa đơn hoặc trò chuyện về hình ảnh này, bạn hãy nhấn vào biểu tượng chìa khóa 🔑 ở góc trên để kết nối mã **Google Gemini API Key** (hoàn toàn miễn phí từ [Google AI Studio](https://aistudio.google.com/app/apikey)) nhé! ❤️`);
+      }, 350);
+      return;
     }
 
     setTimeout(() => {
@@ -2900,7 +2976,19 @@ function initChatEngine() {
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       if (typeof stopVoiceInput === 'function') stopVoiceInput();
-      handleUserTurn(input.value);
+
+      const attachedImg = (typeof getCopilotAttachedImage === 'function')
+        ? getCopilotAttachedImage()
+        : null;
+
+      const rawVal = input ? input.value : '';
+      if (!rawVal.trim() && !attachedImg) return;
+
+      handleUserTurn(rawVal, null, attachedImg);
+
+      if (typeof clearCopilotAttachedImage === 'function') {
+        clearCopilotAttachedImage();
+      }
     });
   }
 
