@@ -314,13 +314,12 @@ function matchAutoImage(rawText) {
     return AUTO_SMART_VISUALS.com;
   }
 
-  // 4. Hải sản / Ốc / Nghêu sò
+  // 4. Hải sản / Ốc / Nghêu sò / Tôm cua mực
   if (
-    norm.includes('hai san') || norm.includes('oc ') || norm.endsWith('oc') ||
-    norm.includes('ngheu') || norm.includes('so ') || norm.includes('cua ') ||
-    norm.includes('tom ') || norm.includes('muc ') || norm.includes('hau ') ||
+    norm.includes('hai san') || /\b(?:oc|ngheu|cua|tom|muc|hau|ghe)\b/.test(norm) ||
     norm.includes('oc huong') || norm.includes('oc buou') || norm.includes('oc len') ||
-    norm.includes('so diep') || norm.includes('so huyet') || norm.includes('ghe ')
+    norm.includes('so diep') || norm.includes('so huyet') || norm.includes('bach tuoc') ||
+    norm.includes('tom hum') || norm.includes('cua bien')
   ) {
     return AUTO_SMART_VISUALS.hai_san_oc;
   }
@@ -651,13 +650,12 @@ function resolveTransactionImage(item) {
     };
   }
 
-  // 2. Tự động nhận diện từ ghi chú, lý do, danh mục
+  // 2. Tự động nhận diện từ ghi chú, lý do, danh mục (TUYỆT ĐỐI KHÔNG dùng tên người để tránh nhầm lẫn)
   const combinedText = [
     item.note || '',
-    item.category || '',
     item.reason || '',
-    item.person ? `với ${item.person}` : ''
-  ].join(' ');
+    item.category || ''
+  ].join(' ').trim();
 
   const visual = matchAutoImage(combinedText);
 
@@ -843,6 +841,251 @@ function renderModalPresetChips() {
 }
 
 /**
+ * Làm sạch tên món/nội dung giao dịch để tìm kiếm ảnh trên mạng chính xác nhất
+ */
+function cleanQueryForImageSearch(rawText) {
+  if (!rawText || typeof rawText !== 'string') return '';
+  let s = rawText.trim();
+  // Bỏ các từ nợ nần, tiền nong, mượn trả dư thừa
+  s = s.replace(/\b(?:khoản nợ|khoan no|nợ tiền|no tien|trả nợ|tra no|trả tiền|tra tien|mượn tiền|muon tien|vay tiền|vay tien|nợ|no|mượn|muon|tiền|tien)\b/gi, ' ');
+  // Bỏ tiền tố hành động
+  s = s.replace(/\b(?:thanh toán|chi trả|mua|ăn|uống|đi|uong|thanh toan)\b/gi, ' ');
+  // Bỏ "với [Tên]" nếu có
+  s = s.replace(/\bvới\s+[^\s,]+/gi, ' ');
+  s = s.replace(/\s+/g, ' ').trim();
+  return s || rawText.trim();
+}
+
+/**
+ * Tìm kiếm ảnh thực tế từ Wikipedia và Wikimedia Commons (Hoàn toàn miễn phí, không cần API Key, không bị CORS)
+ */
+async function searchWebImages(rawQuery) {
+  const clean = cleanQueryForImageSearch(rawQuery);
+  if (!clean) return [];
+
+  const results = [];
+  const seenUrls = new Set();
+  const cleanLower = clean.toLowerCase();
+
+  // 1. Tìm trên Wikipedia Tiếng Việt (chất lượng cao nhất về ẩm thực & đời sống Việt Nam)
+  const p1 = (async () => {
+    try {
+      const params = new URLSearchParams({
+        action: 'query',
+        generator: 'search',
+        gsrsearch: clean,
+        gsrlimit: '8',
+        prop: 'pageimages',
+        piprop: 'thumbnail|original',
+        pithumbsize: '600',
+        format: 'json',
+        origin: '*'
+      });
+      const res = await fetch(`https://vi.wikipedia.org/w/api.php?${params.toString()}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const pages = (data.query && data.query.pages) || {};
+      for (const p of Object.values(pages)) {
+        const origUrl = (p.original && p.original.source) || '';
+        const thumbUrl = (p.thumbnail && p.thumbnail.source) || origUrl;
+        const targetUrl = origUrl || thumbUrl;
+        const title = p.title || '';
+        if (targetUrl && !seenUrls.has(targetUrl)) {
+          seenUrls.add(targetUrl);
+          const titleLower = title.toLowerCase();
+          const isExact = titleLower.includes(cleanLower) || cleanLower.includes(titleLower);
+          results.push({
+            title: title,
+            url: targetUrl,
+            thumb: thumbUrl,
+            source: 'Wikipedia VN',
+            score: isExact ? 10 : 5
+          });
+        }
+      }
+    } catch (e) { }
+  })();
+
+  // 2. Tìm trên Wikimedia Commons (kho ảnh mở toàn cầu)
+  const p2 = (async () => {
+    try {
+      const params = new URLSearchParams({
+        action: 'query',
+        generator: 'search',
+        gsrnamespace: '6',
+        gsrsearch: clean,
+        gsrlimit: '10',
+        prop: 'imageinfo',
+        iiprop: 'url',
+        format: 'json',
+        origin: '*'
+      });
+      const res = await fetch(`https://commons.wikimedia.org/w/api.php?${params.toString()}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      const pages = (data.query && data.query.pages) || {};
+      for (const p of Object.values(pages)) {
+        const info = (p.imageinfo && p.imageinfo[0]) || {};
+        const url = info.url;
+        const title = (p.title || '').replace(/^File:/i, '').replace(/\.[a-zA-Z0-9]+$/, '');
+        if (url && !seenUrls.has(url)) {
+          const lower = url.toLowerCase();
+          if (lower.endsWith('.pdf') || lower.endsWith('.svg') || lower.endsWith('.tif') || lower.endsWith('.djvu')) continue;
+          seenUrls.add(url);
+          const titleLower = title.toLowerCase();
+          const isExact = titleLower.includes(cleanLower);
+          results.push({
+            title: title,
+            url: url,
+            thumb: url,
+            source: 'Wikimedia Commons',
+            score: isExact ? 8 : 3
+          });
+        }
+      }
+    } catch (e) { }
+  })();
+
+  await Promise.allSettled([p1, p2]);
+
+  // Sắp xếp theo mức độ phù hợp cao nhất
+  results.sort((a, b) => b.score - a.score);
+  return results;
+}
+
+/**
+ * Hiển thị lưới kết quả tìm kiếm ảnh mạng
+ */
+function renderWebSearchGrid(containerId, results, onSelect) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  if (!results || results.length === 0) {
+    container.innerHTML = `
+      <div class="tx-web-empty-state">
+        <i class="fa-solid fa-circle-exclamation" style="font-size: 1.5rem; color: #f59e0b; margin-bottom: 6px; display: block;"></i>
+        Chưa tìm thấy ảnh phù hợp trên mạng. Bạn hãy thử gõ từ khóa ngắn gọn hơn (ví dụ: "bún bò", "bánh cuốn", "cơm sườn").
+      </div>
+    `;
+    container.style.display = 'grid';
+    return;
+  }
+
+  container.innerHTML = results.map((item, idx) => `
+    <div class="tx-web-card" data-idx="${idx}" title="${escapeTxAttr(item.title)} (${item.source})">
+      <img src="${escapeTxAttr(item.thumb || item.url)}" alt="${escapeTxAttr(item.title)}" loading="lazy" />
+      <div class="tx-web-card-overlay">${escapeTxHTML(item.title)}</div>
+      <button type="button" class="tx-web-card-select-btn">Gán ảnh</button>
+    </div>
+  `).join('');
+
+  container.style.display = 'grid';
+
+  container.querySelectorAll('.tx-web-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const idx = parseInt(card.dataset.idx, 10);
+      const item = results[idx];
+      if (item && typeof onSelect === 'function') {
+        onSelect(item);
+      }
+    });
+  });
+}
+
+function escapeTxHTML(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function escapeTxAttr(str) {
+  if (!str) return '';
+  return String(str).replace(/"/g, '&quot;');
+}
+
+/**
+ * Gán trực tiếp ảnh từ Web vào giao dịch hoặc khoản nợ hiện tại
+ */
+async function applyWebImageDirectly(imageUrl, titleText = '') {
+  if (!currentModalTargetId) return;
+  const data = getLedgerData();
+  if (currentModalTargetType === 'debt') {
+    const debt = (data.debts || []).find(d => String(d.id) === String(currentModalTargetId));
+    if (debt) debt.image = imageUrl;
+    (data.transactions || []).forEach(t => {
+      if (String(t.debtId) === String(currentModalTargetId) || String(t.id) === 'tx-debt-' + currentModalTargetId) {
+        t.image = imageUrl;
+      }
+    });
+  } else {
+    const tx = (data.transactions || []).find(t => String(t.id) === String(currentModalTargetId));
+    if (tx) tx.image = imageUrl;
+    if (tx && tx.debtId) {
+      const debt = (data.debts || []).find(d => String(d.id) === String(tx.debtId));
+      if (debt) debt.image = imageUrl;
+    }
+  }
+
+  saveLedgerData(data);
+
+  // Cập nhật ngay preview lớn trong view modal
+  const largeImg = document.getElementById('txImageLargePreview');
+  if (largeImg) largeImg.src = imageUrl;
+
+  const metaTitle = document.getElementById('txImageMetaTitle');
+  if (metaTitle) {
+    metaTitle.innerHTML = `<strong>${escapeTxHTML(titleText || 'Ảnh từ Web')}</strong> <span style="font-size:0.75rem; color:#38bdf8; margin-left:8px;">🌐 Ảnh thực tế từ mạng</span>`;
+  }
+
+  if (typeof renderFinanceTab === 'function') renderFinanceTab();
+}
+
+/**
+ * Tự động tìm kiếm trên mạng và gán ảnh chuẩn nhất chỉ với 1 chạm
+ */
+async function autoSearchAndApplyWebImage(targetId, targetType) {
+  const data = getLedgerData();
+  let targetItem = null;
+  if (targetType === 'debt') {
+    targetItem = (data.debts || []).find(d => String(d.id) === String(targetId));
+  } else {
+    targetItem = (data.transactions || []).find(t => String(t.id) === String(targetId));
+  }
+
+  const query = targetItem ? (targetItem.note || targetItem.reason || targetItem.category || '') : '';
+  const clean = cleanQueryForImageSearch(query);
+  if (!clean) {
+    alert('Không tìm thấy tên món ăn/khoản chi để tìm kiếm.');
+    return;
+  }
+
+  const btnAuto = document.getElementById('btnQuickAutoApplyTopImage');
+  const btnWeb = document.getElementById('btnAutoWebSearchTxImage');
+  if (btnAuto) btnAuto.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tìm...';
+  if (btnWeb) btnWeb.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tìm...';
+
+  try {
+    const results = await searchWebImages(clean);
+    if (results && results.length > 0) {
+      const best = results[0];
+      await applyWebImageDirectly(best.url, best.title);
+      // Hiển thị cả lưới ảnh để người dùng có thể đổi nếu muốn
+      renderWebSearchGrid('txWebSearchResultsView', results, (chosen) => {
+        applyWebImageDirectly(chosen.url, chosen.title);
+      });
+      const tray = document.getElementById('txWebSearchTrayView');
+      if (tray) tray.style.display = 'block';
+    } else {
+      alert(`Không tìm thấy ảnh trên mạng cho từ khóa: "${clean}". Bạn có thể thử gõ từ khóa khác vào ô tìm kiếm.`);
+    }
+  } catch (err) {
+    alert('Không thể kết nối đến máy chủ tìm kiếm ảnh. Vui lòng kiểm tra lại mạng Internet.');
+  } finally {
+    if (btnAuto) btnAuto.innerHTML = '<i class="fa-solid fa-bolt"></i> Gán ảnh đầu tiên';
+    if (btnWeb) btnWeb.innerHTML = '<i class="fa-solid fa-globe"></i> Tìm ảnh Web';
+  }
+}
+
+/**
  * Mở modal ở chế độ THAY ĐỔI ẢNH TÙY CHỌN
  */
 function openAttachImageModal(targetId, targetType = 'debt') {
@@ -874,6 +1117,29 @@ function openAttachImageModal(targetId, targetType = 'debt') {
 
   renderModalPresetChips();
 
+  // Tự động điền từ khóa và tìm kiếm ảnh web trong tab edit
+  const data = getLedgerData();
+  let targetItem = null;
+  if (targetType === 'debt') {
+    targetItem = (data.debts || []).find(d => String(d.id) === String(targetId));
+  } else {
+    targetItem = (data.transactions || []).find(t => String(t.id) === String(targetId));
+  }
+  const raw = targetItem ? (targetItem.note || targetItem.reason || targetItem.category || '') : '';
+  const clean = cleanQueryForImageSearch(raw);
+  const inputEdit = document.getElementById('txWebSearchInputEdit');
+  const containerEdit = document.getElementById('txWebSearchResultsEdit');
+  if (inputEdit) inputEdit.value = clean;
+  if (clean && containerEdit) {
+    containerEdit.innerHTML = '<div class="tx-web-empty-state"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem; color:#38bdf8;"></i> Đang tìm kiếm ảnh thực tế trên mạng...</div>';
+    containerEdit.style.display = 'grid';
+    searchWebImages(clean).then(results => {
+      renderWebSearchGrid('txWebSearchResultsEdit', results, (chosen) => {
+        setModalPendingPreview(chosen.url);
+      });
+    });
+  }
+
   modal.classList.add('active');
 }
 
@@ -883,6 +1149,10 @@ function closeTransactionImageModal() {
   currentModalTargetId = null;
   currentModalActiveImageUrl = null;
   currentPendingModalImage = null;
+  const trayView = document.getElementById('txWebSearchTrayView');
+  if (trayView) trayView.style.display = 'none';
+  const gridEdit = document.getElementById('txWebSearchResultsEdit');
+  if (gridEdit) gridEdit.style.display = 'none';
 }
 
 function setModalPendingPreview(dataUrl) {
@@ -961,6 +1231,100 @@ function initBillImageModule() {
         openImageGenModal(`Chụp ảnh món ${promptText} thơm ngon bày trên đĩa, phong cách ẩm thực cao cấp, ánh sáng tự nhiên chân thực, sắc nét 8k`, 'photorealistic', '1:1');
       } else {
         alert(`Bạn có thể dùng tính năng Tạo Ảnh AI để vẽ món: ${promptText}`);
+      }
+    });
+  }
+
+  // Nút Tìm ảnh Web trong View Modal
+  const btnAutoWeb = document.getElementById('btnAutoWebSearchTxImage');
+  const trayView = document.getElementById('txWebSearchTrayView');
+  const inputView = document.getElementById('txWebSearchInputView');
+  const btnRunSearchView = document.getElementById('btnRunWebSearchView');
+  const btnQuickTop = document.getElementById('btnQuickAutoApplyTopImage');
+
+  if (btnAutoWeb && trayView) {
+    btnAutoWeb.addEventListener('click', async () => {
+      const isHidden = trayView.style.display === 'none' || !trayView.style.display;
+      if (isHidden) {
+        trayView.style.display = 'block';
+        const data = getLedgerData();
+        let targetItem = null;
+        if (currentModalTargetType === 'debt') {
+          targetItem = (data.debts || []).find(d => String(d.id) === String(currentModalTargetId));
+        } else {
+          targetItem = (data.transactions || []).find(t => String(t.id) === String(currentModalTargetId));
+        }
+        const raw = targetItem ? (targetItem.note || targetItem.reason || targetItem.category || '') : '';
+        const clean = cleanQueryForImageSearch(raw);
+        if (inputView) inputView.value = clean;
+        if (clean) {
+          const container = document.getElementById('txWebSearchResultsView');
+          if (container) {
+            container.innerHTML = '<div class="tx-web-empty-state"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem; color:#38bdf8;"></i> Đang tìm kiếm ảnh thực tế trên mạng...</div>';
+            container.style.display = 'grid';
+          }
+          const results = await searchWebImages(clean);
+          renderWebSearchGrid('txWebSearchResultsView', results, (chosen) => {
+            applyWebImageDirectly(chosen.url, chosen.title);
+          });
+        }
+      } else {
+        trayView.style.display = 'none';
+      }
+    });
+  }
+
+  if (btnRunSearchView && inputView) {
+    btnRunSearchView.addEventListener('click', async () => {
+      const q = inputView.value.trim();
+      if (!q) return;
+      const container = document.getElementById('txWebSearchResultsView');
+      if (container) {
+        container.innerHTML = '<div class="tx-web-empty-state"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem; color:#38bdf8;"></i> Đang tìm kiếm ảnh...</div>';
+        container.style.display = 'grid';
+      }
+      const results = await searchWebImages(q);
+      renderWebSearchGrid('txWebSearchResultsView', results, (chosen) => {
+        applyWebImageDirectly(chosen.url, chosen.title);
+      });
+    });
+    inputView.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        btnRunSearchView.click();
+      }
+    });
+  }
+
+  if (btnQuickTop) {
+    btnQuickTop.addEventListener('click', () => {
+      if (currentModalTargetId) {
+        autoSearchAndApplyWebImage(currentModalTargetId, currentModalTargetType);
+      }
+    });
+  }
+
+  // Nút Tìm ảnh Web trong Edit Modal
+  const btnRunSearchEdit = document.getElementById('btnRunWebSearchEdit');
+  const inputEdit = document.getElementById('txWebSearchInputEdit');
+  if (btnRunSearchEdit && inputEdit) {
+    btnRunSearchEdit.addEventListener('click', async () => {
+      const q = inputEdit.value.trim();
+      if (!q) return;
+      const container = document.getElementById('txWebSearchResultsEdit');
+      if (container) {
+        container.innerHTML = '<div class="tx-web-empty-state"><i class="fa-solid fa-spinner fa-spin" style="font-size:1.5rem; color:#38bdf8;"></i> Đang tìm kiếm...</div>';
+        container.style.display = 'grid';
+      }
+      const results = await searchWebImages(q);
+      renderWebSearchGrid('txWebSearchResultsEdit', results, (chosen) => {
+        setModalPendingPreview(chosen.url);
+      });
+    });
+    inputEdit.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        btnRunSearchEdit.click();
       }
     });
   }
@@ -1276,3 +1640,6 @@ window.getFormAttachedExpenseImage = getFormAttachedExpenseImage;
 window.resetFormAttachedExpenseImage = resetFormAttachedExpenseImage;
 window.getFormAttachedDebtImage = getFormAttachedDebtImage;
 window.resetFormAttachedDebtImage = resetFormAttachedDebtImage;
+window.searchWebImages = searchWebImages;
+window.autoSearchAndApplyWebImage = autoSearchAndApplyWebImage;
+window.cleanQueryForImageSearch = cleanQueryForImageSearch;

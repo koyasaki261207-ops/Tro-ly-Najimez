@@ -1335,19 +1335,39 @@
             <span id="txImageMetaTitle">Hóa đơn đính kèm</span>
             <span id="txImageMetaDate">Hôm nay</span>
           </div>
-          <div class="modal-actions-row" style="margin-top: 14px; gap: 8px;">
-            <a href="#" id="btnDownloadTxImage" download="anh-giao-dich.jpg" class="btn-modal-action secondary" style="flex: 1;">
+          <div class="modal-actions-row" style="margin-top: 14px; gap: 8px; flex-wrap: wrap;">
+            <a href="#" id="btnDownloadTxImage" download="anh-giao-dich.jpg" class="btn-modal-action secondary" style="flex: 1; min-width: 85px;">
               <i class="fa-solid fa-download"></i> Tải về
             </a>
-            <button type="button" id="btnGenerateAITxImage" class="btn-modal-action primary" style="flex: 1.2; background: linear-gradient(135deg, #a855f7, #6366f1); border-color: #c084fc;" title="Dùng AI sáng tạo bức ảnh chân thực cho món này">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> AI Vẽ Món Này
+            <button type="button" id="btnAutoWebSearchTxImage" class="btn-modal-action secondary" style="flex: 1.2; min-width: 135px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(59, 130, 246, 0.25)); border-color: #38bdf8; color: #38bdf8;" title="Tìm ảnh thực tế trên trình duyệt cho đúng món này">
+              <i class="fa-solid fa-globe"></i> Tìm ảnh Web
             </button>
-            <button type="button" id="btnReplaceTxImage" class="btn-modal-action secondary" style="flex: 1;">
+            <button type="button" id="btnGenerateAITxImage" class="btn-modal-action primary" style="flex: 1.2; min-width: 120px; background: linear-gradient(135deg, #a855f7, #6366f1); border-color: #c084fc;" title="Dùng AI sáng tạo bức ảnh chân thực cho món này">
+              <i class="fa-solid fa-wand-magic-sparkles"></i> AI Vẽ
+            </button>
+            <button type="button" id="btnReplaceTxImage" class="btn-modal-action secondary" style="flex: 1; min-width: 90px;">
               <i class="fa-solid fa-rotate"></i> Đổi ảnh
             </button>
-            <button type="button" id="btnDeleteTxImage" class="btn-modal-action danger" style="flex: 1;">
+            <button type="button" id="btnDeleteTxImage" class="btn-modal-action danger" style="flex: 1; min-width: 85px;">
               <i class="fa-solid fa-trash-can"></i> Xóa ảnh
             </button>
+          </div>
+
+          <!-- Khung tìm kiếm ảnh trên mạng mở rộng (Wikipedia / Commons) -->
+          <div id="txWebSearchTrayView" class="tx-web-search-tray" style="display: none; margin-top: 12px;">
+            <div class="tx-web-search-bar-wrap">
+              <div class="tx-web-search-input-group">
+                <i class="fa-solid fa-globe" style="color: #38bdf8; font-size: 1.05rem;"></i>
+                <input type="text" id="txWebSearchInputView" class="form-input-custom text-sm" placeholder="Tìm ảnh thực tế trên mạng (bún bò huế, bánh cuốn, cơm tấm...)" />
+                <button type="button" id="btnRunWebSearchView" class="btn-sub-apply" style="background: #0284c7; padding: 0 14px;">
+                  <i class="fa-solid fa-magnifying-glass"></i> Tìm
+                </button>
+              </div>
+              <button type="button" id="btnQuickAutoApplyTopImage" class="btn-sub-apply" style="background: linear-gradient(135deg, #0284c7, #2563eb); border: none; font-size: 0.76rem; padding: 0 12px; white-space: nowrap;" title="Tự động gán ngay bức ảnh đầu tiên">
+                <i class="fa-solid fa-bolt"></i> Gán ảnh đầu tiên
+              </button>
+            </div>
+            <div id="txWebSearchResultsView" class="tx-web-search-grid"></div>
           </div>
         </div>
 
@@ -1375,6 +1395,21 @@
           <div class="avatar-url-input-wrap" style="margin-top: 10px;">
             <input type="url" id="txImageUrlInput" class="form-input-custom text-sm" placeholder="Hoặc dán URL ảnh (https://...)" autocomplete="off" />
             <button type="button" id="btnApplyTxImageUrl" class="btn-sub-apply">Áp dụng</button>
+          </div>
+
+          <!-- Tìm kiếm ảnh thực tế trên mạng (Wikipedia & Commons) -->
+          <div class="tx-web-search-tray" style="margin-top: 12px;">
+            <div style="font-size: 0.8rem; font-weight: 600; color: #38bdf8; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+              <span><i class="fa-solid fa-globe"></i> Tìm ảnh thực tế trên mạng:</span>
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Wikipedia &amp; Commons</span>
+            </div>
+            <div class="avatar-url-input-wrap">
+              <input type="text" id="txWebSearchInputEdit" class="form-input-custom text-sm" placeholder="Nhập tên món ăn / đồ vật (bún bò huế, bánh cuốn, cơm tấm...)" />
+              <button type="button" id="btnRunWebSearchEdit" class="btn-sub-apply" style="background: #0284c7;">
+                <i class="fa-solid fa-magnifying-glass"></i> Tìm ảnh
+              </button>
+            </div>
+            <div id="txWebSearchResultsEdit" class="tx-web-search-grid" style="display: none;"></div>
           </div>
 
           <!-- Gợi ý ảnh theo chủ đề (Chọn nhanh 1 chạm) -->
@@ -1798,7 +1833,7 @@
   <script src="js/storage.js?v=3.55.0"></script>
   <script src="js/ui.js?v=3.55.0"></script>
   <script src="js/vietqr.js?v=3.55.0"></script>
-  <script src="js/bill-image.js?v=3.55.2"></script>
+  <script src="js/bill-image.js?v=3.56.0"></script>
   <script src="js/debt.js?v=3.55.0"></script>
   <script src="js/debt-profile.js?v=3.55.0"></script>
   <script src="js/finance.js?v=3.55.0"></script>
