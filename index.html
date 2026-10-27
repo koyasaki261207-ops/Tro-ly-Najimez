@@ -114,6 +114,11 @@
           <span>Hộp Dụng Cụ</span>
           <span class="pill-badge" style="background: rgba(168, 85, 247, 0.25); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">Tiện Ích</span>
         </button>
+        <button class="nav-item" data-tab="tab-friends">
+          <i class="fa-solid fa-user-group"></i>
+          <span>Bạn Bè &amp; Kết Nối</span>
+          <span class="pill-badge" id="friendRequestsBadge" style="display: none; background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);">0</span>
+        </button>
         <button class="nav-item" id="btnSidebarImageGen" type="button" title="Sáng tạo hình ảnh AI cùng Najimez">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
           <span>Tạo Ảnh AI Najimez</span>
@@ -1196,6 +1201,46 @@
             </div>
           </div>
         </section>
+
+        <!-- =================================================================
+             TAB 7: BẠN BÈ & KẾT NỐI (NAJIMEZ SOCIAL CONNECT)
+             ================================================================= -->
+        <section class="tab-pane" id="tab-friends">
+          <div class="friends-container">
+
+            <!-- Thẻ hồ sơ cá nhân hoặc Banner đăng nhập Google -->
+            <div id="friendsProfileContainer"></div>
+
+            <!-- Thanh kết bạn nhanh (Add Friend Bar) -->
+            <div class="friends-add-bar-wrap">
+              <div class="friends-input-group">
+                <i class="fa-solid fa-user-plus"></i>
+                <input type="text" id="friendSearchInput" class="friends-search-input" placeholder="Nhập Mã Najimez ID (VD: NJ-849201) hoặc Email Google của bạn bè..." autocomplete="off" />
+              </div>
+              <button type="button" class="btn-social-action primary" id="btnSendFriendRequest">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>Gửi Lời Mời</span>
+              </button>
+            </div>
+
+            <!-- Khu vực lời mời kết bạn chờ duyệt (Pending Requests) -->
+            <div id="friendsPendingContainer" style="display: none;"></div>
+
+            <!-- Tiêu đề danh sách bạn bè & Ô tìm nhanh -->
+            <div class="friends-list-header">
+              <div class="friends-section-title">
+                <i class="fa-solid fa-user-group" style="color: #c084fc;"></i>
+                <span>Danh Sách Bạn Bè</span>
+                <span id="friendsCountDisplay" style="color: #94a3b8; font-size: 0.88rem; font-weight: normal;">(0)</span>
+              </div>
+              <input type="text" id="friendsFilterInput" class="friends-filter-input" placeholder="🔍 Lọc nhanh theo tên, ID, email..." />
+            </div>
+
+            <!-- Lưới thẻ bạn bè (Friends Grid) -->
+            <div class="friends-grid" id="friendsListGrid"></div>
+
+          </div>
+        </section>
       </main>
 
     </div>
@@ -2205,6 +2250,38 @@
     </div>
   </div>
 
+  <!-- MODAL: MÃ QR KẾT BẠN CÁ NHÂN -->
+  <div class="modal-backdrop" id="friendQrModal">
+    <div class="modal-dialog friend-qr-dialog">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-qrcode" style="color: #c084fc;"></i>
+          <span>Mã QR Kết Bạn Najimez</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCloseFriendQrModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body" style="padding: 20px 24px;">
+        <p style="color: #cbd5e1; font-size: 0.88rem; margin: 0 0 12px;">
+          Đưa mã QR này cho bạn bè quét camera hoặc chia sẻ để kết bạn trong tích tắc!
+        </p>
+        <div class="friend-qr-code-pill" id="friendQrCodePill">NJ-......</div>
+        <div class="friend-qr-box">
+          <img id="friendQrImageTag" src="" alt="Mã QR Bạn Bè" class="friend-qr-img" />
+        </div>
+        <div class="modal-actions-row" style="margin-top: 14px;">
+          <button type="button" class="btn-modal-action secondary" onclick="copyMyFriendCode()">
+            <i class="fa-regular fa-copy"></i> Sao chép ID
+          </button>
+          <button type="button" class="btn-modal-action primary" onclick="handleShareInviteLink()">
+            <i class="fa-solid fa-share-nodes"></i> Chia sẻ Link
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Firebase SDK Compat v10 (Chạy mượt mà trực tiếp không cần npm build) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
@@ -2215,7 +2292,7 @@
   <!-- Các module chức năng theo chuẩn Code Modularization -->
   <script src="js/config.js?v=3.55.0"></script>
   <script src="js/storage.js?v=3.55.0"></script>
-  <script src="js/ui.js?v=3.68.0"></script>
+  <script src="js/ui.js?v=3.77.0"></script>
   <script src="js/vietqr.js?v=3.55.0"></script>
   <script src="js/bill-image.js?v=3.62.0"></script>
   <script src="js/debt.js?v=3.55.0"></script>
@@ -2233,10 +2310,12 @@
   <script src="js/copilot-image.js?v=3.60.1"></script>
   <script src="js/copilot.js?v=3.62.0"></script>
   <script src="js/stars.js?v=3.55.0"></script>
-  <script src="js/auth.js?v=3.55.0"></script>
+  <script src="js/auth.js?v=3.77.0"></script>
   <script src="js/firebase-sync.js?v=3.55.0"></script>
+  <script src="js/friends.js?v=3.77.0"></script>
+  <script src="js/friends-ui.js?v=3.77.0"></script>
   <!-- Entrypoint khởi động -->
-  <script src="app.js?v=3.55.0"></script>
+  <script src="app.js?v=3.77.0"></script>
 </body>
 
 </html>

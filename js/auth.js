@@ -94,6 +94,7 @@ async function handleAuthStateChanged(user) {
   if (typeof renderTodosTab === 'function') renderTodosTab();
   if (typeof renderCalendarTab === 'function') renderCalendarTab();
   if (typeof renderTimetableTab === 'function') renderTimetableTab();
+  if (typeof initFriendsForUser === 'function') initFriendsForUser(user);
 }
 
 // Đăng nhập bằng Google

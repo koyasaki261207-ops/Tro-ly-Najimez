@@ -54,6 +54,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   try {
+    if (typeof initFriendsUI === 'function') initFriendsUI();
+  } catch (err) {
+    console.error('Lỗi khởi tạo Friends UI:', err);
+  }
+
+  try {
     if (typeof initCopilotImageAttachment === 'function') initCopilotImageAttachment();
     initChatEngine();
   } catch (err) {

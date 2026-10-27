@@ -1,0 +1,864 @@
+/**
+ * css/friends.css - Giao diện Phân Hệ Bạn Bè & Kết Nối (Najimez Social Connect)
+ * Cyber Luxury Glassmorphism & Neon Purple Aesthetic
+ * Tuân thủ quy chuẩn Code Modularization.
+ */
+
+/* ==========================================================================
+   1. BỐ CỤC TỔNG THỂ TAB BẠN BÈ (FRIENDS TAB LAYOUT)
+   ========================================================================== */
+#tab-friends {
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.45) rgba(15, 23, 42, 0.6);
+}
+
+.friends-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8px 4px 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ==========================================================================
+   2. THẺ HỒ SƠ CÁ NHÂN (MY SOCIAL PROFILE CARD)
+   ========================================================================== */
+.friends-profile-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 26px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.65), rgba(49, 46, 129, 0.45));
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  box-shadow: 0 10px 32px rgba(15, 23, 42, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+  position: relative;
+  overflow: hidden;
+}
+
+.friends-profile-banner::after {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.22), transparent 70%);
+  pointer-events: none;
+}
+
+.friends-profile-left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.friends-my-avatar-wrap {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  flex-shrink: 0;
+}
+
+.friends-my-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(192, 132, 252, 0.7);
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.45);
+}
+
+.friends-status-dot {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2.5px solid #0f172a;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.friends-profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.friends-profile-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.friends-profile-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: -0.01em;
+}
+
+.friends-tag-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: rgba(168, 85, 247, 0.2);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+}
+
+.friends-profile-email {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+/* Khối Mã ID & Các nút tương tác chia sẻ */
+.friends-profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.friends-id-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.88rem;
+  color: #e2e8f0;
+}
+
+.friends-id-val {
+  font-weight: 700;
+  color: #c084fc;
+  letter-spacing: 0.05em;
+}
+
+.btn-pill-copy {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-pill-copy:hover {
+  color: #38bdf8;
+  transform: scale(1.1);
+}
+
+.btn-social-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  border: 1px solid transparent;
+}
+
+.btn-social-action.primary {
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.35);
+}
+
+.btn-social-action.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+}
+
+.btn-social-action.secondary {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #f1f5f9;
+}
+
+.btn-social-action.secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(168, 85, 247, 0.4);
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   3. KHUNG CẢNH BÁO / KHUYÊN ĐĂNG NHẬP GOOGLE KHI Ở CHẾ ĐỘ GUEST
+   ========================================================================== */
+.friends-guest-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px 24px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(234, 88, 12, 0.15), rgba(217, 70, 239, 0.15));
+  border: 1px solid rgba(234, 88, 12, 0.35);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
+}
+
+.friends-guest-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.friends-guest-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fdba74;
+}
+
+.friends-guest-sub {
+  font-size: 0.85rem;
+  color: #cbd5e1;
+  line-height: 1.45;
+}
+
+/* ==========================================================================
+   4. KHU VỰC THÊM BẠN BÈ (ADD FRIEND BAR)
+   ========================================================================== */
+.friends-add-bar-wrap {
+  display: flex;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  border-radius: 16px;
+  padding: 12px 16px;
+  align-items: center;
+  backdrop-filter: blur(12px);
+}
+
+.friends-input-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.friends-input-group i {
+  color: #c084fc;
+  font-size: 1.1rem;
+}
+
+.friends-search-input {
+  background: transparent;
+  border: none;
+  color: #f8fafc;
+  font-size: 0.95rem;
+  width: 100%;
+  outline: none;
+}
+
+.friends-search-input::placeholder {
+  color: #64748b;
+}
+
+/* ==========================================================================
+   5. LỜI MỜI KẾT BẠN CHỜ DUYỆT (PENDING REQUESTS)
+   ========================================================================== */
+.friends-requests-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(30, 27, 75, 0.35);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 18px;
+  padding: 18px 20px;
+  backdrop-filter: blur(12px);
+}
+
+.friends-section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.friends-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.friends-badge-count {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: #f59e0b;
+  color: #0f172a;
+  font-weight: 800;
+}
+
+.friends-requests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
+}
+
+.friend-req-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 12px;
+}
+
+.friend-req-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.friend-req-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(168, 85, 247, 0.5);
+  flex-shrink: 0;
+}
+
+.friend-req-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.friend-req-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friend-req-sub {
+  font-size: 0.76rem;
+  color: #94a3b8;
+}
+
+.friend-req-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-req-accept,
+.btn-req-reject {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.btn-req-accept {
+  background: #10b981;
+  color: #ffffff;
+}
+
+.btn-req-accept:hover {
+  background: #059669;
+  transform: scale(1.08);
+}
+
+.btn-req-reject {
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+}
+
+.btn-req-reject:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #f87171;
+  transform: scale(1.08);
+}
+
+/* ==========================================================================
+   6. LƯỚI DANH SÁCH BẠN BÈ (FRIENDS LIST GRID)
+   ========================================================================== */
+.friends-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.friends-filter-input {
+  background: rgba(15, 23, 42, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 6px 12px;
+  font-size: 0.82rem;
+  color: #f8fafc;
+  outline: none;
+  min-width: 220px;
+}
+
+.friends-filter-input:focus {
+  border-color: rgba(168, 85, 247, 0.5);
+}
+
+.friends-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+/* Thẻ Bạn Bè phong cách Cyber Glass */
+.friend-card {
+  display: flex;
+  flex-direction: column;
+  padding: 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.4), rgba(15, 23, 42, 0.6));
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  gap: 14px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.friend-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(168, 85, 247, 0.45);
+  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.2);
+}
+
+.friend-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.friend-card-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.friend-card-avatar-wrap {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.friend-card-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1.5px solid rgba(192, 132, 252, 0.5);
+}
+
+.friend-card-status-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #0f172a;
+}
+
+.friend-card-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.friend-card-name {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.friend-card-sub {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.friend-card-more-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.friend-card-more-btn:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Các nút hành động 1-chạm trong thẻ bạn bè */
+.friend-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.btn-friend-action {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-friend-action:hover {
+  background: rgba(168, 85, 247, 0.18);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #c084fc;
+  transform: translateY(-1px);
+}
+
+.btn-friend-action.debt-action:hover {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+/* ==========================================================================
+   7. TRẠNG THÁI TRỐNG (EMPTY STATE)
+   ========================================================================== */
+.friends-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  border-radius: 20px;
+  background: rgba(15, 23, 42, 0.35);
+  border: 1px dashed rgba(168, 85, 247, 0.25);
+  text-align: center;
+  gap: 12px;
+}
+
+.friends-empty-img {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 0 24px rgba(168, 85, 247, 0.3);
+  margin-bottom: 6px;
+}
+
+.friends-empty-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.friends-empty-desc {
+  font-size: 0.88rem;
+  color: #94a3b8;
+  max-width: 440px;
+  line-height: 1.5;
+}
+
+/* ==========================================================================
+   8. MODAL XEM MÃ QR KẾT BẠN (FRIEND QR MODAL)
+   ========================================================================== */
+.friend-qr-dialog {
+  max-width: 400px;
+  text-align: center;
+}
+
+.friend-qr-box {
+  background: #ffffff;
+  padding: 18px;
+  border-radius: 18px;
+  margin: 16px auto;
+  display: inline-block;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.friend-qr-img {
+  width: 220px;
+  height: 220px;
+  display: block;
+}
+
+.friend-qr-code-pill {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #c084fc;
+  letter-spacing: 0.08em;
+  padding: 8px 16px;
+  background: rgba(15, 23, 42, 0.7);
+  border-radius: 12px;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+/* ==========================================================================
+   9. RESPONSIVE THIẾT BỊ DI ĐỘNG (MOBILE OPTIMIZATION)
+   ========================================================================== */
+@media (max-width: 768px) {
+  #tab-friends {
+    padding: 10px 12px 32px;
+  }
+
+  .friends-container {
+    padding: 0 0 24px;
+    gap: 14px;
+  }
+
+  /* 1. Banner kêu gọi đăng nhập Google trên mobile */
+  .friends-guest-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 18px 16px;
+  }
+
+  .friends-guest-banner .btn-social-action {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 18px;
+    font-size: 0.9rem;
+  }
+
+  /* 2. Thẻ hồ sơ cá nhân trên mobile */
+  .friends-profile-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 16px;
+    gap: 14px;
+  }
+
+  .friends-profile-left {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .friends-my-avatar-wrap {
+    width: 56px;
+    height: 56px;
+  }
+
+  .friends-profile-name {
+    font-size: 1.1rem;
+  }
+
+  .friends-profile-email {
+    font-size: 0.8rem;
+    word-break: break-all;
+  }
+
+  .friends-profile-actions {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .friends-id-pill {
+    width: 100%;
+    justify-content: space-between;
+    padding: 9px 12px;
+    box-sizing: border-box;
+    font-size: 0.86rem;
+  }
+
+  .friends-profile-actions .btn-social-action {
+    flex: 1 1 calc(50% - 4px);
+    justify-content: center;
+    padding: 10px 8px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+
+  /* 3. Thanh tìm kiếm kết bạn */
+  .friends-add-bar-wrap {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  .friends-input-group {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .friends-search-input {
+    font-size: 0.88rem;
+  }
+
+  .friends-add-bar-wrap .btn-social-action {
+    width: 100%;
+    justify-content: center;
+    padding: 11px 16px;
+  }
+
+  /* 4. Lời mời kết bạn chờ duyệt */
+  .friends-requests-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .friend-req-card {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .friend-req-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  /* 5. Tiêu đề danh sách & ô lọc */
+  .friends-list-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .friends-filter-input {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 8px 12px;
+    font-size: 0.84rem;
+  }
+
+  /* 6. Lưới thẻ bạn bè */
+  .friends-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .friend-card {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .friend-card-avatar {
+    width: 46px;
+    height: 46px;
+  }
+
+  /* 3 nút hành động chia đều 3 cột cân đối */
+  .friend-card-actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    width: 100%;
+  }
+
+  .btn-friend-action {
+    padding: 8px 4px;
+    font-size: 0.72rem;
+    gap: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    justify-content: center;
+  }
+}
+
+/* Tối ưu màn hình cực nhỏ (<= 480px) */
+@media (max-width: 480px) {
+  .friend-qr-dialog {
+    width: 92vw;
+    max-width: 350px;
+    margin: 16px auto;
+  }
+
+  .friend-qr-box {
+    padding: 12px;
+    margin: 10px auto;
+  }
+
+  .friend-qr-img {
+    width: 190px;
+    height: 190px;
+    max-width: 100%;
+  }
+
+  .friend-qr-code-pill {
+    font-size: 0.95rem;
+    padding: 6px 14px;
+  }
+
+  .modal-actions-row {
+    display: flex;
+    gap: 8px;
+  }
+
+  .modal-actions-row .btn-modal-action {
+    flex: 1;
+    justify-content: center;
+    padding: 9px 8px;
+    font-size: 0.8rem;
+  }
+
+  #socialToastContainer {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: 16px !important;
+  }
+}
