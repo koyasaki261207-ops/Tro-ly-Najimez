@@ -1,6 +1,7 @@
 /**
- * js/firebase-sync.js - Module tích hợp và đồng bộ đám mây Firebase Cloud Firestore cho Najimez
- * Chuẩn kiến trúc Code Modularization
+ * js/firebase-sync.js - Module Tự Động Đồng Bộ Đám Mây Firebase Cloud Firestore cho Najimez
+ * Dữ liệu luôn luôn tự động đồng bộ theo tài khoản Google thời gian thực, không cần thao tác thủ công.
+ * Tuân thủ quy chuẩn Code Modularization (< 500 dòng).
  */
 
 const NAJIMEZ_FIREBASE_CONFIG = {
@@ -13,43 +14,43 @@ const NAJIMEZ_FIREBASE_CONFIG = {
   measurementId: "G-G1LVP5VM1L"
 };
 
-const FIREBASE_SYNC_KEY_STORAGE = 'najimez_firebase_sync_key';
 const FIREBASE_LAST_SYNC_STORAGE = 'najimez_firebase_last_sync';
 
 let firebaseApp = null;
 let firestoreDb = null;
-let firebaseAuth = null;
 let cloudSyncUnsubscribe = null;
 let isCloudSyncing = false;
 let isApplyingRemoteUpdate = false;
 let autoSyncTimer = null;
 let pendingSyncData = null;
 
-// Lấy mã đồng bộ hiện tại (Chỉ đồng bộ khi đã đăng nhập tài khoản Google với UID hợp lệ)
+// Lấy mã đồng bộ tài khoản Google hiện tại
 function getFirebaseSyncKey() {
   const uid = window.currentUserUid || (window.currentUser && window.currentUser.uid);
-  if (uid) {
-    return `user_${uid}`;
-  }
-  // Khi chưa đăng nhập Google, không dùng mã chung mà trả về null để chỉ lưu localStorage
-  return null;
+  return uid ? `user_${uid}` : null;
 }
 
-// Cập nhật mã đồng bộ mới (Chỉ áp dụng thông báo khi đã cố định theo Google UID)
-function setFirebaseSyncKey(newKey) {
-  const uid = window.currentUserUid || (window.currentUser && window.currentUser.uid);
-  if (uid) {
-    console.warn('[Firebase] Tài khoản đã đăng nhập, mã đồng bộ cố định là user_' + uid);
-    return false;
+// Định danh duy nhất cho từng tab/phiên làm việc
+function getClientSourceId() {
+  if (!window.__najimezClientSourceId) {
+    try {
+      let id = sessionStorage.getItem('najimez_client_source_id');
+      if (!id) {
+        id = 'src-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now();
+        sessionStorage.setItem('najimez_client_source_id', id);
+      }
+      window.__najimezClientSourceId = id;
+    } catch (e) {
+      window.__najimezClientSourceId = 'src-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now();
+    }
   }
-  return false;
+  return window.__najimezClientSourceId;
 }
 
-// Khởi tạo Firebase SDK
+// Khởi tạo Firebase SDK & Firestore
 function initFirebaseModule() {
   if (typeof firebase === 'undefined') {
     console.warn('[Firebase] Firebase SDK chưa được nạp từ CDN.');
-    updateSyncStatusUI('offline', 'Firebase SDK chưa nạp');
     return false;
   }
 
@@ -61,12 +62,11 @@ function initFirebaseModule() {
     }
 
     firestoreDb = firebase.firestore();
-    firebaseAuth = firebase.auth();
 
-    // Kích hoạt bộ nhớ đệm ngoại tuyến của Firestore
+    // Kích hoạt bộ nhớ đệm ngoại tuyến (Offline persistence)
     firestoreDb.enablePersistence({ synchronizeTabs: true }).catch(err => {
       if (err.code !== 'failed-precondition' && err.code !== 'unimplemented') {
-        console.warn('[Firebase] Offline persistence warning:', err);
+        console.warn('[Firebase] Offline persistence:', err);
       }
     });
 
@@ -75,20 +75,18 @@ function initFirebaseModule() {
       initAuthModule();
     }
 
-    updateSyncStatusUI('online', 'Đã kết nối Firebase');
-    console.log('[Firebase] Khởi tạo thành công cho dự án:', NAJIMEZ_FIREBASE_CONFIG.projectId);
+    console.log('[Firebase] Tự động đồng bộ sẵn sàng cho dự án:', NAJIMEZ_FIREBASE_CONFIG.projectId);
 
-    // Lắng nghe thay đổi thời gian thực từ đám mây
+    // Lắng nghe thay đổi thời gian thực nếu đã đăng nhập
     subscribeToCloudChanges();
     return true;
   } catch (err) {
     console.error('[Firebase] Lỗi khởi tạo Firebase:', err);
-    updateSyncStatusUI('error', 'Lỗi kết nối Firebase');
     return false;
   }
 }
 
-// Đăng ký lắng nghe thay đổi thời gian thực từ Firestore
+// Lắng nghe thay đổi dữ liệu thời gian thực từ Firestore
 function subscribeToCloudChanges() {
   if (!firestoreDb) return;
 
@@ -99,8 +97,6 @@ function subscribeToCloudChanges() {
 
   const syncKey = getFirebaseSyncKey();
   if (!syncKey) {
-    // Chưa đăng nhập Google, không lắng nghe Firestore
-    updateSyncStatusUI('offline', 'Chưa đăng nhập (Lưu cục bộ)');
     return;
   }
 
@@ -108,7 +104,7 @@ function subscribeToCloudChanges() {
 
   cloudSyncUnsubscribe = docRef.onSnapshot((docSnap) => {
     if (!docSnap.exists) {
-      // Nếu chưa có dữ liệu trên đám mây cho mã này, đẩy dữ liệu máy lên khởi tạo
+      // Nếu Cloud chưa có dữ liệu cho tài khoản này, tự động đẩy dữ liệu máy lên
       const localData = typeof getLedgerData === 'function' ? getLedgerData() : null;
       if (localData) {
         syncLedgerToFirebase(localData, false);
@@ -116,133 +112,106 @@ function subscribeToCloudChanges() {
       return;
     }
 
+    // Bỏ qua nếu là bản ghi cục bộ đang chờ commit từ chính máy này
+    if (docSnap.metadata && docSnap.metadata.hasPendingWrites) {
+      return;
+    }
+
     const cloudData = docSnap.data();
     if (!cloudData) return;
 
-    // Bỏ qua nếu dữ liệu vừa được chính máy này đẩy lên
+    // Bỏ qua nếu snapshot là kết quả từ chính tab này vừa đẩy lên
     if (cloudData.clientSourceId === getClientSourceId()) {
       return;
     }
 
+    // Tự động áp dụng dữ liệu mới nhất từ đám mây
     applyRemoteCloudData(cloudData);
   }, (err) => {
-    console.warn('[Firebase] Lỗi lắng nghe realtime:', err);
-    if (err.code === 'permission-denied') {
-      updateSyncStatusUI('error', 'Quyền truy cập Firestore bị từ chối');
-      showFirestoreRulesHint(true);
-    } else {
-      updateSyncStatusUI('offline', 'Mất kết nối đám mây');
-    }
+    console.warn('[Firebase] Realtime snapshot listener warning:', err);
   });
 }
 
-// Trả về định danh phiên trình duyệt hiện tại (Lưu vào localStorage thay vì sessionStorage)
-function getClientSourceId() {
-  let id = localStorage.getItem('najimez_client_source_id');
-  if (!id) {
-    id = 'src-' + Math.random().toString(36).substring(2, 9) + '-' + Date.now();
-    localStorage.setItem('najimez_client_source_id', id);
-  }
-  return id;
-}
-
-// Hàm gộp danh sách bản ghi theo ID và timestamp/updatedAt (ưu tiên bản ghi mới nhất)
-function mergeArrayByIdAndTime(localArr = [], cloudArr = []) {
-  const map = new Map();
-
-  (localArr || []).forEach(item => {
-    if (item && item.id) {
-      map.set(item.id, item);
-    }
-  });
-
-  (cloudArr || []).forEach(cloudItem => {
-    if (!cloudItem || !cloudItem.id) return;
-    if (!map.has(cloudItem.id)) {
-      map.set(cloudItem.id, cloudItem);
-    } else {
-      const localItem = map.get(cloudItem.id);
-      const localTime = Number(localItem.updatedAt || localItem.timestamp || localItem.settledAt || 0);
-      const cloudTime = Number(cloudItem.updatedAt || cloudItem.timestamp || cloudItem.settledAt || 0);
-      if (cloudTime >= localTime) {
-        map.set(cloudItem.id, { ...localItem, ...cloudItem });
-      }
-    }
-  });
-
-  return Array.from(map.values());
-}
-
-// Cập nhật dữ liệu từ đám mây vào LocalStorage và làm mới giao diện
+// Cập nhật dữ liệu từ Đám mây vào LocalStorage và làm mới toàn bộ giao diện
 function applyRemoteCloudData(cloudData) {
   if (isApplyingRemoteUpdate) return;
   try {
     isApplyingRemoteUpdate = true;
     const currentLocal = typeof getLedgerData === 'function' ? getLedgerData() : {};
 
-    // Hợp nhất dữ liệu thông minh theo id + updatedAt/timestamp thay vì ghi đè toàn bộ
+    // Cập nhật các danh sách từ đám mây (đảm bảo phản ánh chính xác thêm/sửa/xóa)
     const mergedData = {
-      transactions: mergeArrayByIdAndTime(currentLocal.transactions, cloudData.transactions),
-      debts: mergeArrayByIdAndTime(currentLocal.debts, cloudData.debts),
-      tasks: mergeArrayByIdAndTime(currentLocal.tasks, cloudData.tasks),
-      calendarEvents: mergeArrayByIdAndTime(currentLocal.calendarEvents, cloudData.calendarEvents),
+      transactions: Array.isArray(cloudData.transactions) ? cloudData.transactions : (currentLocal.transactions || []),
+      debts: Array.isArray(cloudData.debts) ? cloudData.debts : (currentLocal.debts || []),
+      tasks: Array.isArray(cloudData.tasks) ? cloudData.tasks : (currentLocal.tasks || []),
+      calendarEvents: Array.isArray(cloudData.calendarEvents) ? cloudData.calendarEvents : (currentLocal.calendarEvents || []),
       bank: { ...(currentLocal.bank || {}), ...(cloudData.bank || {}) },
       contacts: { ...(currentLocal.contacts || {}), ...(cloudData.contacts || {}) }
     };
 
-    const beforeHealStr = JSON.stringify(mergedData);
-    // Tự động chuẩn hóa dữ liệu
+    // Đồng bộ cài đặt vòng quay may mắn nếu có
+    if (Array.isArray(cloudData.wheelItems) && cloudData.wheelItems.length >= 2) {
+      try {
+        localStorage.setItem('najimez_wheel_custom_items', JSON.stringify(cloudData.wheelItems));
+      } catch (e) {}
+    }
+
+    // Đồng bộ cài đặt giọng nói nếu có
+    if (cloudData.voiceSettings && typeof cloudData.voiceSettings === 'object') {
+      try {
+        localStorage.setItem('najimez_voice_settings', JSON.stringify(cloudData.voiceSettings));
+        if (typeof loadVoiceSettings === 'function') loadVoiceSettings();
+      } catch (e) {}
+    }
+
+    // Đồng bộ Google Gemini API Key nếu máy hiện tại chưa có
+    if (cloudData.geminiApiKey && typeof cloudData.geminiApiKey === 'string') {
+      const curKey = localStorage.getItem(APP_CONFIG.storageKey) || '';
+      if (!curKey && cloudData.geminiApiKey.trim()) {
+        localStorage.setItem(APP_CONFIG.storageKey, cloudData.geminiApiKey.trim());
+        if (typeof updateApiKeyUI === 'function') updateApiKeyUI();
+      }
+    }
+
+    // Tự động chuẩn hóa & chữa lành dữ liệu
     const healed = typeof healLedgerData === 'function' ? healLedgerData(mergedData) : mergedData;
-    const afterHealStr = JSON.stringify(healed);
-    const hasHealedChanges = beforeHealStr !== afterHealStr;
 
     // Lưu vào LocalStorage riêng biệt theo tài khoản
     const targetKey = typeof getCurrentLedgerKey === 'function' ? getCurrentLedgerKey() : APP_CONFIG.ledgerKey;
     localStorage.setItem(targetKey, JSON.stringify(healed));
     localStorage.setItem(FIREBASE_LAST_SYNC_STORAGE, Date.now().toString());
 
-    // Cập nhật giao diện
+    // Cập nhật tất cả các giao diện đang mở
     if (typeof updateHeaderStats === 'function') updateHeaderStats();
     if (typeof renderFinanceTab === 'function') renderFinanceTab();
     if (typeof renderTodosTab === 'function') renderTodosTab();
     if (typeof renderCalendarTab === 'function') renderCalendarTab();
     if (typeof renderTimetableTab === 'function') renderTimetableTab();
 
-    updateSyncStatusUI('online', 'Đã đồng bộ từ Cloud');
-    updateModalStatsUI();
-
-    // Sau healLedgerData nếu có thay đổi thì đẩy lại lên cloud
-    if (hasHealedChanges) {
-      setTimeout(() => {
-        syncLedgerToFirebase(healed, false);
-      }, 500);
-    }
+    console.log('[Firebase] Đã tự động cập nhật dữ liệu mới nhất từ đám mây');
   } catch (e) {
     console.error('[Firebase] Lỗi áp dụng dữ liệu đám mây:', e);
   } finally {
     setTimeout(() => {
       isApplyingRemoteUpdate = false;
-    }, 400);
+    }, 300);
   }
 }
 
-// Đẩy dữ liệu Sổ cái lên Firebase Cloud Firestore (có Debounce & Pending queue)
-function syncLedgerToFirebase(data, isManual = false) {
+// Tự động đẩy dữ liệu lên Firebase Cloud Firestore (Debounce 500ms & Queue thông minh)
+function syncLedgerToFirebase(data, isImmediate = false) {
   if (isApplyingRemoteUpdate) return;
   if (!firestoreDb) return;
 
   const syncKey = getFirebaseSyncKey();
   if (!syncKey) {
-    if (isManual && typeof showCustomToast === 'function') {
-      showCustomToast('⚠️ Bạn chưa đăng nhập Google. Dữ liệu chỉ được lưu trên trình duyệt.', 'info');
-    }
-    updateSyncStatusUI('offline', 'Chưa đăng nhập (Lưu cục bộ)');
+    // Chưa đăng nhập Google, dữ liệu chỉ lưu an toàn trong localStorage
     return;
   }
 
-  // Nếu đang trong tiến trình đồng bộ, đặt cờ pending để đẩy lại sau khi xong (không bỏ qua)
+  // Nếu đang có tiến trình đẩy lên mạng, xếp hàng để gửi tiếp ngay sau đó
   if (isCloudSyncing) {
-    pendingSyncData = { data, isManual: isManual || (pendingSyncData && pendingSyncData.isManual) };
+    pendingSyncData = { data, isImmediate: isImmediate || (pendingSyncData && pendingSyncData.isImmediate) };
     return;
   }
 
@@ -253,16 +222,29 @@ function syncLedgerToFirebase(data, isManual = false) {
 
   const doPush = async () => {
     if (isCloudSyncing) {
-      pendingSyncData = { data, isManual: isManual || (pendingSyncData && pendingSyncData.isManual) };
+      pendingSyncData = { data, isImmediate };
       return;
     }
     try {
       isCloudSyncing = true;
-      updateSyncStatusUI('syncing', 'Đang tải lên Đám mây...');
-
       const currentSyncKey = getFirebaseSyncKey();
       if (!currentSyncKey) return;
       const docRef = firestoreDb.collection('najimez_vault').doc(currentSyncKey);
+
+      // Thu thập thêm cài đặt bổ trợ (Vòng quay, Giọng nói, API Key)
+      let customWheel = null;
+      try {
+        const rawWheel = localStorage.getItem('najimez_wheel_custom_items');
+        if (rawWheel) customWheel = JSON.parse(rawWheel);
+      } catch (e) {}
+
+      let customVoice = null;
+      try {
+        const rawVoice = localStorage.getItem('najimez_voice_settings');
+        if (rawVoice) customVoice = JSON.parse(rawVoice);
+      } catch (e) {}
+
+      const apiKey = localStorage.getItem(APP_CONFIG.storageKey) || '';
 
       const payload = {
         transactions: data.transactions || [],
@@ -271,264 +253,140 @@ function syncLedgerToFirebase(data, isManual = false) {
         calendarEvents: data.calendarEvents || [],
         bank: data.bank || {},
         contacts: data.contacts || {},
+        wheelItems: customWheel,
+        voiceSettings: customVoice,
+        geminiApiKey: apiKey ? apiKey.trim() : '',
         clientSourceId: getClientSourceId(),
         clientUpdatedAt: Date.now(),
         serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
       };
 
       await docRef.set(payload, { merge: true });
-
       localStorage.setItem(FIREBASE_LAST_SYNC_STORAGE, Date.now().toString());
-      updateSyncStatusUI('online', 'Đã đồng bộ lên Cloud');
-      showFirestoreRulesHint(false);
-      updateModalStatsUI();
-
-      if (isManual && typeof showCustomToast === 'function') {
-        showCustomToast('☁️ Đã sao lưu dữ liệu lên Firebase thành công!');
-      }
     } catch (err) {
-      console.warn('[Firebase] Lỗi đẩy dữ liệu lên Firestore:', err);
-      if (err.code === 'permission-denied') {
-        updateSyncStatusUI('error', 'Cần cấp quyền Firestore Rules');
-        showFirestoreRulesHint(true);
-      } else {
-        updateSyncStatusUI('offline', 'Chế độ Ngoại tuyến');
-      }
-      if (isManual && typeof showCustomToast === 'function') {
-        showCustomToast('⚠️ Không thể đồng bộ: ' + (err.message || 'Lỗi mạng'), 'warning');
-      }
+      console.warn('[Firebase] Tự động đồng bộ lỗi (sẽ thử lại khi có mạng):', err.message || err);
     } finally {
       isCloudSyncing = false;
-      // Nếu có thay đổi mới trong lúc đang sync, đẩy lại ngay
       if (pendingSyncData) {
         const next = pendingSyncData;
         pendingSyncData = null;
-        syncLedgerToFirebase(next.data, next.isManual);
+        syncLedgerToFirebase(next.data, next.isImmediate);
       }
     }
   };
 
-  if (isManual) {
+  if (isImmediate) {
     doPush();
   } else {
-    // Tự động đẩy sau 1000ms khi người dùng ngừng thao tác
-    autoSyncTimer = setTimeout(doPush, 1000);
+    // Tự động đẩy sau 500ms
+    autoSyncTimer = setTimeout(doPush, 500);
   }
 }
 
-// Kéo dữ liệu từ Cloud về máy (Khôi phục)
-async function pullLedgerFromFirebase() {
-  if (!firestoreDb) {
-    if (typeof showCustomToast === 'function') showCustomToast('Firebase chưa sẵn sàng', 'warning');
-    return;
-  }
-
-  const syncKey = getFirebaseSyncKey();
-  if (!syncKey) {
-    if (typeof showCustomToast === 'function') {
-      showCustomToast('⚠️ Vui lòng đăng nhập Google để tải dữ liệu từ Cloud!', 'warning');
+// Xả ngay hàng đợi đồng bộ khi chuyển trang hoặc đóng tab
+function flushPendingCloudSync() {
+  if (autoSyncTimer) {
+    clearTimeout(autoSyncTimer);
+    autoSyncTimer = null;
+    const curData = typeof getLedgerData === 'function' ? getLedgerData() : null;
+    if (curData) {
+      syncLedgerToFirebase(curData, true);
     }
-    return;
   }
+}
+
+// Tự động đồng bộ hoặc di chuyển dữ liệu khi đăng nhập Google
+async function syncOrMigrateUserData() {
+  if (!firestoreDb || !window.currentUserUid) return;
+  const syncKey = getFirebaseSyncKey();
+  if (!syncKey) return;
 
   try {
-    updateSyncStatusUI('syncing', 'Đang tải về từ Cloud...');
     const docRef = firestoreDb.collection('najimez_vault').doc(syncKey);
     const docSnap = await docRef.get();
 
-    if (!docSnap.exists) {
-      if (typeof showCustomToast === 'function') {
-        showCustomToast('Không tìm thấy dữ liệu trên Cloud với mã: ' + syncKey, 'info');
-      }
-      updateSyncStatusUI('online', 'Đã kết nối');
-      return;
-    }
+    if (docSnap.exists) {
+      // Đã có dữ liệu trên Cloud cho tài khoản Google này -> Nạp về máy
+      applyRemoteCloudData(docSnap.data());
+    } else {
+      // Tài khoản Google mới -> Kiểm tra và di chuyển dữ liệu từ Khách sang
+      const guestKey = APP_CONFIG.ledgerKey;
+      const userKey = getCurrentLedgerKey();
+      let localData = null;
 
-    applyRemoteCloudData(docSnap.data());
-    if (typeof showCustomToast === 'function') {
-      showCustomToast('✅ Đã khôi phục dữ liệu từ Firebase thành công!');
+      try {
+        const rawUser = localStorage.getItem(userKey);
+        if (rawUser) localData = JSON.parse(rawUser);
+      } catch (e) {}
+
+      const isUserEmpty = !localData || (
+        (!localData.transactions || localData.transactions.length === 0) &&
+        (!localData.debts || localData.debts.length === 0) &&
+        (!localData.tasks || localData.tasks.length === 0)
+      );
+
+      if (isUserEmpty) {
+        try {
+          const rawGuest = localStorage.getItem(guestKey);
+          if (rawGuest) {
+            const guestData = JSON.parse(rawGuest);
+            if (guestData && (
+              (guestData.transactions && guestData.transactions.length > 0) ||
+              (guestData.debts && guestData.debts.length > 0) ||
+              (guestData.tasks && guestData.tasks.length > 0)
+            )) {
+              localStorage.setItem(userKey, JSON.stringify(guestData));
+              localData = guestData;
+            }
+          }
+        } catch (e) {}
+      }
+
+      if (localData) {
+        await syncLedgerToFirebase(localData, true);
+      }
     }
   } catch (err) {
-    console.error('[Firebase] Lỗi kéo dữ liệu:', err);
-    if (err.code === 'permission-denied') {
-      updateSyncStatusUI('error', 'Cần cấu hình Firestore Rules');
-      showFirestoreRulesHint(true);
-    }
-    if (typeof showCustomToast === 'function') {
-      showCustomToast('Lỗi tải dữ liệu: ' + err.message, 'warning');
-    }
+    console.warn('[Firebase] Lỗi đồng bộ khi đăng nhập:', err);
   }
 }
 
-// Cập nhật giao diện trạng thái đồng bộ
-function updateSyncStatusUI(status, label) {
-  const dot = document.getElementById('cloudSyncStatusDot');
-  const btn = document.getElementById('btnCloudSync');
-  const title = document.getElementById('firebaseStatusTitle');
-  const desc = document.getElementById('firebaseStatusDesc');
-  const iconWrap = document.getElementById('syncStatusIconWrap');
-
-  if (dot) {
-    dot.className = 'cloud-sync-status-dot ' + status;
-  }
-
-  if (btn) {
-    btn.title = `Đồng bộ Đám mây Firebase: ${label}`;
-  }
-
-  if (title) {
-    if (status === 'online') title.textContent = 'Đã kết nối Firebase (Sẵn sàng)';
-    else if (status === 'syncing') title.textContent = 'Đang đồng bộ Đám mây...';
-    else if (status === 'error') title.textContent = 'Lỗi kết nối / Quyền Firestore';
-    else title.textContent = 'Chế độ Ngoại tuyến';
-  }
-
-  if (desc) {
-    desc.textContent = `Dự án: ${NAJIMEZ_FIREBASE_CONFIG.projectId} • Trạng thái: ${label}`;
-  }
-
-  if (iconWrap) {
-    iconWrap.className = 'sync-status-icon-wrap ' + status;
-    if (status === 'online') {
-      iconWrap.innerHTML = '<i class="fa-solid fa-cloud-check"></i>';
-    } else if (status === 'syncing') {
-      iconWrap.innerHTML = '<i class="fa-solid fa-arrows-rotate fa-spin"></i>';
-    } else if (status === 'error') {
-      iconWrap.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
-    } else {
-      iconWrap.innerHTML = '<i class="fa-solid fa-cloud"></i>';
-    }
+// Kích hoạt đồng bộ khi có thay đổi từ các module khác (API key, Giọng nói, Vòng quay)
+function triggerAutoSyncToCloud() {
+  const data = typeof getLedgerData === 'function' ? getLedgerData() : null;
+  if (data && window.currentUserUid) {
+    syncLedgerToFirebase(data, false);
   }
 }
 
-// Cập nhật số liệu thống kê trong Modal
-function updateModalStatsUI() {
-  const lastSyncEl = document.getElementById('firebaseLastSyncTime');
-  const recordsEl = document.getElementById('firebaseRecordCounts');
-  const syncKeyInput = document.getElementById('firebaseSyncKeyInput');
-  const btnSaveKey = document.getElementById('btnSaveFirebaseSyncKey');
-  const syncHelpEl = document.getElementById('firebaseSyncKeyHelp');
-
-  const syncKey = getFirebaseSyncKey();
-
-  if (syncKeyInput) {
-    if (syncKey) {
-      syncKeyInput.value = syncKey;
-      syncKeyInput.readOnly = true;
-      syncKeyInput.disabled = true;
-      if (btnSaveKey) btnSaveKey.style.display = 'none';
-      if (syncHelpEl) {
-        syncHelpEl.textContent = '🔒 Dữ liệu được bảo mật riêng biệt theo tài khoản Google của bạn (không áp dụng đổi mã tùy ý).';
-      }
-    } else {
-      syncKeyInput.value = 'Chưa đăng nhập (Chỉ lưu cục bộ)';
-      syncKeyInput.readOnly = true;
-      syncKeyInput.disabled = true;
-      if (btnSaveKey) btnSaveKey.style.display = 'none';
-      if (syncHelpEl) {
-        syncHelpEl.textContent = '💡 Vui lòng đăng nhập Google để tự động sao lưu và bảo mật dữ liệu trên Đám mây.';
-      }
-    }
-  }
-
-  if (lastSyncEl) {
-    const raw = localStorage.getItem(FIREBASE_LAST_SYNC_STORAGE);
-    if (!raw || !syncKey) {
-      lastSyncEl.textContent = syncKey ? 'Chưa đồng bộ' : 'Chưa đăng nhập Google';
-    } else {
-      const d = new Date(parseInt(raw, 10));
-      lastSyncEl.textContent = d.toLocaleTimeString('vi-VN') + ' ' + d.toLocaleDateString('vi-VN');
-    }
-  }
-
-  if (recordsEl && typeof getLedgerData === 'function') {
-    const d = getLedgerData();
-    const txCount = (d.transactions || []).length;
-    const debtCount = (d.debts || []).length;
-    const taskCount = (d.tasks || []).length;
-    const calCount = (d.calendarEvents || []).length;
-    recordsEl.textContent = `${txCount} thu chi, ${debtCount} nợ, ${taskCount} việc, ${calCount} lịch`;
-  }
-}
-
-// Hiện / ẩn gợi ý cấu hình Firestore Rules
-function showFirestoreRulesHint(show) {
-  const hint = document.getElementById('firebaseRulesHint');
-  if (hint) {
-    hint.style.display = show ? 'flex' : 'none';
-  }
-}
-
-// Khởi tạo các sự kiện cho Modal Đồng Bộ Firebase
+// Khởi tạo các bộ lắng nghe toàn cục cho module đồng bộ đám mây
 function initFirebaseSyncModule() {
-  const btnOpen = document.getElementById('btnCloudSync');
-  const modal = document.getElementById('firebaseSyncModal');
-  const btnClose = document.getElementById('btnCloseFirebaseSyncModal');
-  const btnSyncNow = document.getElementById('btnFirebaseSyncNow');
-  const btnPullCloud = document.getElementById('btnFirebasePullCloud');
-  const btnSaveKey = document.getElementById('btnSaveFirebaseSyncKey');
-  const syncKeyInput = document.getElementById('firebaseSyncKeyInput');
-
-  // Khởi động Firebase
   initFirebaseModule();
 
-  if (btnOpen && modal) {
-    btnOpen.addEventListener('click', () => {
-      updateModalStatsUI();
-      modal.classList.add('active');
-    });
-  }
+  // Đảm bảo dữ liệu luôn được đẩy lên trước khi người dùng tắt hoặc ẩn tab
+  window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') {
+      flushPendingCloudSync();
+    }
+  });
 
-  if (btnClose && modal) {
-    btnClose.addEventListener('click', () => {
-      modal.classList.remove('active');
-    });
-  }
+  window.addEventListener('beforeunload', () => {
+    flushPendingCloudSync();
+  });
 
-  if (modal) {
-    modal.addEventListener('click', (e) => {
-      if (e.target === modal) modal.classList.remove('active');
-    });
-  }
+  // Tự động đồng bộ ngay khi kết nối Internet phục hồi
+  window.addEventListener('online', () => {
+    const curData = typeof getLedgerData === 'function' ? getLedgerData() : null;
+    if (curData && window.currentUserUid) {
+      syncLedgerToFirebase(curData, true);
+    }
+  });
+}
 
-  if (btnSyncNow) {
-    btnSyncNow.addEventListener('click', () => {
-      const data = typeof getLedgerData === 'function' ? getLedgerData() : null;
-      if (data) {
-        syncLedgerToFirebase(data, true);
-      }
-    });
-  }
-
-  if (btnPullCloud) {
-    btnPullCloud.addEventListener('click', async () => {
-      const confirmed = typeof showAppConfirm === 'function'
-        ? await showAppConfirm('Bạn có chắc muốn tải dữ liệu từ Đám mây về để đồng bộ và cập nhật với máy không?', {
-            title: 'Tải dữ liệu Đám mây',
-            btnText: 'Tải về',
-            btnIcon: 'fa-solid fa-cloud-arrow-down'
-          })
-        : confirm('Bạn có chắc muốn tải dữ liệu từ Đám mây về đè lên máy không?');
-      if (confirmed) {
-        pullLedgerFromFirebase();
-      }
-    });
-  }
-
-  if (btnSaveKey && syncKeyInput) {
-    btnSaveKey.addEventListener('click', () => {
-      const syncKey = getFirebaseSyncKey();
-      if (syncKey) {
-        if (typeof showCustomToast === 'function') {
-          showCustomToast('Mã đồng bộ được liên kết cố định theo tài khoản Google cá nhân, không áp dụng đổi mã tùy ý.', 'info');
-        }
-      } else {
-        if (typeof showCustomToast === 'function') {
-          showCustomToast('Vui lòng đăng nhập Google để sử dụng tính năng đồng bộ đám mây.', 'warning');
-        }
-      }
-    });
-  }
+// Hàm tương thích ngược (không làm gì nếu gọi từ code cũ)
+function updateSyncStatusUI() {}
+function pullLedgerFromFirebase() {
+  return syncOrMigrateUserData();
 }
 
 // Xuất các hàm ra phạm vi toàn cục
@@ -537,4 +395,6 @@ window.initFirebaseSyncModule = initFirebaseSyncModule;
 window.syncLedgerToFirebase = syncLedgerToFirebase;
 window.pullLedgerFromFirebase = pullLedgerFromFirebase;
 window.getFirebaseSyncKey = getFirebaseSyncKey;
-window.setFirebaseSyncKey = setFirebaseSyncKey;
+window.syncOrMigrateUserData = syncOrMigrateUserData;
+window.triggerAutoSyncToCloud = triggerAutoSyncToCloud;
+window.updateSyncStatusUI = updateSyncStatusUI;

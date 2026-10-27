@@ -83,17 +83,9 @@ async function handleAuthStateChanged(user) {
     subscribeToCloudChanges();
   }
 
-  // Nếu là tài khoản Google và trên máy chưa có dữ liệu, tự động kéo từ Firestore về
-  if (window.currentUserUid && typeof getLedgerData === 'function') {
-    const localData = getLedgerData();
-    const isLocalEmpty = !localData || (
-      (localData.transactions || []).length === 0 &&
-      (localData.debts || []).length === 0 &&
-      (localData.tasks || []).length === 0
-    );
-    if (isLocalEmpty && typeof pullLedgerFromFirebase === 'function') {
-      await pullLedgerFromFirebase();
-    }
+  // Nếu là tài khoản Google, tự động nạp từ Cloud hoặc di chuyển dữ liệu
+  if (window.currentUserUid && typeof syncOrMigrateUserData === 'function') {
+    await syncOrMigrateUserData();
   }
 
   // Làm mới giao diện theo kho dữ liệu của tài khoản hiện tại
@@ -102,7 +94,6 @@ async function handleAuthStateChanged(user) {
   if (typeof renderTodosTab === 'function') renderTodosTab();
   if (typeof renderCalendarTab === 'function') renderCalendarTab();
   if (typeof renderTimetableTab === 'function') renderTimetableTab();
-  if (typeof updateModalStatsUI === 'function') updateModalStatsUI();
 }
 
 // Đăng nhập bằng Google
@@ -113,18 +104,19 @@ async function loginWithGoogle() {
   }
 
   const auth = firebase.auth();
+  try {
+    // Đảm bảo duy trì đăng nhập sau khi tắt mở lại trình duyệt
+    await auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+  } catch (e) {}
+
   const provider = new firebase.auth.GoogleAuthProvider();
   provider.setCustomParameters({ prompt: 'select_account' });
 
   try {
-    if (typeof updateSyncStatusUI === 'function') {
-      updateSyncStatusUI('syncing', 'Đang đăng nhập Google...');
-    }
-
     const result = await auth.signInWithPopup(provider);
     if (result && result.user) {
       if (typeof showCustomToast === 'function') {
-        showCustomToast(`👋 Chào mừng ${result.user.displayName || 'bạn'}!`);
+        showCustomToast(`👋 Chào mừng ${result.user.displayName || 'bạn'}! Mọi dữ liệu đã được tự động đồng bộ.`);
       }
     }
   } catch (err) {
@@ -193,7 +185,7 @@ function updateUserAuthUI() {
 
     if (headerBtn) {
       headerBtn.classList.add('logged-in');
-      headerBtn.title = `Tài khoản: ${user.displayName || user.email} (Nhấn để đăng xuất)`;
+      headerBtn.title = `Tài khoản: ${user.displayName || user.email} (Dữ liệu luôn tự động đồng bộ • Bấm để đăng xuất)`;
     }
     if (headerAvatar) {
       headerAvatar.src = user.photoURL || 'assets/najimez.jpg';
@@ -208,7 +200,7 @@ function updateUserAuthUI() {
 
     if (headerBtn) {
       headerBtn.classList.remove('logged-in');
-      headerBtn.title = 'Đăng nhập Google (Tách biệt dữ liệu riêng)';
+      headerBtn.title = 'Đăng nhập Google (Tự động đồng bộ mọi dữ liệu lên Đám mây)';
     }
     if (headerAvatar) {
       headerAvatar.style.display = 'none';

@@ -511,6 +511,9 @@ function renderWheelItemsUI() {
 function saveCustomItemsIfApplicable() {
   if (wheelCurrentPreset === 'custom') {
     localStorage.setItem('najimez_wheel_custom_items', JSON.stringify(wheelItems));
+    if (typeof window.triggerAutoSyncToCloud === 'function') {
+      window.triggerAutoSyncToCloud();
+    }
   }
 }
 

@@ -53,6 +53,9 @@ function saveVoiceSettings(newSettings) {
   currentVoiceSettings = { ...currentVoiceSettings, ...newSettings };
   try {
     localStorage.setItem(NAJIMEZ_VOICE_STORAGE_KEY, JSON.stringify(currentVoiceSettings));
+    if (typeof window.triggerAutoSyncToCloud === 'function') {
+      window.triggerAutoSyncToCloud();
+    }
   } catch (err) {
     console.warn('Lỗi lưu voice settings:', err);
   }

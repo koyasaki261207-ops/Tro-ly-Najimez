@@ -52,6 +52,7 @@ function renderDebtsUI() {
     const hasUnpaid = p.theyOweMe > 0 || p.iOweThem > 0;
     let status = 'paid';
     let badgeClass = 'paid';
+    let badgeIcon = 'fa-circle-check';
     let badgeText = 'Đã thanh toán hết';
     let amountStr = '0 đ';
 
@@ -59,17 +60,20 @@ function renderDebtsUI() {
       if (net > 0) {
         status = 'they_owe_me';
         badgeClass = 'they_owe_me';
+        badgeIcon = 'fa-arrow-down-left';
         badgeText = 'Họ nợ bạn';
         amountStr = formatCurrency(net);
       } else if (net < 0) {
         status = 'i_owe_them';
         badgeClass = 'i_owe_them';
+        badgeIcon = 'fa-arrow-up-right';
         badgeText = 'Bạn nợ họ';
         amountStr = formatCurrency(Math.abs(net));
       } else {
         status = 'paid';
         badgeClass = 'paid';
-        badgeText = 'Cân bằng nợ (0 đ)';
+        badgeIcon = 'fa-scale-balanced';
+        badgeText = 'Cân bằng nợ';
         amountStr = '0 đ';
       }
     }
@@ -88,6 +92,7 @@ function renderDebtsUI() {
       net,
       status,
       badgeClass,
+      badgeIcon,
       badgeText,
       amountStr,
       subDetail,
@@ -150,7 +155,10 @@ function renderDebtsUI() {
           </div>
           <div class="debt-sub-line">
             <div class="debt-sub-left">
-              <span class="direction-badge ${c.badgeClass}">${c.badgeText}</span>
+              <span class="direction-badge ${c.badgeClass}">
+                <i class="fa-solid ${c.badgeIcon || 'fa-circle-check'}"></i>
+                <span>${c.badgeText}</span>
+              </span>
             </div>
             <div class="debt-actions-group">
               <button type="button" class="btn-debt-history" data-action="view-history" data-person="${escapeHTML(c.name)}" title="Xem lịch sử giao dịch với ${escapeHTML(c.name)}">

@@ -2,189 +2,8 @@
  * css/firebase-sync.css - Định kiểu cho tính năng Đồng bộ Đám mây Firebase (Cyber Luxury Glassmorphism)
  */
 
-/* Nút Đồng bộ Cloud trên Top Header */
-.btn-cloud-sync {
-  position: relative;
-  background: rgba(56, 189, 248, 0.12);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  color: #38bdf8;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 1.05rem;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.btn-cloud-sync:hover {
-  background: rgba(56, 189, 248, 0.25);
-  color: #fff;
-  border-color: rgba(56, 189, 248, 0.5);
-  transform: translateY(-1px);
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
-}
-
-/* Chấm trạng thái nhỏ ở góc nút */
-.cloud-sync-status-dot {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  border: 2px solid var(--bg-surface);
-  transition: all 0.3s ease;
-}
-
-.cloud-sync-status-dot.online {
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
-}
-
-.cloud-sync-status-dot.syncing {
-  background: #f59e0b;
-  box-shadow: 0 0 8px #f59e0b;
-  animation: pulse-sync 1s infinite alternate;
-}
-
-.cloud-sync-status-dot.offline {
-  background: #94a3b8;
-  box-shadow: none;
-}
-
-.cloud-sync-status-dot.error {
-  background: #ef4444;
-  box-shadow: 0 0 8px #ef4444;
-}
-
-@keyframes pulse-sync {
-  from {
-    transform: scale(0.9);
-    opacity: 0.7;
-  }
-  to {
-    transform: scale(1.2);
-    opacity: 1;
-  }
-}
-
-/* Thẻ trạng thái kết nối bên trong Modal */
-.firebase-sync-status-card {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 14px 16px;
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--radius-md);
-  margin-bottom: 12px;
-  backdrop-filter: blur(8px);
-}
-
-.sync-status-icon-wrap {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.3rem;
-  background: rgba(56, 189, 248, 0.16);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  transition: all 0.3s ease;
-}
-
-.sync-status-icon-wrap.online {
-  background: rgba(16, 185, 129, 0.16);
-  color: #10b981;
-  border-color: rgba(16, 185, 129, 0.35);
-}
-
-.sync-status-icon-wrap.syncing {
-  background: rgba(245, 158, 11, 0.16);
-  color: #f59e0b;
-  border-color: rgba(245, 158, 11, 0.35);
-}
-
-.sync-status-icon-wrap.error {
-  background: rgba(239, 68, 68, 0.16);
-  color: #ef4444;
-  border-color: rgba(239, 68, 68, 0.35);
-}
-
-.sync-status-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #f8fafc;
-}
-
-.sync-status-desc {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-top: 2px;
-}
-
-/* Hộp thông tin chi tiết meta sync */
-.sync-meta-box {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-md);
-  padding: 12px 14px;
-  margin-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sync-meta-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.84rem;
-  color: var(--text-muted);
-}
-
-.sync-meta-row strong {
-  color: #e2e8f0;
-  font-weight: 600;
-}
-
-/* Cảnh báo hướng dẫn Firestore Rules */
-.firebase-rules-hint {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  color: #fde68a;
-  padding: 12px 14px;
-  border-radius: var(--radius-md);
-  font-size: 0.82rem;
-  line-height: 1.5;
-  margin-top: 14px;
-}
-
-.firebase-rules-hint i {
-  color: #f59e0b;
-  font-size: 1.1rem;
-  margin-top: 2px;
-}
-
-.firebase-rules-hint code {
-  background: rgba(0, 0, 0, 0.3);
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: #38bdf8;
-  font-family: var(--font-mono, monospace);
-  font-size: 0.8rem;
-}
-
 /* ==========================================================================
-   TÀI KHOẢN GOOGLE AUTH & TÁCH BIỆT DỮ LIỆU NGƯỜI DÙNG
+   TÀI KHOẢN GOOGLE AUTH & TỰ ĐỘNG ĐỒNG BỘ ĐÁM MÂY
    ========================================================================== */
 .btn-user-profile {
   position: relative;
@@ -200,7 +19,6 @@
   cursor: pointer;
   font-size: 1.1rem;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
 }
 
 .btn-user-profile:hover {
@@ -211,9 +29,26 @@
 }
 
 .btn-user-profile.logged-in {
-  border-color: rgba(52, 211, 153, 0.4);
-  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(52, 211, 153, 0.55);
+  background: rgba(16, 185, 129, 0.14);
   padding: 2px;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.25);
+}
+
+/* Chấm xanh góc avatar biểu thị tài khoản đang kết nối và tự động đồng bộ realtime */
+.btn-user-profile.logged-in::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid var(--bg-surface, #0b0f19);
+  box-shadow: 0 0 6px #10b981;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .header-user-avatar-img {

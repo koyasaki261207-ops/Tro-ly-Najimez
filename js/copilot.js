@@ -17,6 +17,9 @@ function setStoredApiKey(key) {
   }
   cachedModelInfo = null;
   updateApiKeyUI();
+  if (typeof window.triggerAutoSyncToCloud === 'function') {
+    window.triggerAutoSyncToCloud();
+  }
 }
 
 function updateApiKeyUI() {

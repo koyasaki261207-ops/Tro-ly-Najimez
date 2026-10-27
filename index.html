@@ -25,8 +25,8 @@
   <!-- Favicon Najimez -->
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
-  <link rel="stylesheet" href="style.css?v=3.56.0">
-  <link rel="stylesheet" href="css/responsive.css?v=3.56.0">
+  <link rel="stylesheet" href="style.css?v=3.58.0">
+  <link rel="stylesheet" href="css/responsive.css?v=3.58.0">
 
   <!-- Style cốt lõi chống cache @import trên trình duyệt di động -->
   <style>
@@ -191,13 +191,9 @@
               <strong id="headerPendingTasks">2 việc</strong>
             </div>
           </div>
-          <button class="btn-user-profile" id="btnHeaderUserProfile" title="Tài khoản Google (Dữ liệu riêng)">
+          <button class="btn-user-profile" id="btnHeaderUserProfile" title="Tài khoản Google (Tự động đồng bộ đám mây)">
             <img id="headerUserAvatarImg" src="assets/najimez.jpg" alt="Avatar" class="header-user-avatar-img" style="display: none;" />
             <i class="fa-brands fa-google" id="headerUserGuestIcon"></i>
-          </button>
-          <button class="btn-cloud-sync" id="btnCloudSync" title="Đồng bộ Đám mây Firebase">
-            <i class="fa-solid fa-cloud"></i>
-            <span class="cloud-sync-status-dot online" id="cloudSyncStatusDot"></span>
           </button>
           <button class="btn-api-key" id="btnOpenApiKeyModal" title="Cài đặt Google Gemini API Key">
             <i class="fa-solid fa-key"></i>
@@ -648,74 +644,6 @@
     </div>
   </div>
 
-  <!-- MODAL: ĐỒNG BỘ ĐÁM MÂY FIREBASE -->
-  <div class="modal-backdrop" id="firebaseSyncModal">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <div class="dialog-title">
-          <i class="fa-solid fa-cloud" style="color: #38bdf8;"></i>
-          <span>Đồng Bộ Đám Mây Firebase</span>
-        </div>
-        <button class="btn-close-modal" id="btnCloseFirebaseSyncModal">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="firebase-sync-status-card" id="firebaseSyncStatusCard">
-          <div class="sync-status-icon-wrap" id="syncStatusIconWrap">
-            <i class="fa-solid fa-cloud-check"></i>
-          </div>
-          <div class="sync-status-info">
-            <div class="sync-status-title" id="firebaseStatusTitle">Đã kết nối Firebase</div>
-            <div class="sync-status-desc" id="firebaseStatusDesc">Dự án: najimez • Tự động sao lưu thời gian thực</div>
-          </div>
-        </div>
-
-        <div class="form-group-custom" style="margin-top: 14px;">
-          <label for="firebaseSyncKeyInput">
-            <i class="fa-solid fa-id-badge"></i> Mã Hồ Sơ Đồng Bộ (Sync Profile ID):
-          </label>
-          <div class="input-with-action">
-            <input type="text" id="firebaseSyncKeyInput" class="form-input-custom"
-              placeholder="Chưa đăng nhập" autocomplete="off" readonly disabled />
-            <button type="button" class="btn-sub-apply" id="btnSaveFirebaseSyncKey" style="display: none;">Đổi Mã</button>
-          </div>
-          <small class="form-help" id="firebaseSyncKeyHelp">
-            Dữ liệu được tự động bảo mật và đồng bộ riêng biệt theo tài khoản Google của bạn (không áp dụng đổi mã tùy ý).
-          </small>
-        </div>
-
-        <div class="sync-meta-box">
-          <div class="sync-meta-row">
-            <span>Lần đồng bộ gần nhất:</span>
-            <strong id="firebaseLastSyncTime">Chưa đồng bộ</strong>
-          </div>
-          <div class="sync-meta-row">
-            <span>Số bản ghi hiện tại:</span>
-            <strong id="firebaseRecordCounts">0 thu chi, 0 nợ</strong>
-          </div>
-        </div>
-
-        <div class="modal-actions-row" style="margin-top: 16px;">
-          <button type="button" class="btn-modal-action primary" id="btnFirebaseSyncNow">
-            <i class="fa-solid fa-arrows-rotate"></i> Đồng Bộ Ngay
-          </button>
-          <button type="button" class="btn-modal-action secondary" id="btnFirebasePullCloud">
-            <i class="fa-solid fa-cloud-arrow-down"></i> Tải Về Từ Cloud
-          </button>
-        </div>
-
-        <div class="firebase-rules-hint" id="firebaseRulesHint" style="display: none;">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <div>
-            <strong>Lưu ý về Firestore Rules:</strong>
-            Nếu gặp lỗi quyền hạn (permission-denied), hãy vào Firebase Console &rarr; Firestore Database &rarr; Rules &rarr; đặt:
-            <code>match /najimez_vault/{docId} { allow read, write: if request.auth != null && docId == 'user_' + request.auth.uid; }</code>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- MODAL: CÀI ĐẶT GOOGLE GEMINI API KEY -->
   <div class="modal-backdrop" id="apiKeyModal">
@@ -1605,26 +1533,26 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
   <!-- Các module chức năng theo chuẩn Code Modularization -->
-  <script src="js/config.js?v=3.53.0"></script>
-  <script src="js/storage.js?v=3.54.0"></script>
-  <script src="js/ui.js?v=3.53.0"></script>
-  <script src="js/vietqr.js?v=3.53.0"></script>
-  <script src="js/bill-image.js?v=3.53.0"></script>
-  <script src="js/debt.js?v=3.53.0"></script>
-  <script src="js/debt-profile.js?v=3.53.0"></script>
-  <script src="js/finance.js?v=3.53.0"></script>
-  <script src="js/todos.js?v=3.53.0"></script>
-  <script src="js/event-theme.js?v=3.53.0"></script>
-  <script src="js/calendar.js?v=3.53.0"></script>
-  <script src="js/timetable.js?v=3.53.0"></script>
-  <script src="js/lucky-wheel.js?v=3.53.0"></script>
-  <script src="js/voice-settings.js?v=3.53.0"></script>
-  <script src="js/copilot.js?v=3.53.0"></script>
-  <script src="js/stars.js?v=3.53.0"></script>
-  <script src="js/auth.js?v=3.54.0"></script>
-  <script src="js/firebase-sync.js?v=3.54.0"></script>
+  <script src="js/config.js?v=3.55.0"></script>
+  <script src="js/storage.js?v=3.55.0"></script>
+  <script src="js/ui.js?v=3.55.0"></script>
+  <script src="js/vietqr.js?v=3.55.0"></script>
+  <script src="js/bill-image.js?v=3.55.0"></script>
+  <script src="js/debt.js?v=3.55.0"></script>
+  <script src="js/debt-profile.js?v=3.55.0"></script>
+  <script src="js/finance.js?v=3.55.0"></script>
+  <script src="js/todos.js?v=3.55.0"></script>
+  <script src="js/event-theme.js?v=3.55.0"></script>
+  <script src="js/calendar.js?v=3.55.0"></script>
+  <script src="js/timetable.js?v=3.55.0"></script>
+  <script src="js/lucky-wheel.js?v=3.55.0"></script>
+  <script src="js/voice-settings.js?v=3.55.0"></script>
+  <script src="js/copilot.js?v=3.55.0"></script>
+  <script src="js/stars.js?v=3.55.0"></script>
+  <script src="js/auth.js?v=3.55.0"></script>
+  <script src="js/firebase-sync.js?v=3.55.0"></script>
   <!-- Entrypoint khởi động -->
-  <script src="app.js?v=3.54.0"></script>
+  <script src="app.js?v=3.55.0"></script>
 </body>
 
 </html>
