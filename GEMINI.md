@@ -30,3 +30,7 @@ Tài liệu này lưu lại các yêu cầu cốt lõi của dự án cho các p
 * **Bố cục khoa học, tối ưu hóa đọc hiểu:** Không để mã nguồn dồn vào một file khổng lồ (>500 dòng). Mỗi lần chạy hoặc sửa tính năng, chỉ cần nạp và đọc đúng file liên quan để tối ưu ngữ cảnh (context), tránh đọc thừa, tiết kiệm token và tránh xung đột code.
 * Chi tiết quy chuẩn thực thi xem tại kỹ năng: [.agents/skills/code-modularization/SKILL.md](file:///d:/Siêu%20bá%20khí%20trợ%20lý/.agents/skills/code-modularization/SKILL.md).
 
+## 5. Quy Chuẩn Bố Cục Thẻ Hộp Dụng Cụ (Toolbox Grid Layout)
+* Mỗi tiện ích/công cụ trong Hộp Dụng Cụ luôn luôn chiếm đúng **1 ô chữ nhật chuẩn (1 cột)** trong hệ thống lưới 2 cột.
+* **Tuyệt đối không dùng `grid-column: 1 / -1` (không kéo dãn thẻ chiếm trọn cả hàng)** đối với các thẻ lẻ, mà giữ nguyên phần ô bên phải để trống, chừa chỗ cho các tính năng tiếp theo lấp đầy lần lượt theo thứ tự, đảm bảo bố cục không bị xô lệch hay lấn chỗ khi mở rộng tính năng mới.
+

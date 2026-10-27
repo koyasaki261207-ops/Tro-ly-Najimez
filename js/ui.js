@@ -132,6 +132,8 @@ function initTabNavigation() {
         } else if (targetTabId === 'tab-timetable') {
           if (typeof renderTimetableTab === 'function') renderTimetableTab();
           if (typeof autoScrollTimetableToCurrentTime === 'function') autoScrollTimetableToCurrentTime();
+        } else if (targetTabId === 'tab-toolbox') {
+          if (typeof renderToolboxTab === 'function') renderToolboxTab();
         }
 
         // Tự động gõ lời nhắc tắt nếu có
@@ -263,9 +265,9 @@ function updateHeaderGreeting() {
 
 
 function updateHeaderStats() {
-  const data = getLedgerData();
+  const data = typeof getLedgerData === 'function' ? getLedgerData() : {};
   const netEl = document.getElementById('headerNetCashflow');
-  const taskEl = document.getElementById('headerPendingTasks');
+  const eventEl = document.getElementById('headerTodayEvents') || document.getElementById('headerPendingTasks');
 
   let net = 0;
   if (Array.isArray(data.transactions)) {
@@ -288,9 +290,28 @@ function updateHeaderStats() {
     }
   }
 
-  if (taskEl) {
-    const pendingCount = Array.isArray(data.tasks) ? data.tasks.filter(t => !t.done).length : 0;
-    taskEl.textContent = `${pendingCount} việc`;
+  // Đếm số sự kiện trong ngày hôm nay ở Lịch
+  if (eventEl) {
+    const events = Array.isArray(data.calendarEvents) ? data.calendarEvents : [];
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const todayKey = `${yyyy}-${mm}-${dd}`;
+
+    let todayEventsCount = 0;
+    if (typeof isEventOccurringOnDate === 'function') {
+      todayEventsCount = events.filter(e => isEventOccurringOnDate(e, todayKey)).length;
+    } else {
+      todayEventsCount = events.filter(e => {
+        if (!e) return false;
+        if (e.date === todayKey) return true;
+        if (e.endDate && todayKey >= e.date && todayKey <= e.endDate) return true;
+        return false;
+      }).length;
+    }
+
+    eventEl.textContent = `${todayEventsCount} sự kiện`;
   }
 }
 
@@ -299,6 +320,16 @@ function initLedgerAndStats() {
   updateHeaderStats();
   if (typeof renderFinanceTab === 'function') renderFinanceTab();
   if (typeof renderTodosTab === 'function') renderTodosTab();
+
+  // Nhấp vào ô Sự Kiện Hôm Nay để chuyển nhanh đến tab Lịch & Sự Kiện
+  const btnTodayEvents = document.getElementById('btnHeaderTodayEvents');
+  if (btnTodayEvents && !btnTodayEvents.dataset.bound) {
+    btnTodayEvents.dataset.bound = 'true';
+    btnTodayEvents.addEventListener('click', () => {
+      const calTabBtn = document.querySelector('.sidebar-nav .nav-item[data-tab="tab-calendar"]');
+      if (calTabBtn) calTabBtn.click();
+    });
+  }
 }
 
 function notifyChat(markdownText) {

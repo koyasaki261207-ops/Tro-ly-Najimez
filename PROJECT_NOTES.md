@@ -80,7 +80,7 @@
 * **js/ (Hệ thống module logic):**
   * [`js/config.js`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/js/config.js): Cấu hình hệ thống, `APP_CONFIG`, trạng thái toàn cục.
   * [`js/storage.js`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/js/storage.js): Quản lý LocalStorage, tự chữa lành dữ liệu ([healLedgerData](file:///d:/Siêu%20bá%20khí%20trợ%20lý/js/storage.js)), các hàm helper định dạng tiền tệ, thời gian, avatar gradient.
-  * [`js/ui.js`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/js/ui.js): Đồng hồ thời gian thực, điều hướng tabs, toggle sidebar, cập nhật Header Stats, thông báo chat.
+  * [`js/ui.js`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/js/ui.js): Đồng hồ thời gian thực, điều hướng tabs (thứ tự thanh điều hướng: Trợ Lý Najimez -> Tài Chính & Sổ Nợ -> Lịch & Sự Kiện -> Thời Khóa Biểu -> Lịch Trình & To-Do -> Hỏi Đáp -> Đời Sống -> Hộp Dụng Cụ), toggle sidebar, cập nhật Header Stats (Cân đối thu chi & Ô Sự Kiện Hôm Nay đếm số sự kiện lịch trong ngày), thông báo chat.
   * [`js/vietqr.js`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/js/vietqr.js): Cài đặt STK ngân hàng, kiểm tra kết nối QR, modal hiển thị VietQR Napas.
   * [`js/debt.js`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/js/debt.js): Quản lý sổ nợ, thuật toán gom nhóm theo người (Person-Centric Net Debt), tính số dư ròng, tất toán nợ, bộ lọc nợ (đã loại bỏ ribbon thống kê tổng nợ nần để giữ giao diện tối giản, riêng tư và tinh tế).
   * [`js/debt-profile.js`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/js/debt-profile.js): Quản lý hồ sơ đối tượng sổ nợ: nén ảnh và đổi avatar (tải ảnh/dán ảnh/url), đổi tên, ghi chú cá nhân.
@@ -119,10 +119,15 @@
     * Kho phong cách nghệ thuật đa dạng (Anime Najimez tóc tím, Siêu thực 8K, Cyberpunk Neon, Epic Fantasy, Sơn dầu, 3D Pixar, Màu nước...), bộ tối ưu hóa prompt AI (Prompt Enhancer), thẻ hành động tạo ảnh trực tiếp trong bong bóng chat (`<!--NAJIMEZ_ACTION:{"type":"generate_image",...}-->`), và Modal Studio Sáng Tạo Ảnh chuyên nghiệp với bộ sưu tập gần đây (Recent Gallery).
   * [`css/image-gen.css`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/css/image-gen.css): Định kiểu Cyber Luxury Glassmorphism cho Thẻ tạo ảnh trong chat, hiệu ứng quét tia sáng Cyber Shimmer, nút mở studio trên thanh chat, bộ chọn phong cách nghệ thuật, tỷ lệ khung hình, badge ảnh minh họa sắc nét và banner thông báo đa tầng.
 
+  * [`js/toolbox.js`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/js/toolbox.js): Quản lý Phân Hệ Hộp Dụng Cụ & Tiện Ích Đa Năng: Bố cục lưới tiện ích tích hợp đồng thời 5 tính năng (Vòng quay may mắn, Xúc xắc 3D & Lật đồng xu, Đồng hồ Pomodoro, Máy tính bỏ túi, Quy đổi tiền tệ đa quốc gia trực tuyến & ngoại tuyến), hỗ trợ nút phóng to/thu nhỏ từng góc tiện ích linh hoạt, bộ tổng hợp âm thanh Web Audio API thuần (Offline 100%), động cơ lật đồng xu 3D, xúc xắc 3D, đồng hồ Pomodoro và tỷ giá ngoại tệ thời gian thực.
+  * [`css/toolbox.css`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/css/toolbox.css): Định kiểu Cyber Luxury Glassmorphism cho Hộp Dụng Cụ: Lưới tiện ích đa năng cân đối, viền phát sáng gradient riêng biệt cho từng tiện ích (Vàng hổ phách, Xanh cyan, Đỏ hoa hồng, Xanh ngọc lục bảo, Tím amethyst), responsive co giãn mượt mà trên mọi thiết bị.
+
 ---
 
 ## 4. Định Hướng Kiến Trúc & Quy Chuẩn (Code Modularization)
 * Kỹ năng **`code-modularization`** tại [.agents/skills/code-modularization/SKILL.md](file:///d:/Siêu%20bá%20khí%20trợ%20lý/.agents/skills/code-modularization/SKILL.md).
 * Quy tắc bắt buộc: Phân tách mã nguồn thành các module độc lập, kích thước nhỏ (150 - 400 dòng/file), có tính liên kết chặt chẽ theo từng phân hệ nhằm tối ưu tốc độ đọc hiểu và xử lý của AI mỗi khi thực thi tác vụ.
+* **Quy chuẩn bố cục thẻ Hộp Dụng Cụ (Toolbox Grid Layout):** Mỗi tính năng/tiện ích trong Hộp Dụng Cụ luôn luôn chiếm đúng 1 ô chữ nhật chuẩn (1 cột) trong lưới 2 cột. Tuyệt đối không dùng `grid-column: 1 / -1` (không kéo dãn thẻ chiếm trọn cả hàng) đối với các thẻ lẻ, mà để trống phần ô bên phải để chừa chỗ cho các tính năng tiếp theo lấp đầy lần lượt theo thứ tự, đảm bảo bố cục không bị xô lệch hay lấn chỗ khi mở rộng tính năng mới.
+
 
 

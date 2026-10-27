@@ -188,13 +188,23 @@ function drawWheelCanvas() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  const size = 360;
+  const wrapper = canvas.parentElement;
+  const wrapperWidth = wrapper ? wrapper.clientWidth : 230;
+  const size = Math.max(180, Math.min(360, Math.floor(wrapperWidth) || 230));
 
-  if (canvas.width !== size * dpr) {
+  if (canvas.width !== size * dpr || canvas.height !== size * dpr) {
     canvas.width = size * dpr;
     canvas.height = size * dpr;
     canvas.style.width = size + 'px';
     canvas.style.height = size + 'px';
+  }
+
+  const confettiCanvas = document.getElementById('luckyWheelConfettiCanvas');
+  if (confettiCanvas && (confettiCanvas.width !== size * dpr || confettiCanvas.height !== size * dpr)) {
+    confettiCanvas.width = size * dpr;
+    confettiCanvas.height = size * dpr;
+    confettiCanvas.style.width = size + 'px';
+    confettiCanvas.style.height = size + 'px';
   }
 
   ctx.save();
@@ -251,13 +261,15 @@ function drawWheelCanvas() {
     ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
     ctx.shadowBlur = 4;
 
-    const fontSize = count > 10 ? 11 : (count > 6 ? 12 : 14);
+    const scaleRatio = size / 360;
+    const baseFontSize = count > 10 ? 11 : (count > 6 ? 12 : 14);
+    const fontSize = Math.max(8.5, Math.round(baseFontSize * scaleRatio));
     ctx.font = `bold ${fontSize}px "Plus Jakarta Sans", sans-serif`;
 
     const text = wheelItems[i] || '';
-    const maxLen = count > 10 ? 12 : 16;
+    const maxLen = count > 10 ? 9 : 14;
     const shortText = text.length > maxLen ? text.substring(0, maxLen - 1) + '…' : text;
-    ctx.fillText(shortText, radius - 20, 0);
+    ctx.fillText(shortText, radius - (14 * scaleRatio), 0);
 
     ctx.restore();
     ctx.restore();
@@ -393,7 +405,8 @@ function launchConfetti() {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  const size = 360;
+  const wrapper = canvas.parentElement;
+  const size = Math.max(180, Math.min(360, (wrapper ? wrapper.clientWidth : 230) || 230));
 
   canvas.width = size * dpr;
   canvas.height = size * dpr;
@@ -518,25 +531,38 @@ function saveCustomItemsIfApplicable() {
 }
 
 /**
- * Mở hộp thoại Vòng Quay May Mắn
+ * Mở công cụ Vòng Quay May Mắn (tích hợp trong Hộp Dụng Cụ)
  */
 function openLuckyWheel(preset = 'an_gi') {
-  const modal = document.getElementById('luckyWheelModal');
-  if (!modal) return;
+  // 1. Chuyển sang Tab Hộp Dụng Cụ
+  const toolboxTabBtn = document.querySelector('.sidebar-nav .nav-item[data-tab="tab-toolbox"]');
+  if (toolboxTabBtn) {
+    toolboxTabBtn.click();
+  } else {
+    const pane = document.getElementById('tab-toolbox');
+    if (pane) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      pane.classList.add('active');
+    }
+  }
 
-  // Active chip tương ứng
+  // 2. Chuyển sang tiện ích con Vòng Quay trong Hộp Dụng Cụ
+  if (typeof switchToolboxTool === 'function') {
+    switchToolboxTool('wheel');
+  }
+
+  // 3. Active chip mẫu tương ứng
   const presetChips = document.querySelectorAll('.btn-preset-chip');
   presetChips.forEach(chip => {
     chip.classList.toggle('active', chip.dataset.preset === preset);
   });
 
   loadItemsFromPreset(preset);
-  modal.classList.add('active');
 
-  // Trigger resize canvas sau khi hiển thị
+  // 4. Trigger resize & vẽ lại canvas
   setTimeout(() => {
     drawWheelCanvas();
-  }, 60);
+  }, 80);
 }
 
 /**
@@ -659,6 +685,9 @@ function initLuckyWheel() {
       drawWheelCanvas();
     });
   }
+
+  // Tự động nạp preset mặc định khi khởi tạo để hiển thị trong góc phần tư Hộp Dụng Cụ
+  loadItemsFromPreset('an_gi');
 }
 
 function updateMuteUI(btn) {

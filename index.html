@@ -93,6 +93,10 @@
           <span>Trợ Lý Najimez</span>
           <span class="pill-badge">AI</span>
         </button>
+        <button class="nav-item" data-tab="tab-finance">
+          <i class="fa-solid fa-wallet"></i>
+          <span>Tài Chính & Sổ Nợ</span>
+        </button>
         <button class="nav-item" data-tab="tab-calendar">
           <i class="fa-solid fa-calendar-days"></i>
           <span>Lịch &amp; Sự Kiện</span>
@@ -100,10 +104,6 @@
         <button class="nav-item" data-tab="tab-timetable">
           <i class="fa-solid fa-calendar-week"></i>
           <span>Thời Khóa Biểu</span>
-        </button>
-        <button class="nav-item" data-tab="tab-finance">
-          <i class="fa-solid fa-wallet"></i>
-          <span>Tài Chính & Sổ Nợ</span>
         </button>
         <button class="nav-item" data-tab="tab-todos">
           <i class="fa-solid fa-calendar-check"></i>
@@ -119,9 +119,10 @@
           <i class="fa-solid fa-heart-pulse"></i>
           <span>Đời Sống & Kỷ Niệm</span>
         </button>
-        <button class="nav-item" id="btnSidebarLuckyWheel" type="button">
-          <i class="fa-solid fa-dharmachakra"></i>
-          <span>Vòng Quay May Mắn</span>
+        <button class="nav-item" data-tab="tab-toolbox">
+          <i class="fa-solid fa-toolbox"></i>
+          <span>Hộp Dụng Cụ</span>
+          <span class="pill-badge" style="background: rgba(168, 85, 247, 0.25); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">Tiện Ích</span>
         </button>
         <button class="nav-item" id="btnSidebarImageGen" type="button" title="Sáng tạo hình ảnh AI cùng Najimez">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
@@ -188,11 +189,11 @@
               <strong id="headerNetCashflow">-95.000 đ</strong>
             </div>
           </div>
-          <div class="stat-bubble purple" title="Công việc chưa hoàn thành hôm nay">
-            <i class="fa-solid fa-circle-check"></i>
+          <div class="stat-bubble purple" id="btnHeaderTodayEvents" title="Xem số sự kiện trong ngày hôm nay (Nhấp để mở Lịch &amp; Sự kiện)" style="cursor: pointer;">
+            <i class="fa-solid fa-calendar-day"></i>
             <div>
-              <span class="bubble-title">VIỆC CẦN LÀM</span>
-              <strong id="headerPendingTasks">2 việc</strong>
+              <span class="bubble-title">SỰ KIỆN HÔM NAY</span>
+              <strong id="headerTodayEvents">0 sự kiện</strong>
             </div>
           </div>
           <button class="btn-user-profile" id="btnHeaderUserProfile" title="Tài khoản Google (Tự động đồng bộ đám mây)">
@@ -706,6 +707,505 @@
             </div>
           </div>
         </section>
+
+        <!-- =================================================================
+             TAB 6: HỘP DỤNG CỤ & TIỆN ÍCH ĐA NĂNG (TOOLBOX WORKSPACE)
+             ================================================================= -->
+        <section class="tab-pane" id="tab-toolbox">
+          <div class="toolbox-workspace-layout">
+            <!-- BỐ CỤC CHIA 4 PHẦN MÀN HÌNH (4-QUADRANT GRID DASHBOARD) -->
+            <div class="toolbox-quad-grid" id="toolboxQuadGrid">
+
+              <!-- =============================================================
+                   PHẦN 1: VÒNG QUAY MAY MẮN (LUCKY WHEEL)
+                   ============================================================= -->
+              <div class="toolbox-quad-card quad-wheel" id="quadWheel">
+                <div class="quad-card-header">
+                  <div class="quad-card-title">
+                    <i class="fa-solid fa-dharmachakra" style="color: #fbbf24;"></i>
+                    <span>1. Vòng Quay May Mắn</span>
+                  </div>
+                  <button type="button" class="btn-quad-maximize" data-tool="wheel" title="Phóng to công cụ này">
+                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                  </button>
+                </div>
+                <div class="quad-card-body">
+                  <div class="lucky-wheel-layout">
+                    <!-- Cột trái: Sân khấu vòng quay & Hiệu ứng -->
+                    <div class="wheel-stage-col">
+                      <div class="wheel-canvas-wrapper">
+                        <!-- Kim chỉ ở đỉnh -->
+                        <div class="wheel-pointer" id="luckyWheelPointer">
+                          <svg viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M18 42L4 12C2.5 8.5 5 4 9 4H27C31 4 33.5 8.5 32 12L18 42Z" fill="url(#pointerGradWheel)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+                            <circle cx="18" cy="14" r="5" fill="#ffffff" />
+                            <defs>
+                              <linearGradient id="pointerGradWheel" x1="18" y1="4" x2="18" y2="42" gradientUnits="userSpaceOnUse">
+                                <stop stop-color="#fbbf24" />
+                                <stop offset="1" stop-color="#ea580c" />
+                              </linearGradient>
+                            </defs>
+                          </svg>
+                        </div>
+
+                        <!-- Canvas vẽ các nan quạt -->
+                        <canvas id="luckyWheelCanvas" width="230" height="230"></canvas>
+
+                        <!-- Nút tròn quay ở trung tâm -->
+                        <button type="button" class="wheel-center-btn" id="btnWheelCenterSpin" title="Nhấn để quay ngay!">
+                          QUAY
+                        </button>
+
+                        <!-- Canvas pháo hoa Confetti khi có kết quả -->
+                        <canvas id="luckyWheelConfettiCanvas" width="230" height="230"></canvas>
+                      </div>
+
+                      <!-- Nút điều khiển quay & âm thanh -->
+                      <div class="wheel-actions-bar" style="margin-top: 6px;">
+                        <button type="button" class="btn-spin-main" id="btnWheelSpinMain">
+                          <i class="fa-solid fa-dice"></i> Quay Ngay
+                        </button>
+                        <button type="button" class="btn-wheel-tool" id="btnWheelToggleMute" title="Bật/Tắt âm thanh">
+                          <i class="fa-solid fa-volume-high"></i>
+                        </button>
+                      </div>
+
+                      <!-- Thẻ thông báo kết quả may mắn -->
+                      <div class="wheel-winner-card" id="luckyWheelWinnerCard" style="display: none;">
+                        <img src="assets/najimez.jpg" alt="Najimez" class="wheel-winner-avatar" />
+                        <div class="wheel-winner-info">
+                          <div class="wheel-winner-label" id="luckyWheelWinnerLabel">Najimez đã chọn cho bạn:</div>
+                          <div class="wheel-winner-text" id="luckyWheelWinnerText">...</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Cột phải: Chọn Preset & Tùy biến ô lựa chọn -->
+                    <div class="wheel-control-col">
+                      <!-- Nhóm danh mục Presets -->
+                      <div class="wheel-control-card">
+                        <div class="wheel-control-title">
+                          <span><i class="fa-solid fa-wand-magic-sparkles"></i> Mẫu Gợi Ý Sẵn</span>
+                        </div>
+                        <div class="wheel-preset-chips">
+                          <button type="button" class="btn-preset-chip active" data-preset="an_gi">
+                            <i class="fa-solid fa-bowl-food"></i> Ăn gì?
+                          </button>
+                          <button type="button" class="btn-preset-chip" data-preset="uong_gi">
+                            <i class="fa-solid fa-mug-hot"></i> Uống gì?
+                          </button>
+                          <button type="button" class="btn-preset-chip" data-preset="todos">
+                            <i class="fa-solid fa-list-check"></i> Việc To-Do
+                          </button>
+                          <button type="button" class="btn-preset-chip" data-preset="contacts">
+                            <i class="fa-solid fa-users"></i> Ai bao?
+                          </button>
+                          <button type="button" class="btn-preset-chip" data-preset="custom">
+                            <i class="fa-solid fa-pen-to-square"></i> Tùy chỉnh
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Quản lý các ô -->
+                      <div class="wheel-control-card" style="flex: 1; display: flex; flex-direction: column;">
+                        <div class="wheel-control-title">
+                          <span><i class="fa-solid fa-list-ol"></i> Các Ô Lựa Chọn</span>
+                          <span id="wheelItemsCount" style="color: #f59e0b; font-weight: 700;">8 mục</span>
+                        </div>
+
+                        <!-- Thêm ô mới -->
+                        <div class="wheel-add-item-form">
+                          <input type="text" id="wheelAddItemInput" class="wheel-add-input" placeholder="Thêm lựa chọn..." maxlength="40" />
+                          <button type="button" class="btn-wheel-add" id="btnWheelAddItem">
+                            <i class="fa-solid fa-plus"></i> Thêm
+                          </button>
+                        </div>
+
+                        <!-- Danh sách ô cuộn -->
+                        <div class="wheel-items-list" id="wheelItemsList">
+                          <!-- Được render bởi js/lucky-wheel.js -->
+                        </div>
+
+                        <!-- Thao tác phụ -->
+                        <div class="wheel-items-actions">
+                          <button type="button" class="btn-wheel-sublink" id="btnWheelResetItems">
+                            <i class="fa-solid fa-rotate-left"></i> Khôi phục mẫu
+                          </button>
+                          <button type="button" class="btn-wheel-sublink" id="btnWheelClearItems" style="color: #f87171;">
+                            <i class="fa-regular fa-trash-can"></i> Xóa hết
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- =============================================================
+                   PHẦN 2: XÚC XẮC 3D & LẬT ĐỒNG XU (DICE & COIN)
+                   ============================================================= -->
+              <div class="toolbox-quad-card quad-dice-coin" id="quadDiceCoin">
+                <div class="quad-card-header">
+                  <div class="quad-card-title">
+                    <i class="fa-solid fa-dice" style="color: #38bdf8;"></i>
+                    <span>2. Xúc Xắc 3D &amp; Lật Đồng Xu</span>
+                  </div>
+                  <button type="button" class="btn-quad-maximize" data-tool="dice-coin" title="Phóng to công cụ này">
+                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                  </button>
+                </div>
+                <div class="quad-card-body">
+                  <div class="toolbox-dice-coin-grid">
+                    <!-- Thẻ Đồng Xu May Mắn 50/50 -->
+                    <div class="mini-tool-card">
+                      <div class="mini-tool-title-bar">
+                        <div class="mini-tool-heading">
+                          <i class="fa-solid fa-coins" style="color: #fbbf24;"></i>
+                          <span>Lật Đồng Xu (50/50)</span>
+                        </div>
+                        <span class="mini-tool-badge">Nhanh</span>
+                      </div>
+
+                      <!-- Sân khấu Đồng Xu 3D -->
+                      <div class="coin-stage" title="Nhấp vào đồng xu để lật">
+                        <div class="coin-3d" id="coin3d">
+                          <div class="coin-face front">
+                            <i class="fa-solid fa-sparkles"></i>
+                            <span>NGỬA</span>
+                          </div>
+                          <div class="coin-face back">
+                            <i class="fa-solid fa-crown"></i>
+                            <span>SẤP</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="coin-result-banner" id="coinResultBanner">
+                        Nhấn hoặc chạm đồng xu để lật!
+                      </div>
+
+                      <button type="button" class="btn-mini-tool-action gold" id="btnFlipCoin">
+                        <i class="fa-solid fa-rotate"></i> Tung Đồng Xu
+                      </button>
+
+                      <div class="coin-stats-row">
+                        <span class="coin-stat-pill">Ngửa: <strong id="coinStatHeads" style="color: #fbbf24;">0</strong></span>
+                        <span class="coin-stat-pill">Sấp: <strong id="coinStatTails" style="color: #94a3b8;">0</strong></span>
+                        <span class="coin-stat-pill">Tỉ lệ: <strong id="coinStatRate" style="color: #38bdf8;">0%</strong></span>
+                        <button type="button" id="btnResetCoinStats" title="Đặt lại thống kê" style="background: none; border: none; color: #64748b; cursor: pointer; padding: 0 4px;">
+                          <i class="fa-solid fa-arrows-rotate"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Thẻ Đổ Xúc Xắc 3D -->
+                    <div class="mini-tool-card">
+                      <div class="mini-tool-title-bar">
+                        <div class="mini-tool-heading">
+                          <i class="fa-solid fa-dice" style="color: #38bdf8;"></i>
+                          <span>Xúc Xắc 3D</span>
+                        </div>
+                        <div class="dice-count-selector">
+                          <button type="button" class="btn-dice-count" data-count="1">1</button>
+                          <button type="button" class="btn-dice-count active" data-count="2">2</button>
+                          <button type="button" class="btn-dice-count" data-count="3">3</button>
+                        </div>
+                      </div>
+
+                      <!-- Sân khấu Xúc Xắc 3D -->
+                      <div class="dice-stage" id="diceStage">
+                        <!-- Render động bởi initDiceRoller() -->
+                      </div>
+
+                      <div class="dice-result-banner" id="diceResultBanner">
+                        Nhấn nút hoặc chạm vào xúc xắc để lắc!
+                      </div>
+
+                      <button type="button" class="btn-mini-tool-action cyan" id="btnRollDice">
+                        <i class="fa-solid fa-dice-d6"></i> Lắc Xúc Xắc
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- =============================================================
+                   PHẦN 3: ĐỒNG HỒ TẬP TRUNG POMODORO (FOCUS TIMER)
+                   ============================================================= -->
+              <div class="toolbox-quad-card quad-pomodoro" id="quadPomodoro">
+                <div class="quad-card-header">
+                  <div class="quad-card-title">
+                    <i class="fa-solid fa-stopwatch-20" style="color: #f43f5e;"></i>
+                    <span>3. Đồng Hồ Tập Trung (Pomodoro)</span>
+                  </div>
+                  <button type="button" class="btn-quad-maximize" data-tool="pomodoro" title="Phóng to công cụ này">
+                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                  </button>
+                </div>
+                <div class="quad-card-body">
+                  <div class="toolbox-pomodoro-layout">
+                    <!-- Cột trái: Đồng hồ đếm ngược tròn -->
+                    <div class="pomodoro-card">
+                      <!-- Chế độ thời gian -->
+                      <div class="pomodoro-modes-nav">
+                        <button type="button" class="btn-pomo-mode active" data-mode="pomodoro">
+                          <i class="fa-solid fa-brain"></i> 25m Tập Trung
+                        </button>
+                        <button type="button" class="btn-pomo-mode" data-mode="shortBreak">
+                          <i class="fa-solid fa-mug-hot"></i> 5m Nghỉ
+                        </button>
+                        <button type="button" class="btn-pomo-mode" data-mode="longBreak">
+                          <i class="fa-solid fa-couch"></i> 15m Nghỉ Dài
+                        </button>
+                      </div>
+
+                      <!-- Vòng tròn tiến trình SVG -->
+                      <div class="pomodoro-circle-wrapper">
+                        <svg class="pomodoro-svg" viewBox="0 0 250 250">
+                          <defs>
+                            <linearGradient id="pomoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                              <stop offset="0%" stop-color="#f43f5e" />
+                              <stop offset="100%" stop-color="#ec4899" />
+                            </linearGradient>
+                          </defs>
+                          <circle class="pomodoro-svg-bg" cx="125" cy="125" r="78" fill="none" />
+                          <circle class="pomodoro-svg-progress" id="pomodoroProgressRing" cx="125" cy="125" r="78" fill="none" />
+                        </svg>
+                        <div class="pomodoro-inner-content">
+                          <div class="pomodoro-time-display" id="pomodoroTimeDisplay">25:00</div>
+                          <div class="pomodoro-status-tag" id="pomodoroStatusTag">TẬP TRUNG SÂU</div>
+                        </div>
+                      </div>
+
+                      <!-- Nút thao tác Pomodoro -->
+                      <div class="pomodoro-actions-row">
+                        <button type="button" class="btn-pomo-main" id="btnPomodoroToggle">
+                          <i class="fa-solid fa-play"></i> Bắt Đầu
+                        </button>
+                        <button type="button" class="btn-pomo-tool" id="btnPomodoroReset" title="Đặt lại đồng hồ">
+                          <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Cột phải: Thông số hiệp & Mẹo năng suất -->
+                    <div class="pomodoro-side-card">
+                      <div class="mini-tool-title-bar">
+                        <div class="mini-tool-heading">
+                          <i class="fa-solid fa-chart-pie" style="color: #fb7185;"></i>
+                          <span>Năng Suất Hôm Nay</span>
+                        </div>
+                      </div>
+
+                      <div class="pomodoro-stats-box">
+                        <div>
+                          <div class="pomodoro-stats-label">Hiệp hoàn thành:</div>
+                          <span style="font-size: 0.76rem; color: #94a3b8;">(1 hiệp = 25 phút)</span>
+                        </div>
+                        <div class="pomodoro-stats-val" id="pomoCompletedCount">0 hiệp</div>
+                      </div>
+
+                      <div class="pomodoro-tips-list">
+                        <div class="pomodoro-tip-item">
+                          <i class="fa-solid fa-check"></i>
+                          <span><strong>25 phút:</strong> Tập trung duy nhất 1 mục tiêu.</span>
+                        </div>
+                        <div class="pomodoro-tip-item">
+                          <i class="fa-solid fa-check"></i>
+                          <span><strong>5 phút:</strong> Đứng dậy uống nước, thư giãn mắt.</span>
+                        </div>
+                        <div class="pomodoro-tip-item">
+                          <i class="fa-solid fa-check"></i>
+                          <span><strong>Sau 4 hiệp:</strong> Nghỉ dài 15 - 30 phút.</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- =============================================================
+                   PHẦN 4: MÁY TÍNH NHANH (POCKET CALCULATOR)
+                   ============================================================= -->
+              <div class="toolbox-quad-card quad-calculator" id="quadCalculator">
+                <div class="quad-card-header">
+                  <div class="quad-card-title">
+                    <i class="fa-solid fa-calculator" style="color: #34d399;"></i>
+                    <span>4. Máy Tính Bỏ Túi</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="btn-wheel-sublink" id="btnCopyCalcResult" style="color: #34d399; font-size: 0.8rem; margin: 0; padding: 2px 6px;">
+                      <i class="fa-regular fa-copy"></i> Sao chép
+                    </button>
+                    <button type="button" class="btn-quad-maximize" data-tool="calculator" title="Phóng to công cụ này">
+                      <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="quad-card-body">
+                  <div class="toolbox-calc-layout">
+                    <div class="toolbox-calc-card">
+                      <!-- Màn hình LED máy tính -->
+                      <div class="calc-screen">
+                        <div class="calc-expression" id="calcExpression"></div>
+                        <div class="calc-display" id="calcDisplay">0</div>
+                      </div>
+
+                      <!-- Hàng phím tắt cộng tiền VND nhanh -->
+                      <div class="calc-quick-row">
+                        <button type="button" class="btn-calc-quick" data-add="10000">+10k</button>
+                        <button type="button" class="btn-calc-quick" data-add="50000">+50k</button>
+                        <button type="button" class="btn-calc-quick" data-add="100000">+100k</button>
+                        <button type="button" class="btn-calc-quick" data-add="500000">+500k</button>
+                      </div>
+
+                      <!-- Bàn phím số và phép tính -->
+                      <div class="calc-keypad">
+                        <!-- Hàng 1 -->
+                        <button type="button" class="btn-calc-key clear" data-action="clear">C</button>
+                        <button type="button" class="btn-calc-key clear" data-action="clear-entry">CE</button>
+                        <button type="button" class="btn-calc-key" data-action="backspace"><i class="fa-solid fa-delete-left"></i></button>
+                        <button type="button" class="btn-calc-key operator" data-action="divide">÷</button>
+
+                        <!-- Hàng 2 -->
+                        <button type="button" class="btn-calc-key" data-val="7">7</button>
+                        <button type="button" class="btn-calc-key" data-val="8">8</button>
+                        <button type="button" class="btn-calc-key" data-val="9">9</button>
+                        <button type="button" class="btn-calc-key operator" data-action="multiply">×</button>
+
+                        <!-- Hàng 3 -->
+                        <button type="button" class="btn-calc-key" data-val="4">4</button>
+                        <button type="button" class="btn-calc-key" data-val="5">5</button>
+                        <button type="button" class="btn-calc-key" data-val="6">6</button>
+                        <button type="button" class="btn-calc-key operator" data-action="subtract">−</button>
+
+                        <!-- Hàng 4 -->
+                        <button type="button" class="btn-calc-key" data-val="1">1</button>
+                        <button type="button" class="btn-calc-key" data-val="2">2</button>
+                        <button type="button" class="btn-calc-key" data-val="3">3</button>
+                        <button type="button" class="btn-calc-key operator" data-action="add">+</button>
+
+                        <!-- Hàng 5 -->
+                        <button type="button" class="btn-calc-key" data-action="negate">±</button>
+                        <button type="button" class="btn-calc-key" data-val="0">0</button>
+                        <button type="button" class="btn-calc-key" data-val="000">000</button>
+                        <button type="button" class="btn-calc-key" data-val=".">.</button>
+
+                        <!-- Hàng 6: Phép tính phần trăm & Bằng -->
+                        <button type="button" class="btn-calc-key operator" data-action="percent" style="grid-column: span 1;">%</button>
+                        <button type="button" class="btn-calc-key equals" data-action="equals" style="grid-column: span 3;">=</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- =============================================================
+                   PHẦN 5: QUY ĐỔI TIỀN TỆ (CURRENCY CONVERTER)
+                   ============================================================= -->
+              <div class="toolbox-quad-card quad-currency" id="quadCurrency">
+                <div class="quad-card-header">
+                  <div class="quad-card-title">
+                    <i class="fa-solid fa-money-bill-transfer" style="color: #c084fc;"></i>
+                    <span>5. Quy Đổi Tiền Tệ</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="btn-wheel-sublink" id="btnRefreshRates" title="Làm mới tỷ giá trực tuyến" style="color: #c084fc; font-size: 0.8rem; margin: 0; padding: 2px 6px;">
+                      <i class="fa-solid fa-arrows-rotate"></i> Cập nhật
+                    </button>
+                    <button type="button" class="btn-wheel-sublink" id="btnCopyCurrResult" title="Sao chép kết quả quy đổi" style="color: #94a3b8; font-size: 0.8rem; margin: 0; padding: 2px 6px;">
+                      <i class="fa-regular fa-copy"></i> Sao chép
+                    </button>
+                    <button type="button" class="btn-quad-maximize" data-tool="currency" title="Phóng to công cụ này">
+                      <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="quad-card-body">
+                  <div class="toolbox-currency-layout">
+                    <!-- Khung chuyển đổi From - To và nút Swap -->
+                    <div class="curr-converter-main">
+                      <!-- Khối From -->
+                      <div class="curr-input-box">
+                        <div class="curr-box-top">
+                          <span class="curr-box-label">Số tiền đổi</span>
+                        </div>
+                        <div class="curr-field-row">
+                          <input type="text" id="currFromAmount" class="curr-amount-input" value="100" placeholder="0" inputmode="decimal" />
+                          <select id="currFromSelect" class="curr-select" title="Chọn loại tiền nguồn">
+                            <option value="USD" selected>🇺🇸 USD (Đô Mỹ)</option>
+                            <option value="VND">🇻🇳 VND (Việt Nam)</option>
+                            <option value="EUR">🇪🇺 EUR (Euro)</option>
+                            <option value="JPY">🇯🇵 JPY (Yên Nhật)</option>
+                            <option value="KRW">🇰🇷 KRW (Won Hàn)</option>
+                            <option value="CNY">🇨🇳 CNY (Nhân dân tệ)</option>
+                            <option value="GBP">🇬🇧 GBP (Bảng Anh)</option>
+                            <option value="THB">🇹🇭 THB (Baht Thái)</option>
+                            <option value="SGD">🇸🇬 SGD (Đô Singapore)</option>
+                            <option value="AUD">🇦🇺 AUD (Đô Úc)</option>
+                            <option value="CAD">🇨🇦 CAD (Đô Canada)</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <!-- Nút Đảo Chiều -->
+                      <button type="button" class="btn-curr-swap" id="btnSwapCurrency" title="Đảo ngược 2 loại tiền">
+                        <i class="fa-solid fa-arrow-up-down"></i>
+                      </button>
+
+                      <!-- Khối To -->
+                      <div class="curr-input-box result-box">
+                        <div class="curr-box-top">
+                          <span class="curr-box-label">Quy đổi thành</span>
+                        </div>
+                        <div class="curr-field-row">
+                          <div class="curr-result-display" id="currResultDisplay">
+                            <span class="curr-val-num" id="currResultValue">2,545,000</span>
+                            <span class="curr-val-unit" id="currResultUnit">VND</span>
+                          </div>
+                          <select id="currToSelect" class="curr-select" title="Chọn loại tiền đích">
+                            <option value="VND" selected>🇻🇳 VND (Việt Nam)</option>
+                            <option value="USD">🇺🇸 USD (Đô Mỹ)</option>
+                            <option value="EUR">🇪🇺 EUR (Euro)</option>
+                            <option value="JPY">🇯🇵 JPY (Yên Nhật)</option>
+                            <option value="KRW">🇰🇷 KRW (Won Hàn)</option>
+                            <option value="CNY">🇨🇳 CNY (Nhân dân tệ)</option>
+                            <option value="GBP">🇬🇧 GBP (Bảng Anh)</option>
+                            <option value="THB">🇹🇭 THB (Baht Thái)</option>
+                            <option value="SGD">🇸🇬 SGD (Đô Singapore)</option>
+                            <option value="AUD">🇦🇺 AUD (Đô Úc)</option>
+                            <option value="CAD">🇨🇦 CAD (Đô Canada)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Thanh trạng thái tỷ giá & Thời gian cập nhật -->
+                    <div class="curr-meta-bar">
+                      <div class="curr-rate-tag" id="currRateTag">
+                        <i class="fa-solid fa-chart-line"></i>
+                        <span id="currRateInfoText">1 USD ≈ 25,450 VND</span>
+                      </div>
+                      <div class="curr-timestamp" id="currTimestampText">
+                        <i class="fa-regular fa-clock"></i> Tỷ giá chuẩn theo thị trường
+                      </div>
+                    </div>
+
+                    <!-- Nút chọn nhanh số tiền -->
+                    <div class="curr-quick-bar">
+                      <span class="curr-quick-label"><i class="fa-solid fa-bolt"></i> Chọn nhanh:</span>
+                      <div class="curr-quick-chips" id="currQuickChips"></div>
+                    </div>
+
+                    <!-- Dải tỷ giá tham khảo nhanh các ngoại tệ phổ biến với VND -->
+                    <div class="curr-rates-strip" id="currRatesStrip"></div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </section>
       </main>
 
     </div>
@@ -1005,130 +1505,7 @@
     </div>
   </div>
 
-  <!-- MODAL: VÒNG QUAY MAY MẮN NAJIMEZ -->
-  <div class="modal-backdrop" id="luckyWheelModal">
-    <div class="modal-dialog lucky-wheel-dialog">
-      <div class="modal-header">
-        <div class="dialog-title">
-          <i class="fa-solid fa-dharmachakra" style="color: #f59e0b;"></i>
-          <span>Vòng Quay May Mắn Najimez</span>
-        </div>
-        <button class="btn-close-modal" id="btnCloseLuckyWheelModal">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-      <div class="modal-body" style="padding: 0;">
-        <div class="lucky-wheel-layout">
-          <!-- Cột trái: Sân khấu vòng quay & Hiệu ứng -->
-          <div class="wheel-stage-col">
-            <div class="wheel-canvas-wrapper">
-              <!-- Kim chỉ ở đỉnh -->
-              <div class="wheel-pointer" id="luckyWheelPointer">
-                <svg viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M18 42L4 12C2.5 8.5 5 4 9 4H27C31 4 33.5 8.5 32 12L18 42Z" fill="url(#pointerGrad)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
-                  <circle cx="18" cy="14" r="5" fill="#ffffff" />
-                  <defs>
-                    <linearGradient id="pointerGrad" x1="18" y1="4" x2="18" y2="42" gradientUnits="userSpaceOnUse">
-                      <stop stop-color="#fbbf24" />
-                      <stop offset="1" stop-color="#ea580c" />
-                    </linearGradient>
-                  </defs>
-                </svg>
-              </div>
 
-              <!-- Canvas vẽ các nan quạt -->
-              <canvas id="luckyWheelCanvas" width="360" height="360"></canvas>
-
-              <!-- Nút tròn quay ở trung tâm -->
-              <button type="button" class="wheel-center-btn" id="btnWheelCenterSpin" title="Nhấn để quay ngay!">
-                QUAY
-              </button>
-
-              <!-- Canvas pháo hoa Confetti khi có kết quả -->
-              <canvas id="luckyWheelConfettiCanvas" width="360" height="360"></canvas>
-            </div>
-
-            <!-- Nút điều khiển quay & âm thanh -->
-            <div class="wheel-actions-bar">
-              <button type="button" class="btn-spin-main" id="btnWheelSpinMain">
-                <i class="fa-solid fa-dice"></i> Quay Ngay
-              </button>
-              <button type="button" class="btn-wheel-tool" id="btnWheelToggleMute" title="Bật/Tắt âm thanh">
-                <i class="fa-solid fa-volume-high"></i>
-              </button>
-            </div>
-
-            <!-- Thẻ thông báo kết quả may mắn -->
-            <div class="wheel-winner-card" id="luckyWheelWinnerCard" style="display: none;">
-              <img src="assets/najimez.jpg" alt="Najimez" class="wheel-winner-avatar" />
-              <div class="wheel-winner-info">
-                <div class="wheel-winner-label" id="luckyWheelWinnerLabel">Najimez đã chọn cho bạn:</div>
-                <div class="wheel-winner-text" id="luckyWheelWinnerText">...</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Cột phải: Chọn Preset & Tùy biến ô lựa chọn -->
-          <div class="wheel-control-col">
-            <!-- Nhóm danh mục Presets -->
-            <div class="wheel-control-card">
-              <div class="wheel-control-title">
-                <span><i class="fa-solid fa-wand-magic-sparkles"></i> Mẫu Gợi Ý Sẵn</span>
-              </div>
-              <div class="wheel-preset-chips">
-                <button type="button" class="btn-preset-chip active" data-preset="an_gi">
-                  <i class="fa-solid fa-bowl-food"></i> Ăn gì?
-                </button>
-                <button type="button" class="btn-preset-chip" data-preset="uong_gi">
-                  <i class="fa-solid fa-mug-hot"></i> Uống gì?
-                </button>
-                <button type="button" class="btn-preset-chip" data-preset="todos">
-                  <i class="fa-solid fa-list-check"></i> Việc To-Do
-                </button>
-                <button type="button" class="btn-preset-chip" data-preset="contacts">
-                  <i class="fa-solid fa-users"></i> Ai bao?
-                </button>
-                <button type="button" class="btn-preset-chip" data-preset="custom">
-                  <i class="fa-solid fa-pen-to-square"></i> Tùy chỉnh
-                </button>
-              </div>
-            </div>
-
-            <!-- Quản lý các ô -->
-            <div class="wheel-control-card" style="flex: 1; display: flex; flex-direction: column;">
-              <div class="wheel-control-title">
-                <span><i class="fa-solid fa-list-ol"></i> Các Ô Lựa Chọn</span>
-                <span id="wheelItemsCount" style="color: #f59e0b; font-weight: 700;">8 mục</span>
-              </div>
-
-              <!-- Thêm ô mới -->
-              <div class="wheel-add-item-form">
-                <input type="text" id="wheelAddItemInput" class="wheel-add-input" placeholder="Nhập thêm lựa chọn mới..." maxlength="40" />
-                <button type="button" class="btn-wheel-add" id="btnWheelAddItem">
-                  <i class="fa-solid fa-plus"></i> Thêm
-                </button>
-              </div>
-
-              <!-- Danh sách ô cuộn -->
-              <div class="wheel-items-list" id="wheelItemsList">
-                <!-- Được render bởi js/lucky-wheel.js -->
-              </div>
-
-              <!-- Thao tác phụ -->
-              <div class="wheel-items-actions">
-                <button type="button" class="btn-wheel-sublink" id="btnWheelResetItems">
-                  <i class="fa-solid fa-rotate-left"></i> Khôi phục mẫu
-                </button>
-                <button type="button" class="btn-wheel-sublink" id="btnWheelClearItems" style="color: #f87171;">
-                  <i class="fa-regular fa-trash-can"></i> Xóa hết
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- MODAL: THÊM SỰ KIỆN / NHẮC NHỞ LỊCH -->
   <div class="modal-backdrop" id="calendarEventModal">
@@ -1848,7 +2225,7 @@
   <!-- Các module chức năng theo chuẩn Code Modularization -->
   <script src="js/config.js?v=3.55.0"></script>
   <script src="js/storage.js?v=3.55.0"></script>
-  <script src="js/ui.js?v=3.55.0"></script>
+  <script src="js/ui.js?v=3.68.0"></script>
   <script src="js/vietqr.js?v=3.55.0"></script>
   <script src="js/bill-image.js?v=3.62.0"></script>
   <script src="js/debt.js?v=3.55.0"></script>
@@ -1859,7 +2236,8 @@
   <script src="js/calendar.js?v=3.55.0"></script>
   <script src="js/timetable.js?v=3.66.0"></script>
   <script src="js/timetable-timeline.js?v=3.66.0"></script>
-  <script src="js/lucky-wheel.js?v=3.55.0"></script>
+  <script src="js/lucky-wheel.js?v=3.70.0"></script>
+  <script src="js/toolbox.js?v=3.72.0"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
   <script src="js/image-gen.js?v=3.62.0"></script>
   <script src="js/copilot-image.js?v=3.60.1"></script>
