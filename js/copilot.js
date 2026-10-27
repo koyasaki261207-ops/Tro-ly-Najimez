@@ -535,6 +535,11 @@ Khi người dùng yêu cầu hành động, hãy giải thích chu đáo và đ
     Khi người dùng bảo bạn "vẽ cho tôi...", "tạo ảnh...", "vẽ tranh...", "hãy vẽ...", "vẽ hình...", "vẽ Najimez", "generate image...":
     BẠN BẮT BUỘC ĐÍNH KÈM THẺ TẠO ẢNH với prompt tiếng Anh chi tiết, sống động:
     <!--NAJIMEZ_ACTION:{"type":"generate_image","prompt":"<detailed artistic English prompt>","title":"<tiêu đề tiếng Việt ngắn gọn>","style":"anime|najimez|photorealistic|cyberpunk|fantasy|oil_painting|3d_render|watercolor|general","aspectRatio":"1:1|16:9|9:16|4:3|3:4"}-->
+14. TẠO VÒNG QUAY MAY MẮN (LUCKY WHEEL / VÒNG QUAY LỰA CHỌN):
+    Khi người dùng bảo bạn tạo vòng quay may mắn (ví dụ: "tạo vòng quay may mắn có đùi gà, cánh gà, ức gà", "làm vòng quay chọn món ăn: phở, bún chả, cơm tấm", "tạo vòng quay may mắn gồm...", "vòng quay may mắn..."):
+    BẠN BẮT BUỘC ĐÍNH KÈM THẺ create_lucky_wheel với danh sách các mục:
+    <!--NAJIMEZ_ACTION:{"type":"create_lucky_wheel","title":"<Tiêu đề vòng quay ngắn gọn>","items":["Mục 1","Mục 2","Mục 3"]}-->
+    (Lưu ý: items là mảng các chuỗi lựa chọn được tách biệt rõ ràng từ câu của người dùng, tối thiểu 2 mục. Trong phản hồi, hãy khen ngợi hoặc hào hứng giới thiệu về vòng quay và mời người dùng bấm nút bên dưới để mở vòng quay trong Hộp Dụng Cụ!)
 
 ============================================================
 QUY TẮC BẢO VỆ TÍNH TOÀN VẸN & ĐỐI CHIẾU XUNG ĐỘT LOGIC SỔ NỢ (CRITICAL LOGIC VALIDATION):
@@ -2147,6 +2152,13 @@ function executeAction(action, data) {
     }
   }
 
+  // 14. Tạo Vòng Quay May Mắn (create_lucky_wheel / lucky_wheel)
+  if (action.type === 'create_lucky_wheel' || action.type === 'lucky_wheel') {
+    if (typeof window.renderLuckyWheelActionCard === 'function') {
+      return window.renderLuckyWheelActionCard(action);
+    }
+  }
+
   return null;
 }
 
@@ -2175,6 +2187,60 @@ function getNaturalAIResponse(userText) {
     const safeTitle = cleanPrompt.substring(0, 45);
     return {
       text: `Dạ được chứ! Ý tưởng bức tranh **"${escapeHTML(safeTitle)}"** của bạn thật tuyệt vời. Najimez sẽ vẽ bức tranh này cho bạn ngay đây nhé! 🥰\n\n<!--NAJIMEZ_ACTION:{"type":"generate_image","prompt":"${escapeHTML(cleanPrompt)}","title":"${escapeHTML(safeTitle)}","style":"${detectedStyle}","aspectRatio":"1:1"}-->`
+    };
+  }
+
+  // Tạo Vòng Quay May Mắn (Lucky Wheel)
+  if (
+    /(?:tạo|làm|mở|quay|chơi)\s+(?:cho\s+tôi\s+)?(?:cái\s+)?vòng\s+quay(?:\s*(?:may\s+)?mắn)?|vòng\s+quay(?:\s*(?:may\s+)?mắn)?/i.test(lower)
+  ) {
+    let items = [];
+    let title = 'Vòng Quay Lựa Chọn';
+
+    // 1. Tách chuỗi danh sách các lựa chọn
+    let itemsStr = '';
+    const markerMatch = raw.match(/(?:có|gồm(?:\s+có)?|với|chứa|chọn|món|là|:)\s+([^.!?]+)/i);
+    if (markerMatch) {
+      itemsStr = markerMatch[1].trim();
+    } else {
+      itemsStr = raw
+        .replace(/^(?:(?:najimez?|ê|ơi|này)\s+)?(?:hãy\s+)?(?:tạo|làm|mở|cho\s+tôi)\s*(?:cái\s+)?vòng\s+quay(?:\s*(?:may\s+)?mắn)?\s*/i, '')
+        .trim();
+    }
+
+    if (itemsStr) {
+      // Tách theo dấu phẩy, chấm phẩy, gạch chéo, xuống dòng hoặc các liên từ "và", "hoặc", "hay"
+      const parts = itemsStr.split(/[,;\/\n]|(?:\s+(?:và|hoặc|hay)\s+)/i);
+      items = parts
+        .map(p => p.trim().replace(/^[-•*]\s*/, '').replace(/^lựa\s+chọn\s+/i, ''))
+        .filter(p => p.length > 0 && !/^(?:nhé|nha|ạ|giúp|cho\s+tôi|đi|được\s+không)$/i.test(p))
+        .map(p => p.charAt(0).toUpperCase() + p.slice(1));
+    }
+
+    // 2. Tự động suy luận tiêu đề nếu người dùng nhắc đến món ăn, việc làm...
+    if (/gà|cơm|bún|phở|thịt|cá|bánh|lẩu|món/i.test(raw)) {
+      title = 'Vòng Quay Món Ăn';
+    } else if (/học|bài|việc|sách|tập|code/i.test(raw)) {
+      title = 'Vòng Quay Công Việc';
+    } else if (/uống|trà|cà\s+phê|nước|sinh\s+tố/i.test(raw)) {
+      title = 'Vòng Quay Đồ Uống';
+    }
+
+    // 3. Nếu không có đủ ít nhất 2 lựa chọn hợp lệ, dùng danh sách mẫu vui nhộn
+    if (items.length < 2) {
+      items = ['Có', 'Không', 'Để mai tính', 'Làm ngay', 'Đi ngủ'];
+      title = 'Vòng Quay May Mắn';
+    }
+
+    const itemsSummary = items.join(', ');
+    const actionObj = {
+      type: 'create_lucky_wheel',
+      title: title,
+      items: items
+    };
+
+    return {
+      text: `Dạ được chứ! Najimez đã chuẩn bị ngay chiếc vòng quay may mắn với **${items.length} lựa chọn** (${itemsSummary}) cho bạn rồi nè! 🎡✨\n\nBạn hãy bấm vào nút **"Mở Vòng Quay"** bên dưới để chuyển đến Hộp Dụng Cụ và quay thử vận may ngay nhé! ❤️\n\n<!--NAJIMEZ_ACTION:${JSON.stringify(actionObj)}-->`
     };
   }
 

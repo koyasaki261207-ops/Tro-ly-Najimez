@@ -698,3 +698,157 @@ function updateMuteUI(btn) {
   btn.title = wheelAudioMuted ? 'Bật âm thanh vòng quay' : 'Tắt âm thanh vòng quay';
   btn.classList.toggle('active', !wheelAudioMuted);
 }
+
+/**
+ * Nạp danh sách các mục tùy biến (Custom Items) do AI Najimez tạo hoặc người dùng chỉ định
+ * @param {string[]} items - Danh sách lựa chọn
+ * @param {string} [title] - Tiêu đề hiển thị
+ */
+function applyCustomWheelItems(items, title) {
+  if (!Array.isArray(items)) return;
+  const cleaned = items.map(s => String(s || '').trim()).filter(s => s.length > 0);
+  if (cleaned.length === 0) return;
+
+  wheelCurrentPreset = 'custom';
+  wheelItems = cleaned.length >= 2 ? cleaned : [...cleaned, 'Lựa chọn 2'];
+
+  // Lưu vào localStorage
+  localStorage.setItem('najimez_wheel_custom_items', JSON.stringify(wheelItems));
+  if (typeof window.triggerAutoSyncToCloud === 'function') {
+    window.triggerAutoSyncToCloud();
+  }
+
+  // Cập nhật trạng thái active cho chip "Tùy chỉnh"
+  const presetChips = document.querySelectorAll('.btn-preset-chip');
+  presetChips.forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.preset === 'custom');
+  });
+
+  // Cập nhật nhãn thông báo kết quả
+  const winnerLabel = document.getElementById('luckyWheelWinnerLabel');
+  if (winnerLabel) {
+    winnerLabel.textContent = title
+      ? `Najimez đã chọn cho bạn (${title}):`
+      : `Najimez đã chọn cho bạn (Tùy chỉnh):`;
+  }
+
+  // Vẽ lại danh sách items UI và canvas
+  renderWheelItemsUI();
+  drawWheelCanvas();
+}
+
+/**
+ * Chuyển tab sang Hộp Dụng Cụ, nạp danh sách mục và cuộn làm sáng Vòng Quay May Mắn
+ * @param {string[]} items - Danh sách lựa chọn
+ * @param {string} [title] - Tiêu đề
+ */
+function loadWheelItemsAndNavigate(items, title) {
+  // 1. Đảm bảo hiển thị đầy đủ công cụ trong Hộp Dụng Cụ
+  if (typeof switchToolboxTool === 'function') {
+    switchToolboxTool('all');
+  }
+
+  // 2. Chuyển sang Tab Hộp Dụng Cụ
+  const toolboxTabBtn = document.querySelector('.sidebar-nav .nav-item[data-tab="tab-toolbox"]');
+  if (toolboxTabBtn) {
+    toolboxTabBtn.click();
+  } else {
+    const pane = document.getElementById('tab-toolbox');
+    if (pane) {
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      pane.classList.add('active');
+    }
+  }
+
+  // 3. Nạp danh sách mục vào vòng quay
+  applyCustomWheelItems(items, title);
+
+  // 4. Phát âm thanh tick nhẹ
+  playTickSound();
+
+  // 5. Cuộn mượt đến Vòng quay may mắn và kích hoạt hiệu ứng phát sáng neon
+  setTimeout(() => {
+    const quad = document.getElementById('quadWheel');
+    if (quad) {
+      quad.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      quad.classList.remove('highlight-pulse');
+      void quad.offsetWidth; // Force CSS reflow
+      quad.classList.add('highlight-pulse');
+      setTimeout(() => quad.classList.remove('highlight-pulse'), 3500);
+    }
+    drawWheelCanvas();
+  }, 120);
+
+  setTimeout(() => {
+    drawWheelCanvas();
+  }, 300);
+
+  // 6. Hiển thị thông báo Toast
+  if (typeof showCustomToast === 'function') {
+    showCustomToast(`🎡 Đã nạp ${wheelItems.length} lựa chọn vào Vòng Quay May Mắn!`);
+  }
+}
+
+/**
+ * Render Thẻ Hành Động Vòng Quay May Mắn trong khung chat Copilot
+ * @param {object} action - { type: 'create_lucky_wheel', title: string, items: string[] }
+ * @returns {HTMLElement} Thẻ hành động tương tác
+ */
+function renderLuckyWheelActionCard(action) {
+  const title = (action.title || 'Vòng Quay May Mắn').trim();
+  const rawItems = Array.isArray(action.items) ? action.items : [];
+  const items = rawItems.map(s => String(s || '').trim()).filter(s => s.length > 0);
+  const itemCount = items.length;
+
+  const card = document.createElement('div');
+  card.className = 'action-card lucky-wheel-card';
+  card.dataset.id = 'wheel-act-' + Date.now();
+
+  const previewItemsHtml = items.slice(0, 5).map((item, idx) => {
+    const color = WHEEL_COLORS[idx % WHEEL_COLORS.length];
+    return `<span class="wheel-action-chip" style="--chip-color: ${color.bg};">
+      <span class="wheel-action-chip-dot" style="background: ${color.bg};"></span>
+      ${typeof escapeHTML === 'function' ? escapeHTML(item) : item}
+    </span>`;
+  }).join('') + (items.length > 5 ? `<span class="wheel-action-chip more">+${items.length - 5} mục nữa</span>` : '');
+
+  card.innerHTML = `
+    <div class="action-card-left">
+      <div class="action-card-icon wheel-icon-pulse">
+        <i class="fa-solid fa-dharmachakra"></i>
+      </div>
+      <div class="action-card-info">
+        <div class="action-card-title">
+          <span>${typeof escapeHTML === 'function' ? escapeHTML(title) : title}</span>
+          <span class="card-category-badge wheel-badge">${itemCount} lựa chọn</span>
+        </div>
+        <div class="action-card-sub wheel-items-chips-wrap">
+          ${previewItemsHtml || '<span>Đã tạo danh sách lựa chọn</span>'}
+        </div>
+      </div>
+    </div>
+    <div class="action-card-right">
+      <button type="button" class="btn-card-action btn-open-lucky-wheel" title="Chuyển đến Hộp Dụng Cụ để quay ngay">
+        <i class="fa-solid fa-dharmachakra"></i>
+        <span>Mở Vòng Quay</span>
+      </button>
+    </div>
+  `;
+
+  const btnOpen = card.querySelector('.btn-open-lucky-wheel');
+  if (btnOpen) {
+    btnOpen.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      loadWheelItemsAndNavigate(items, title);
+    });
+  }
+
+  return card;
+}
+
+// Expose ra window để các module khác (như copilot.js) sử dụng
+window.applyCustomWheelItems = applyCustomWheelItems;
+window.loadWheelItemsAndNavigate = loadWheelItemsAndNavigate;
+window.renderLuckyWheelActionCard = renderLuckyWheelActionCard;
+
