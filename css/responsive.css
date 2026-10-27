@@ -433,11 +433,82 @@
     justify-content: space-between;
   }
 
+  /* Đồng bộ cuộn ngang và định dạng bảng chuẩn cho Thời Khóa Biểu trên điện thoại */
+  .timetable-grid-card {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    scroll-behavior: smooth;
+    --tt-time-col-w: 48px;
+    --tt-day-col-w: 104px;
+    --tt-total-w: calc(var(--tt-time-col-w) + 7 * var(--tt-day-col-w));
+  }
+
   .timetable-col-headers,
   .timetable-night-strip-row,
-  .timetable-grid-body,
-  .timetable-allday-row {
-    grid-template-columns: 44px repeat(7, 92px);
+  .timetable-allday-row,
+  .timetable-grid-body {
+    width: var(--tt-total-w) !important;
+    min-width: var(--tt-total-w) !important;
+    max-width: var(--tt-total-w) !important;
+    grid-template-columns: var(--tt-time-col-w) repeat(7, var(--tt-day-col-w)) !important;
+  }
+
+  .tt-night-cols,
+  .tt-allday-cols,
+  .tt-days-columns {
+    width: calc(7 * var(--tt-day-col-w)) !important;
+    min-width: calc(7 * var(--tt-day-col-w)) !important;
+    max-width: calc(7 * var(--tt-day-col-w)) !important;
+    grid-template-columns: repeat(7, var(--tt-day-col-w)) !important;
+  }
+
+  .tt-col-header-cell,
+  .tt-night-cell,
+  .tt-allday-cell,
+  .tt-day-col {
+    width: var(--tt-day-col-w) !important;
+    min-width: var(--tt-day-col-w) !important;
+    max-width: var(--tt-day-col-w) !important;
+    box-sizing: border-box !important;
+  }
+
+  .tt-time-corner {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 60 !important;
+    background: #090e1d !important;
+    border-right: 1.5px solid rgba(168, 85, 247, 0.4) !important;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.7) !important;
+  }
+
+  .tt-night-label,
+  .tt-allday-label {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 45 !important;
+    background: #090e1d !important;
+    border-right: 1.5px solid rgba(168, 85, 247, 0.4) !important;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.7) !important;
+  }
+
+  .tt-time-axis {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 40 !important;
+    background: #090e1d !important;
+    border-right: 1.5px solid rgba(168, 85, 247, 0.4) !important;
+    box-shadow: 4px 0 12px rgba(0, 0, 0, 0.7) !important;
+  }
+
+  .tt-time-label {
+    color: #cbd5e1 !important;
+    font-weight: 700 !important;
+  }
+
+  /* Thu gọn nhãn giờ phụ trên thanh Timeline 24h để tránh đè chữ */
+  .tt-dtl-hour-mark:not(.is-major-hour):not(.is-night-mark) span {
+    display: none;
   }
 
   /* Hộp thoại Modal trên mobile full vừa vặn */

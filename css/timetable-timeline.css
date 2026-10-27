@@ -715,3 +715,9 @@
     min-width: auto;
   }
 }
+
+@media (max-width: 600px) {
+  .tt-dtl-hour-mark:not(.is-major-hour):not(.is-night-mark) span {
+    display: none !important;
+  }
+}
