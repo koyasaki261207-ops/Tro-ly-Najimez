@@ -224,10 +224,14 @@
 
   .btn-voice-settings,
   .btn-voice-input,
+  .btn-attach-image,
+  .btn-create-image,
   .btn-send-cmd {
-    width: 38px;
-    height: 38px;
-    font-size: 0.98rem;
+    width: 36px;
+    height: 36px;
+    font-size: 0.94rem;
+    margin-left: 2px;
+    touch-action: manipulation;
   }
 
   .input-inner-wrap {
@@ -249,8 +253,48 @@
   }
 
   .header-greeting h2 {
-    max-width: 160px;
-    font-size: 0.88rem;
+    max-width: none;
+    font-size: 0.86rem;
+  }
+
+  .btn-user-profile,
+  .btn-api-key,
+  .btn-clear-all {
+    width: 32px;
+    height: 32px;
+    font-size: 0.84rem;
+    touch-action: manipulation;
+  }
+
+  /* Khung nhập liệu thanh Copilot cho điện thoại hẹp */
+  .copilot-input-bar {
+    margin-top: 6px;
+    gap: 4px;
+  }
+
+  .copilot-form {
+    padding: 3px 5px;
+    gap: 3px;
+  }
+
+  .btn-voice-settings,
+  .btn-voice-input,
+  .btn-attach-image,
+  .btn-create-image,
+  .btn-send-cmd {
+    width: 33px;
+    height: 33px;
+    font-size: 0.86rem;
+    margin-left: 1px;
+    flex-shrink: 0;
+  }
+
+  .input-inner-wrap {
+    padding: 0 6px;
+  }
+
+  .input-inner-wrap input {
+    font-size: 0.82rem;
   }
 
   /* Sổ Thu Chi & Nợ Nần */
@@ -426,6 +470,38 @@
   .modal-actions-row button {
     flex: 1 1 calc(50% - 8px);
   }
+
+  /* Studio Sáng Tạo Ảnh AI trên điện thoại */
+  .image-studio-modal {
+    padding: 6px;
+    align-items: flex-end;
+  }
+
+  .studio-modal-box {
+    max-width: 100%;
+    width: 100%;
+    border-radius: 18px 18px 10px 10px;
+    max-height: 94vh;
+    max-height: 94dvh;
+  }
+
+  .studio-modal-header {
+    padding: 12px 14px;
+  }
+
+  .studio-modal-header h3 {
+    font-size: 0.98rem;
+  }
+
+  .studio-header-sub {
+    font-size: 0.7rem;
+  }
+
+  .studio-modal-body {
+    grid-template-columns: 1fr;
+    padding: 12px 14px;
+    gap: 14px;
+  }
 }
 
 /* ==========================================================================
@@ -436,7 +512,8 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  .modal-backdrop {
+  .modal-backdrop,
+  .image-studio-modal {
     padding-bottom: max(10px, env(safe-area-inset-bottom));
   }
 }
@@ -447,6 +524,8 @@
 .todos-grid,
 .calendar-workspace-layout,
 .timetable-grid-card,
+.toolbox-workspace-layout,
+.studio-modal-body,
 .modal-body,
 .sidebar-nav {
   -webkit-overflow-scrolling: touch;

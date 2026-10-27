@@ -69,7 +69,7 @@
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   transition: all 0.25s ease;
-  min-height: auto;
+  min-height: 365px;
 }
 
 .toolbox-quad-card:hover {
@@ -1182,9 +1182,11 @@
 .toolbox-currency-layout {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: 8px;
   width: 100%;
   height: 100%;
+  flex: 1;
 }
 
 .curr-converter-main {
@@ -1199,10 +1201,10 @@
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(168, 85, 247, 0.2);
   border-radius: 9px;
-  padding: 6px 10px;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   transition: all 0.2s ease;
 }
 
@@ -1223,7 +1225,7 @@
 }
 
 .curr-box-label {
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   color: #94a3b8;
   font-weight: 700;
   text-transform: uppercase;
@@ -1242,7 +1244,7 @@
   border: none;
   outline: none;
   color: #fff;
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 800;
   font-family: 'Space Grotesk', sans-serif;
   flex: 1;
@@ -1260,7 +1262,7 @@
 }
 
 .curr-val-num {
-  font-size: 1.25rem;
+  font-size: 1.35rem;
   font-weight: 800;
   color: #c084fc;
   font-family: 'Space Grotesk', monospace;
@@ -1270,7 +1272,7 @@
 }
 
 .curr-val-unit {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: #e9d5ff;
 }
@@ -1282,7 +1284,7 @@
   color: #f1f5f9;
   font-size: 0.74rem;
   font-weight: 700;
-  padding: 3px 6px;
+  padding: 4px 8px;
   outline: none;
   cursor: pointer;
   transition: background 0.15s;
@@ -1300,25 +1302,30 @@
 }
 
 .btn-curr-swap {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  background: rgba(168, 85, 247, 0.18);
-  border: 1px solid rgba(168, 85, 247, 0.4);
-  color: #c084fc;
+  background: rgba(168, 85, 247, 0.22);
+  border: 1.5px solid rgba(168, 85, 247, 0.5);
+  color: #e9d5ff;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   align-self: center;
-  margin: -6px 0;
+  margin: -8px 0;
   z-index: 2;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+}
+
+.btn-curr-swap i {
+  color: #e9d5ff;
+  font-size: 0.82rem;
 }
 
 .btn-curr-swap:hover {
-  background: rgba(168, 85, 247, 0.35);
+  background: rgba(168, 85, 247, 0.4);
   color: #fff;
   transform: rotate(180deg) scale(1.1);
 }
@@ -1331,7 +1338,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 8px;
+  padding: 5px 10px;
   background: rgba(255, 255, 255, 0.02);
   border-radius: 6px;
   font-size: 0.72rem;
@@ -1392,22 +1399,29 @@
 }
 
 .curr-rates-strip {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 4px;
+}
+
+@media (max-width: 480px) {
+  .curr-rates-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .curr-rate-pill {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 5px;
-  padding: 2px 7px;
+  padding: 4px 6px;
   font-size: 0.68rem;
   color: #94a3b8;
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 4px;
+  justify-content: space-between;
+  gap: 2px;
   transition: all 0.15s;
 }
 
@@ -1422,4 +1436,193 @@
   color: #e2e8f0;
   font-weight: 700;
 }
+
+/* ==========================================================================
+   8. TỐI ƯU HÓA RESPONSIVE DI ĐỘNG & TABLET (MOBILE UX OPTIMIZATION)
+   ========================================================================== */
+@media (max-width: 860px) {
+  .toolbox-workspace-layout {
+    padding: 10px 10px 24px;
+    gap: 10px;
+  }
+
+  .toolbox-quad-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .toolbox-quad-card {
+    min-height: auto;
+    border-radius: 12px;
+  }
+
+  .toolbox-quad-card.maximized {
+    min-height: calc(100dvh - 80px);
+    min-height: calc(100vh - 80px);
+  }
+
+  .quad-card-header {
+    padding: 8px 12px;
+  }
+
+  .quad-card-body {
+    padding: 10px 12px;
+  }
+
+  /* Card 4 - Máy tính bỏ túi: Mở rộng 100% chiều ngang để phím to, bấm cảm ứng mượt mà */
+  .toolbox-calc-card {
+    max-width: 100%;
+  }
+
+  .btn-calc-key {
+    height: 38px;
+    font-size: 0.95rem;
+    touch-action: manipulation;
+  }
+
+  .btn-calc-quick {
+    padding: 5px 0;
+    font-size: 0.76rem;
+    touch-action: manipulation;
+  }
+}
+
+@media (max-width: 680px) {
+  /* Card 1 - Vòng quay */
+  .lucky-wheel-layout {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .wheel-stage-col {
+    width: 100%;
+    max-width: 240px;
+    margin: 0 auto;
+  }
+
+  .wheel-canvas-wrapper {
+    width: 185px;
+    height: 185px;
+  }
+
+  .wheel-control-col {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
+  .wheel-items-list {
+    max-height: 140px;
+  }
+
+  /* Card 2 - Xúc xắc & Đồng xu */
+  .toolbox-dice-coin-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .dice-3d-stage,
+  .coin-flip-stage {
+    height: 120px;
+  }
+
+  .btn-roll-dice,
+  .btn-flip-coin {
+    height: 38px;
+    font-size: 0.85rem;
+    touch-action: manipulation;
+  }
+
+  /* Card 3 - Pomodoro */
+  .toolbox-pomodoro-layout {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .pomodoro-circle-wrap {
+    width: 160px;
+    height: 160px;
+  }
+
+  .pomodoro-svg {
+    width: 160px;
+    height: 160px;
+  }
+
+  .btn-pomo-mode {
+    padding: 4px 10px;
+    font-size: 0.74rem;
+    touch-action: manipulation;
+  }
+
+  .btn-pomo-action {
+    height: 38px;
+    padding: 0 16px;
+    font-size: 0.84rem;
+    touch-action: manipulation;
+  }
+
+  /* Card 5 - Quy đổi tiền tệ */
+  .curr-input-box {
+    padding: 8px 10px;
+  }
+
+  .curr-amount-input,
+  .curr-val-num {
+    font-size: 1.25rem;
+  }
+
+  .curr-select {
+    max-width: 120px;
+    font-size: 0.72rem;
+    padding: 4px 6px;
+  }
+
+  .btn-curr-swap {
+    width: 32px;
+    height: 32px;
+    margin: -7px 0;
+    touch-action: manipulation;
+  }
+
+  .curr-meta-bar {
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .curr-rates-strip {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .btn-calc-key {
+    height: 36px;
+    font-size: 0.9rem;
+  }
+
+  .curr-select {
+    max-width: 105px;
+    font-size: 0.7rem;
+    padding: 4px 4px;
+  }
+
+  .curr-quick-bar {
+    gap: 4px;
+  }
+
+  .btn-curr-chip {
+    padding: 3px 8px;
+    font-size: 0.68rem;
+    touch-action: manipulation;
+  }
+
+  .curr-rate-pill {
+    padding: 3px 5px;
+    font-size: 0.65rem;
+  }
+}
+
 
