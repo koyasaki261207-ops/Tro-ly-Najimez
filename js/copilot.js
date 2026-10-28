@@ -520,6 +520,12 @@ Khi người dùng yêu cầu hành động, hãy giải thích chu đáo và đ
     d) KHI SỰ KIỆN LẶP LẠI CÓ HẠN KẾT THÚC (Ví dụ: "lặp lại mỗi tuần đến ngày 21/12 là hết", "đến hết tháng 12", "kết thúc vào ngày 21/12"):
        BẮT BUỘC TRUYỀN THÊM "repeatUntil": "YYYY-MM-DD" vào thẻ để hệ thống dừng lặp đúng hạn và KHÔNG tạo sự kiện vô hạn:
        <!--NAJIMEZ_ACTION:{"type":"calendar_event","title":"Học lập trình hướng đối tượng","date":"${todayKey}","time":"08:15","endTime":"11:15","category":"Học tập","repeat":"custom","repeatUnit":"week","repeatInterval":1,"daysOfWeek":[1,4],"repeatUntil":"2026-12-21"}-->
+    e) CẬP NHẬT / THÊM GHI CHÚ, GIẢNG VIÊN, PHÒNG HỌC CHO SỰ KIỆN:
+       - Khi người dùng muốn thêm ghi chú hoặc thông tin phòng học, giảng viên (Ví dụ: "tạo ghi chú cho 2 sự kiện đó: 'gv: vũ đình bảo, phòng : A304' cho thứ 2 và 'gv: vũ đình bảo, phòng : B307' cho thứ 5"):
+       - BẮT BUỘC TRUYỀN TRƯỜNG "note": "..." vào thẻ action.
+       - NẾU CÁC THỨ CÓ GHI CHÚ KHÁC NHAU: BẮT BUỘC xuất các thẻ calendar_event riêng cho từng thứ với "daysOfWeek" tương ứng (Ví dụ: 1 thẻ với "daysOfWeek":[1] và "note":"gv: vũ đình bảo, phòng : A304", 1 thẻ với "daysOfWeek":[4] và "note":"gv: vũ đình bảo, phòng : B307"). Hệ thống sẽ tự động tách lịch và cập nhật ghi chú riêng cho từng buổi học!
+       - Hoặc dùng thẻ update_calendar_event kèm "note":
+         <!--NAJIMEZ_ACTION:{"type":"update_calendar_event","title":"Lập trình hướng đối tượng","daysOfWeek":[1],"note":"gv: vũ đình bảo, phòng : A304"}-->
 11. XÓA SỰ KIỆN KHỎI TIỆN ÍCH LỊCH & SỰ KIỆN:
     - Xóa một sự kiện: <!--NAJIMEZ_ACTION:{"type":"delete_calendar_event","title":"Học Tiếng Anh","date":"${todayKey}"}-->
     - Xóa toàn bộ sự kiện: <!--NAJIMEZ_ACTION:{"type":"clear_all_calendar_events"}-->
@@ -1895,7 +1901,32 @@ function executeAction(action, data) {
     }
 
     targetDates.forEach(evDate => {
-      // Chống tạo trùng lặp nếu sự kiện tương đương đã tồn tại
+      // 1. Tự động kiểm tra và tách sự kiện gộp nếu sự kiện này là một thứ riêng lẻ (ví dụ: bổ sung ghi chú riêng cho Thứ 2 trong lịch Thứ 2 & Thứ 5)
+      if (normDaysOfWeek && normDaysOfWeek.length > 0) {
+        data.calendarEvents.forEach(ex => {
+          if (!ex) return;
+          const exTitle = (ex.title || '').trim().toLowerCase();
+          const exTime = (ex.time || ex.startTime || '').trim();
+          const rawExDays = ex.daysOfWeek || ex.repeatDays;
+          if (exTitle === normActionTitle && (!normActionTime || !exTime || exTime === normActionTime) && Array.isArray(rawExDays) && rawExDays.length > normDaysOfWeek.length) {
+            const exDayNums = rawExDays.map(Number);
+            const hasOverlap = normDaysOfWeek.some(d => exDayNums.includes(d));
+            if (hasOverlap) {
+              const rem = exDayNums.filter(d => !normDaysOfWeek.includes(d));
+              ex.daysOfWeek = rem;
+              if (ex.repeatDays) ex.repeatDays = rem;
+              ex.updatedAt = Date.now();
+            }
+          }
+        });
+        // Dọn các sự kiện gộp nếu đã bị tách sạch ngày
+        data.calendarEvents = data.calendarEvents.filter(e => {
+          const rawDays = e.daysOfWeek || e.repeatDays;
+          return !(Array.isArray(rawDays) && rawDays.length === 0);
+        });
+      }
+
+      // 2. Chống tạo trùng lặp hoặc cập nhật sự kiện đã có
       const existingEv = data.calendarEvents.find(ex => {
         if (!ex) return false;
         const exTitle = (ex.title || '').trim().toLowerCase();
@@ -1914,6 +1945,14 @@ function executeAction(action, data) {
         if (effectiveRepeatUntil && !existingEv.repeatUntil) {
           existingEv.repeatUntil = effectiveRepeatUntil;
         }
+        if (action.note !== undefined && action.note !== '') {
+          existingEv.note = action.note;
+        }
+        if (action.category) existingEv.category = action.category;
+        if (action.time) existingEv.time = action.time;
+        if (action.endTime) existingEv.endTime = action.endTime;
+        if (action.title) existingEv.title = action.title;
+        existingEv.updatedAt = Date.now();
         createdIds.push(existingEv.id);
         return;
       }
@@ -1946,6 +1985,9 @@ function executeAction(action, data) {
     const card = document.createElement('div');
     card.className = 'action-card calendar-card';
     card.dataset.id = createdIds[0] || ('cal-existing-' + Date.now());
+
+    const targetEv = createdIds.length > 0 ? data.calendarEvents.find(e => createdIds.includes(e.id)) : null;
+    const effectiveNote = (action.note !== undefined && action.note !== '') ? action.note : (targetEv ? targetEv.note : '');
 
     const dayNameMap = { 0: 'Chủ Nhật', 1: 'Thứ 2', 2: 'Thứ 3', 3: 'Thứ 4', 4: 'Thứ 5', 5: 'Thứ 6', 6: 'Thứ 7' };
     let scheduleSub = '';
@@ -1996,6 +2038,12 @@ function executeAction(action, data) {
             ${overlappingEvents.length > 0 ? '<span class="card-category-badge" style="background: rgba(245, 158, 11, 0.25); color: #f59e0b;"><i class="fa-solid fa-triangle-exclamation"></i> Trùng giờ</span>' : ''}
           </div>
           <div class="action-card-sub"><i class="fa-regular fa-clock"></i> ${escapeHTML(scheduleSub)}</div>
+          ${effectiveNote ? `
+            <div class="action-card-note">
+              <i class="fa-regular fa-note-sticky"></i>
+              <span><strong>Ghi chú:</strong> ${escapeHTML(effectiveNote)}</span>
+            </div>
+          ` : ''}
         </div>
       </div>
       <div class="action-card-right">
@@ -2076,9 +2124,23 @@ function executeAction(action, data) {
     const newDate = action.newDate || action.date || action.toDate || '';
     const newTime = action.time || action.startTime || '';
     const newEndTime = action.endTime || '';
+    const actionNote = action.note !== undefined ? action.note : (action.description !== undefined ? action.description : '');
 
     let targetIdx = -1;
-    if (oldDate) {
+    let actionDays = null;
+    if (action.daysOfWeek) {
+      actionDays = Array.isArray(action.daysOfWeek) ? action.daysOfWeek.map(Number) : [Number(action.daysOfWeek)];
+    }
+    if (actionDays && actionDays.length > 0) {
+      targetIdx = data.calendarEvents.findIndex(e => {
+        const matchTitle = !title || (e.title || '').toLowerCase().includes(title);
+        const rawDays = e.daysOfWeek || e.repeatDays;
+        const eDays = Array.isArray(rawDays) ? rawDays.map(Number) : [];
+        return matchTitle && actionDays.some(d => eDays.includes(d));
+      });
+    }
+
+    if (targetIdx === -1 && oldDate) {
       targetIdx = data.calendarEvents.findIndex(e => {
         const matchTitle = !title || (e.title || '').toLowerCase().includes(title);
         return matchTitle && e.date === oldDate;
@@ -2091,6 +2153,7 @@ function executeAction(action, data) {
     if (targetIdx !== -1) {
       const ev = data.calendarEvents[targetIdx];
       const prevDate = ev.date;
+      const isDateChanged = Boolean(newDate && newDate !== prevDate);
       if (newDate) {
         ev.date = newDate;
         ev.endDate = action.endDate || newDate;
@@ -2102,6 +2165,9 @@ function executeAction(action, data) {
       if (action.repeatUntil || action.repeatEnd || action.until) {
         ev.repeatUntil = action.repeatUntil || action.repeatEnd || action.until;
       }
+      if (actionNote !== '') {
+        ev.note = actionNote;
+      }
       ev.updatedAt = Date.now();
 
       if (typeof renderCalendarTab === 'function') renderCalendarTab();
@@ -2112,6 +2178,15 @@ function executeAction(action, data) {
       const card = document.createElement('div');
       card.className = 'action-card calendar-card';
       card.dataset.id = ev.id;
+
+      const cardTitleText = isDateChanged 
+        ? `Đã dời lịch: ${escapeHTML(ev.title)}` 
+        : (actionNote ? `Đã cập nhật ghi chú: ${escapeHTML(ev.title)}` : `Đã cập nhật lịch: ${escapeHTML(ev.title)}`);
+
+      const cardSubText = isDateChanged 
+        ? `<i class="fa-regular fa-clock"></i> Đã chuyển từ ngày ${escapeHTML(prevDate)} sang ngày ${escapeHTML(ev.date)}${ev.time ? ` (${escapeHTML(ev.time)}${ev.endTime ? ' - ' + escapeHTML(ev.endTime) : ''})` : ''}`
+        : `<i class="fa-regular fa-clock"></i> ${escapeHTML(ev.date || 'Lịch trình')}${ev.time ? ` (${escapeHTML(ev.time)}${ev.endTime ? ' - ' + escapeHTML(ev.endTime) : ''})` : ''}`;
+
       card.innerHTML = `
         <div class="action-card-left">
           <div class="action-card-icon" style="background: ${evColor}28; color: ${evColor};">
@@ -2119,10 +2194,16 @@ function executeAction(action, data) {
           </div>
           <div class="action-card-info">
             <div class="action-card-title">
-              <span>Đã dời lịch: ${escapeHTML(ev.title)}</span>
+              <span>${cardTitleText}</span>
               <span class="card-category-badge" style="background: ${evColor}25; color: ${evColor};">${escapeHTML(ev.category || 'Học tập')}</span>
             </div>
-            <div class="action-card-sub"><i class="fa-regular fa-clock"></i> Đã chuyển từ ngày ${escapeHTML(prevDate)} sang ngày ${escapeHTML(ev.date)}${ev.time ? ` (${escapeHTML(ev.time)}${ev.endTime ? ' - ' + escapeHTML(ev.endTime) : ''})` : ''}</div>
+            <div class="action-card-sub">${cardSubText}</div>
+            ${ev.note ? `
+              <div class="action-card-note">
+                <i class="fa-regular fa-note-sticky"></i>
+                <span><strong>Ghi chú:</strong> ${escapeHTML(ev.note)}</span>
+              </div>
+            ` : ''}
           </div>
         </div>
         <div class="action-card-right">
@@ -2516,6 +2597,20 @@ function getNaturalAIResponse(userText) {
     return {
       text: `Dạ Najimez đã dời lịch **${title}** từ ngày **${oldDate}** sang ngày **${newDate}** và tự động xóa ngày cũ trên Lịch cho bạn rồi nhé! 🥰\n\n<!--NAJIMEZ_ACTION:{"type":"update_calendar_event","title":"${title}","oldDate":"${oldDate}","date":"${newDate}"}-->`
     };
+  }
+
+  // Thêm / Cập nhật ghi chú cho lịch trình (offline fallback)
+  if (/(?:ghi\s+chú|phòng\s+học|giảng\s+viên|gv\s*:)/i.test(lower) && /(?:lịch|sự\s+kiện|buổi\s+học|thứ\s+[2-7]|t[2-7]|môn)/i.test(lower)) {
+    const curData = getLedgerData();
+    const evs = curData.calendarEvents || [];
+    if (evs.length > 0) {
+      const lastEv = evs[evs.length - 1];
+      const noteMatch = raw.match(/(?:ghi\s+chú(?:\s+cho\s+[^:]+)?(?:\s+là)?\s*[:\s]+)(.+)/i) || raw.match(/["']([^"']+)["']/);
+      const noteContent = noteMatch ? (noteMatch[1] || noteMatch[0]).replace(/["']/g, '').trim() : raw;
+      return {
+        text: `Dạ được liền luôn nè bạn ơi! Najimez đã cập nhật ghi chú **"${noteContent}"** cho môn **${lastEv.title}** trên Tiện ích Lịch & Thời Khóa Biểu cho bạn rồi nhé! 🥰\n\n<!--NAJIMEZ_ACTION:{"type":"update_calendar_event","title":"${lastEv.title}","note":"${noteContent}"}-->`
+      };
+    }
   }
 
   // Nhắc việc / Lịch trình

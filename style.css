@@ -3,14 +3,14 @@
  * Được tổ chức dạng module hóa theo quy chuẩn Code Modularization
  */
 
-@import url('css/variables.css?v=3.2.0');
+@import url('css/variables.css?v=3.81.0');
 @import url('css/stars.css?v=3.2.0');
-@import url('css/base.css');
+@import url('css/base.css?v=3.81.0');
 @import url('css/sidebar.css?v=3.55.0');
-@import url('css/copilot.css?v=3.35.0');
+@import url('css/copilot.css?v=3.81.0');
 @import url('css/copilot-image.css?v=3.60.1');
 @import url('css/modal.css?v=3.53.0');
-@import url('css/finance.css?v=3.57.0');
+@import url('css/finance.css?v=3.81.0');
 @import url('css/todos.css');
 @import url('css/lucky-wheel.css?v=3.18.0');
 @import url('css/toolbox.css?v=3.75.0');
@@ -23,5 +23,5 @@
 @import url('css/firebase-sync.css?v=3.56.0');
 @import url('css/friends.css?v=3.77.0');
 @import url('css/timetable-matcher.css?v=3.78.0');
-@import url('css/hyper-najimez.css?v=1.0.2');
-@import url('css/responsive.css?v=3.80.0');
+@import url('css/hyper-najimez.css?v=3.81.0');
+@import url('css/responsive.css?v=3.81.0');

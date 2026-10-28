@@ -714,15 +714,6 @@ function initHyperActionButtons() {
       if (e.target === modalNb) modalNb.classList.remove('active');
     });
   }
-
-  // 6. Nút nhảy từ Hộp dụng cụ (Toolbox Card 6) sang Hyper Najimez
-  const btnToolboxJump = document.getElementById('btnToolboxEnterHyper');
-  if (btnToolboxJump) {
-    btnToolboxJump.addEventListener('click', () => {
-      const hyperTabBtn = document.querySelector('.sidebar-nav .nav-item[data-tab="tab-hyper"]');
-      if (hyperTabBtn) hyperTabBtn.click();
-    });
-  }
 }
 
 // ============================================================================

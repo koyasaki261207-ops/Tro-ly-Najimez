@@ -9,13 +9,18 @@
 #tab-hyper {
   height: 100%;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
   position: relative;
+  box-sizing: border-box;
 }
 
 #tab-hyper.active {
   display: flex !important;
   flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .hyper-workspace {
@@ -268,6 +273,26 @@
   gap: 18px;
   align-items: start;
   flex-shrink: 0;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.hyper-solution-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 480px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 @media (max-width: 1200px) {
@@ -760,7 +785,6 @@
   display: none;
 }
 
-/* Hộp Lời Giải Hoàn Chỉnh (Master Solution Content) */
 .hyper-solution-content {
   display: flex;
   flex-direction: column;
@@ -768,6 +792,15 @@
   color: #e2e8f0;
   font-size: 0.94rem;
   line-height: 1.7;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.hyper-solution-content * {
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Định dạng Markdown trong lời giải */
@@ -782,6 +815,8 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .hyper-solution-content h1 { font-size: 1.15rem; color: #c084fc; }
@@ -790,16 +825,21 @@
 
 .hyper-solution-content p {
   margin: 6px 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .hyper-solution-content ul,
 .hyper-solution-content ol {
   padding-left: 22px;
   margin: 8px 0;
+  max-width: 100%;
 }
 
 .hyper-solution-content li {
   margin-bottom: 6px;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .hyper-solution-content pre {
@@ -808,9 +848,13 @@
   border-radius: 10px;
   padding: 12px 14px;
   overflow-x: auto;
+  max-width: 100%;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.85rem;
   color: #a5f3fc;
+  white-space: pre;
+  word-break: normal;
+  box-sizing: border-box;
 }
 
 .hyper-solution-content code {
@@ -820,6 +864,18 @@
   border-radius: 4px;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.86rem;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  white-space: pre-wrap;
+}
+
+.hyper-solution-content pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  overflow-wrap: normal;
+  word-break: normal;
+  white-space: pre;
 }
 
 /* Khối công thức KaTeX căn giữa và nổi bật */
@@ -830,7 +886,9 @@
   padding: 12px;
   margin: 10px 0;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  max-width: 100%;
   overflow-x: auto;
+  box-sizing: border-box;
 }
 
 /* Thanh Hành Động Lời Giải (Action Bar) */
@@ -990,82 +1048,4 @@
   background: rgba(251, 113, 133, 0.15);
 }
 
-/* ==========================================================================
-   7. THẺ CÔNG CỤ SỐ 6 TRONG HỘP DỤNG CỤ (TOOLBOX CARD #6)
-   ========================================================================== */
-.quad-hyper {
-  background: radial-gradient(ellipse 90% 60% at 50% -20%, rgba(168, 85, 247, 0.25) 0%, rgba(15, 23, 42, 0.85) 100%),
-              rgba(13, 17, 38, 0.75);
-  border-color: rgba(168, 85, 247, 0.35);
-}
 
-.toolbox-hyper-card-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 24px 18px;
-  gap: 14px;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.toolbox-hyper-orb {
-  width: 68px;
-  height: 68px;
-  border-radius: 50%;
-  background: conic-gradient(from 0deg, #a855f7, #06b6d4, #a855f7);
-  padding: 3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
-  animation: hyperSpinRing 8s linear infinite;
-}
-
-.toolbox-hyper-orb-inner {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: #0f172a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #c084fc;
-  font-size: 1.6rem;
-}
-
-.toolbox-hyper-title {
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: #f8fafc;
-}
-
-.toolbox-hyper-desc {
-  font-size: 0.82rem;
-  color: #94a3b8;
-  max-width: 280px;
-  line-height: 1.5;
-}
-
-.btn-toolbox-enter-hyper {
-  background: linear-gradient(135deg, #a855f7, #3b82f6);
-  border: none;
-  border-radius: 10px;
-  padding: 10px 18px;
-  color: #ffffff;
-  font-size: 0.86rem;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
-  transition: all 0.22s ease;
-}
-
-.btn-toolbox-enter-hyper:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
-}

@@ -6,12 +6,17 @@
   display: none;
   height: 100%;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .tab-pane.active {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  max-width: 100%;
   animation: fadeInPane 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 

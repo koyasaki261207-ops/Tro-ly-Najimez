@@ -25,9 +25,9 @@
   <!-- Favicon Najimez -->
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
-  <link rel="stylesheet" href="style.css?v=3.80.0">
+  <link rel="stylesheet" href="style.css?v=3.81.0">
   <link rel="stylesheet" href="css/timetable-matcher.css?v=3.78.0">
-  <link rel="stylesheet" href="css/responsive.css?v=3.80.0">
+  <link rel="stylesheet" href="css/responsive.css?v=3.81.0">
 
   <!-- KaTeX hỗ trợ render công thức Toán học đẹp mắt cho Hyper Najimez -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -52,14 +52,17 @@
         box-shadow: none !important;
         margin-left: 0 !important;
       }
+
       .omni-sidebar.mobile-open {
         transform: translateX(0) !important;
         box-shadow: 15px 0 45px rgba(0, 0, 0, 0.85) !important;
       }
+
       .omni-workspace {
         width: 100% !important;
         flex: 1 1 100% !important;
       }
+
       .copilot-container {
         padding: 12px 14px 10px !important;
       }
@@ -118,21 +121,27 @@
         <button class="nav-item" data-tab="tab-toolbox">
           <i class="fa-solid fa-toolbox"></i>
           <span>Hộp Dụng Cụ</span>
-          <span class="pill-badge" style="background: rgba(168, 85, 247, 0.25); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">Tiện Ích</span>
+          <span class="pill-badge"
+            style="background: rgba(168, 85, 247, 0.25); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">Tiện
+            Ích</span>
         </button>
         <button class="nav-item" data-tab="tab-friends">
           <i class="fa-solid fa-user-group"></i>
           <span>Bạn Bè &amp; Kết Nối</span>
-          <span class="pill-badge" id="friendRequestsBadge" style="display: none; background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);">0</span>
+          <span class="pill-badge" id="friendRequestsBadge"
+            style="display: none; background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);">0</span>
         </button>
         <button class="nav-item" id="btnSidebarImageGen" type="button" title="Sáng tạo hình ảnh AI cùng Najimez">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
           <span>Tạo Ảnh AI Najimez</span>
         </button>
-        <button class="nav-item" data-tab="tab-hyper" id="btnSidebarHyperNajimez" title="Hyper Najimez - Siêu Trí Tuệ &amp; Giải Đề Sâu">
+        <button class="nav-item" data-tab="tab-hyper" id="btnSidebarHyperNajimez"
+          title="Hyper Najimez - Siêu Trí Tuệ &amp; Giải Đề Sâu">
           <i class="fa-solid fa-bolt-lightning" style="color: #c084fc;"></i>
           <span>Hyper Najimez</span>
-          <span class="pill-badge" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(59, 130, 246, 0.4)); color: #f3e8ff; border: 1px solid rgba(168, 85, 247, 0.6); box-shadow: 0 0 8px rgba(168, 85, 247, 0.3);">⚡ PRO</span>
+          <span class="pill-badge"
+            style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(59, 130, 246, 0.4)); color: #f3e8ff; border: 1px solid rgba(168, 85, 247, 0.6); box-shadow: 0 0 8px rgba(168, 85, 247, 0.3);">⚡
+            PRO</span>
         </button>
       </nav>
 
@@ -188,14 +197,15 @@
         </div>
 
         <div class="header-quick-stats">
-          <div class="stat-bubble green" title="Số dư tài chính tháng này">
+          <div class="stat-bubble purple" title="Số dư tài chính tháng này">
             <i class="fa-solid fa-chart-line"></i>
             <div>
               <span class="bubble-title">CÂN ĐỐI THU CHI</span>
-              <strong id="headerNetCashflow">-95.000 đ</strong>
+              <strong id="headerNetCashflow">0 đ</strong>
             </div>
           </div>
-          <div class="stat-bubble purple" id="btnHeaderTodayEvents" title="Xem số sự kiện trong ngày hôm nay (Nhấp để mở Lịch &amp; Sự kiện)" style="cursor: pointer;">
+          <div class="stat-bubble purple" id="btnHeaderTodayEvents"
+            title="Xem số sự kiện trong ngày hôm nay (Nhấp để mở Lịch &amp; Sự kiện)" style="cursor: pointer;">
             <i class="fa-solid fa-calendar-day"></i>
             <div>
               <span class="bubble-title">SỰ KIỆN HÔM NAY</span>
@@ -203,7 +213,8 @@
             </div>
           </div>
           <button class="btn-user-profile" id="btnHeaderUserProfile" title="Tài khoản Google (Tự động đồng bộ đám mây)">
-            <img id="headerUserAvatarImg" src="assets/najimez.jpg" alt="Avatar" class="header-user-avatar-img" style="display: none;" />
+            <img id="headerUserAvatarImg" src="assets/najimez.jpg" alt="Avatar" class="header-user-avatar-img"
+              style="display: none;" />
             <i class="fa-brands fa-google" id="headerUserGuestIcon"></i>
           </button>
           <button class="btn-api-key" id="btnOpenApiKeyModal" title="Cài đặt Google Gemini API Key">
@@ -251,7 +262,8 @@
               <!-- Khay xem trước ảnh đính kèm trước khi gửi -->
               <div class="copilot-attach-preview-tray" id="copilotAttachPreviewTray" style="display: none;">
                 <div class="copilot-attach-preview-item">
-                  <img id="copilotAttachPreviewImg" src="" alt="Ảnh đính kèm" class="copilot-attach-thumb" title="Nhấp để phóng to ảnh" />
+                  <img id="copilotAttachPreviewImg" src="" alt="Ảnh đính kèm" class="copilot-attach-thumb"
+                    title="Nhấp để phóng to ảnh" />
                   <div class="copilot-attach-info">
                     <span class="attach-filename" id="copilotAttachFileName">anh-dinh-kem.jpg</span>
                     <div class="attach-meta">
@@ -354,7 +366,8 @@
                   <div class="form-attach-preview-mini" id="expenseFormImgPreview" style="display: none;">
                     <img src="" id="expenseFormPreviewImgTag" alt="Ảnh đính kèm" />
                     <span class="preview-label">Đã chọn ảnh</span>
-                    <button type="button" class="btn-remove-form-img" id="btnExpenseFormRemoveImg" title="Bỏ ảnh">&times;</button>
+                    <button type="button" class="btn-remove-form-img" id="btnExpenseFormRemoveImg"
+                      title="Bỏ ảnh">&times;</button>
                   </div>
                 </div>
                 <div class="form-actions-inline">
@@ -423,7 +436,8 @@
                   <div class="form-attach-preview-mini" id="debtFormImgPreview" style="display: none;">
                     <img src="" id="debtFormPreviewImgTag" alt="Ảnh đính kèm" />
                     <span class="preview-label">Đã chọn ảnh</span>
-                    <button type="button" class="btn-remove-form-img" id="btnDebtFormRemoveImg" title="Bỏ ảnh">&times;</button>
+                    <button type="button" class="btn-remove-form-img" id="btnDebtFormRemoveImg"
+                      title="Bỏ ảnh">&times;</button>
                   </div>
                 </div>
                 <div class="form-actions-inline">
@@ -531,7 +545,8 @@
 
               <!-- Chú thích chấm màu sự kiện -->
               <div class="cal-legend-bar">
-                <div class="cal-legend-item" title="Chấm màu trên ô lịch tự động đồng bộ theo màu chủ đề Thời Khóa Biểu">
+                <div class="cal-legend-item"
+                  title="Chấm màu trên ô lịch tự động đồng bộ theo màu chủ đề Thời Khóa Biểu">
                   <span class="cal-dot event"></span>
                   <span>Sự kiện (theo màu TKB)</span>
                 </div>
@@ -579,7 +594,8 @@
                 <div>
                   <h2 class="tt-header-title" id="ttWeekTitle">Thời Khóa Biểu Tuần</h2>
                   <div class="tt-header-sub" id="ttWeekSub">
-                    <span id="ttMonthYear">Tháng 10, 2026</span> • <span id="ttWeekEventsCount">0 sự kiện tuần này</span>
+                    <span id="ttMonthYear">Tháng 10, 2026</span> • <span id="ttWeekEventsCount">0 sự kiện tuần
+                      này</span>
                   </div>
                 </div>
               </div>
@@ -595,19 +611,24 @@
                   </button>
                 </div>
 
-                <button type="button" class="btn-tt-toggle-view" id="btnTtToggleViewMode" title="Chuyển đổi giữa 1 màn hình và cuộn thoải mái">
+                <button type="button" class="btn-tt-toggle-view" id="btnTtToggleViewMode"
+                  title="Chuyển đổi giữa 1 màn hình và cuộn thoải mái">
                   <i class="fa-solid fa-table-cells"></i> <span id="ttToggleViewModeText">1 Màn Hình</span>
                 </button>
 
-                <button type="button" class="btn-tt-toggle-night" id="btnTtToggleNight" title="Bật/tắt thu gọn khung giờ ngủ (00:00 - 06:00)">
-                  <i class="fa-solid fa-sun" style="color: #fbbf24;"></i> <span id="ttToggleNightText">0h – 24h (Đầy đủ)</span>
+                <button type="button" class="btn-tt-toggle-night" id="btnTtToggleNight"
+                  title="Bật/tắt thu gọn khung giờ ngủ (00:00 - 06:00)">
+                  <i class="fa-solid fa-sun" style="color: #fbbf24;"></i> <span id="ttToggleNightText">0h – 24h (Đầy
+                    đủ)</span>
                 </button>
 
-                <button type="button" class="btn-tt-scroll-nav" id="btnTtScrollToGrid" title="Cuộn xuống Thời khóa biểu tuần toàn màn hình">
+                <button type="button" class="btn-tt-scroll-nav" id="btnTtScrollToGrid"
+                  title="Cuộn xuống Thời khóa biểu tuần toàn màn hình">
                   <i class="fa-solid fa-arrow-down"></i> <span>Xem TKB Tuần</span>
                 </button>
 
-                <button type="button" class="btn-tt-match" id="btnTtOpenMatcher" title="So khớp thời khóa biểu cùng bạn bè để tìm giờ rảnh chung">
+                <button type="button" class="btn-tt-match" id="btnTtOpenMatcher"
+                  title="So khớp thời khóa biểu cùng bạn bè để tìm giờ rảnh chung">
                   <i class="fa-solid fa-people-arrows"></i> <span>So TKB Bạn Bè</span>
                 </button>
 
@@ -635,7 +656,8 @@
                 </div>
 
                 <div class="tt-dtl-header-right">
-                  <button type="button" class="btn-tt-dtl-toggle" id="btnTtDtlToggle" title="Thu gọn / Mở rộng thanh timeline 24h">
+                  <button type="button" class="btn-tt-dtl-toggle" id="btnTtDtlToggle"
+                    title="Thu gọn / Mở rộng thanh timeline 24h">
                     <i class="fa-solid fa-chevron-up"></i>
                   </button>
                 </div>
@@ -747,10 +769,13 @@
                         <!-- Kim chỉ ở đỉnh -->
                         <div class="wheel-pointer" id="luckyWheelPointer">
                           <svg viewBox="0 0 36 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M18 42L4 12C2.5 8.5 5 4 9 4H27C31 4 33.5 8.5 32 12L18 42Z" fill="url(#pointerGradWheel)" stroke="#ffffff" stroke-width="2.5" stroke-linejoin="round" />
+                            <path d="M18 42L4 12C2.5 8.5 5 4 9 4H27C31 4 33.5 8.5 32 12L18 42Z"
+                              fill="url(#pointerGradWheel)" stroke="#ffffff" stroke-width="2.5"
+                              stroke-linejoin="round" />
                             <circle cx="18" cy="14" r="5" fill="#ffffff" />
                             <defs>
-                              <linearGradient id="pointerGradWheel" x1="18" y1="4" x2="18" y2="42" gradientUnits="userSpaceOnUse">
+                              <linearGradient id="pointerGradWheel" x1="18" y1="4" x2="18" y2="42"
+                                gradientUnits="userSpaceOnUse">
                                 <stop stop-color="#fbbf24" />
                                 <stop offset="1" stop-color="#ea580c" />
                               </linearGradient>
@@ -762,7 +787,8 @@
                         <canvas id="luckyWheelCanvas" width="230" height="230"></canvas>
 
                         <!-- Nút tròn quay ở trung tâm -->
-                        <button type="button" class="wheel-center-btn" id="btnWheelCenterSpin" title="Nhấn để quay ngay!">
+                        <button type="button" class="wheel-center-btn" id="btnWheelCenterSpin"
+                          title="Nhấn để quay ngay!">
                           QUAY
                         </button>
 
@@ -825,7 +851,8 @@
 
                         <!-- Thêm ô mới -->
                         <div class="wheel-add-item-form">
-                          <input type="text" id="wheelAddItemInput" class="wheel-add-input" placeholder="Thêm lựa chọn..." maxlength="40" />
+                          <input type="text" id="wheelAddItemInput" class="wheel-add-input"
+                            placeholder="Thêm lựa chọn..." maxlength="40" />
                           <button type="button" class="btn-wheel-add" id="btnWheelAddItem">
                             <i class="fa-solid fa-plus"></i> Thêm
                           </button>
@@ -841,7 +868,8 @@
                           <button type="button" class="btn-wheel-sublink" id="btnWheelResetItems">
                             <i class="fa-solid fa-rotate-left"></i> Khôi phục mẫu
                           </button>
-                          <button type="button" class="btn-wheel-sublink" id="btnWheelClearItems" style="color: #f87171;">
+                          <button type="button" class="btn-wheel-sublink" id="btnWheelClearItems"
+                            style="color: #f87171;">
                             <i class="fa-regular fa-trash-can"></i> Xóa hết
                           </button>
                         </div>
@@ -899,10 +927,14 @@
                       </button>
 
                       <div class="coin-stats-row">
-                        <span class="coin-stat-pill">Ngửa: <strong id="coinStatHeads" style="color: #fbbf24;">0</strong></span>
-                        <span class="coin-stat-pill">Sấp: <strong id="coinStatTails" style="color: #94a3b8;">0</strong></span>
-                        <span class="coin-stat-pill">Tỉ lệ: <strong id="coinStatRate" style="color: #38bdf8;">0%</strong></span>
-                        <button type="button" id="btnResetCoinStats" title="Đặt lại thống kê" style="background: none; border: none; color: #64748b; cursor: pointer; padding: 0 4px;">
+                        <span class="coin-stat-pill">Ngửa: <strong id="coinStatHeads"
+                            style="color: #fbbf24;">0</strong></span>
+                        <span class="coin-stat-pill">Sấp: <strong id="coinStatTails"
+                            style="color: #94a3b8;">0</strong></span>
+                        <span class="coin-stat-pill">Tỉ lệ: <strong id="coinStatRate"
+                            style="color: #38bdf8;">0%</strong></span>
+                        <button type="button" id="btnResetCoinStats" title="Đặt lại thống kê"
+                          style="background: none; border: none; color: #64748b; cursor: pointer; padding: 0 4px;">
                           <i class="fa-solid fa-arrows-rotate"></i>
                         </button>
                       </div>
@@ -979,7 +1011,8 @@
                             </linearGradient>
                           </defs>
                           <circle class="pomodoro-svg-bg" cx="125" cy="125" r="78" fill="none" />
-                          <circle class="pomodoro-svg-progress" id="pomodoroProgressRing" cx="125" cy="125" r="78" fill="none" />
+                          <circle class="pomodoro-svg-progress" id="pomodoroProgressRing" cx="125" cy="125" r="78"
+                            fill="none" />
                         </svg>
                         <div class="pomodoro-inner-content">
                           <div class="pomodoro-time-display" id="pomodoroTimeDisplay">25:00</div>
@@ -1044,7 +1077,8 @@
                     <span>4. Máy Tính Bỏ Túi</span>
                   </div>
                   <div style="display: flex; align-items: center; gap: 8px;">
-                    <button type="button" class="btn-wheel-sublink" id="btnCopyCalcResult" style="color: #34d399; font-size: 0.8rem; margin: 0; padding: 2px 6px;">
+                    <button type="button" class="btn-wheel-sublink" id="btnCopyCalcResult"
+                      style="color: #34d399; font-size: 0.8rem; margin: 0; padding: 2px 6px;">
                       <i class="fa-regular fa-copy"></i> Sao chép
                     </button>
                     <button type="button" class="btn-quad-maximize" data-tool="calculator" title="Phóng to công cụ này">
@@ -1074,7 +1108,8 @@
                         <!-- Hàng 1 -->
                         <button type="button" class="btn-calc-key clear" data-action="clear">C</button>
                         <button type="button" class="btn-calc-key clear" data-action="clear-entry">CE</button>
-                        <button type="button" class="btn-calc-key" data-action="backspace"><i class="fa-solid fa-delete-left"></i></button>
+                        <button type="button" class="btn-calc-key" data-action="backspace"><i
+                            class="fa-solid fa-delete-left"></i></button>
                         <button type="button" class="btn-calc-key operator" data-action="divide">÷</button>
 
                         <!-- Hàng 2 -->
@@ -1102,8 +1137,10 @@
                         <button type="button" class="btn-calc-key" data-val=".">.</button>
 
                         <!-- Hàng 6: Phép tính phần trăm & Bằng -->
-                        <button type="button" class="btn-calc-key operator" data-action="percent" style="grid-column: span 1;">%</button>
-                        <button type="button" class="btn-calc-key equals" data-action="equals" style="grid-column: span 3;">=</button>
+                        <button type="button" class="btn-calc-key operator" data-action="percent"
+                          style="grid-column: span 1;">%</button>
+                        <button type="button" class="btn-calc-key equals" data-action="equals"
+                          style="grid-column: span 3;">=</button>
                       </div>
                     </div>
                   </div>
@@ -1120,10 +1157,14 @@
                     <span>5. Quy Đổi Tiền Tệ</span>
                   </div>
                   <div style="display: flex; align-items: center; gap: 8px;">
-                    <button type="button" class="btn-wheel-sublink" id="btnRefreshRates" title="Làm mới tỷ giá trực tuyến" style="color: #c084fc; font-size: 0.8rem; margin: 0; padding: 2px 6px;">
+                    <button type="button" class="btn-wheel-sublink" id="btnRefreshRates"
+                      title="Làm mới tỷ giá trực tuyến"
+                      style="color: #c084fc; font-size: 0.8rem; margin: 0; padding: 2px 6px;">
                       <i class="fa-solid fa-arrows-rotate"></i> Cập nhật
                     </button>
-                    <button type="button" class="btn-wheel-sublink" id="btnCopyCurrResult" title="Sao chép kết quả quy đổi" style="color: #94a3b8; font-size: 0.8rem; margin: 0; padding: 2px 6px;">
+                    <button type="button" class="btn-wheel-sublink" id="btnCopyCurrResult"
+                      title="Sao chép kết quả quy đổi"
+                      style="color: #94a3b8; font-size: 0.8rem; margin: 0; padding: 2px 6px;">
                       <i class="fa-regular fa-copy"></i> Sao chép
                     </button>
                     <button type="button" class="btn-quad-maximize" data-tool="currency" title="Phóng to công cụ này">
@@ -1141,7 +1182,8 @@
                           <span class="curr-box-label">Số tiền đổi</span>
                         </div>
                         <div class="curr-field-row">
-                          <input type="text" id="currFromAmount" class="curr-amount-input" value="100" placeholder="0" inputmode="decimal" />
+                          <input type="text" id="currFromAmount" class="curr-amount-input" value="100" placeholder="0"
+                            inputmode="decimal" />
                           <select id="currFromSelect" class="curr-select" title="Chọn loại tiền nguồn">
                             <option value="USD" selected>🇺🇸 USD (Đô Mỹ)</option>
                             <option value="VND">🇻🇳 VND (Việt Nam)</option>
@@ -1213,37 +1255,6 @@
                 </div>
               </div>
 
-              <!-- =============================================================
-                   PHẦN 6: HYPER NAJIMEZ LAUNCHER (KHÔNG GIAN GIẢI ĐỀ SIÊU CẤP)
-                   ============================================================= -->
-              <div class="toolbox-quad-card quad-hyper" id="quadHyper">
-                <div class="quad-card-header">
-                  <div class="quad-card-title">
-                    <i class="fa-solid fa-bolt-lightning" style="color: #c084fc;"></i>
-                    <span>6. Hyper Najimez: Siêu Trí Tuệ</span>
-                  </div>
-                  <button type="button" class="btn-quad-maximize" data-tool="hyper" title="Phóng to công cụ này">
-                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
-                  </button>
-                </div>
-                <div class="quad-card-body">
-                  <div class="toolbox-hyper-card-body">
-                    <div class="toolbox-hyper-orb">
-                      <div class="toolbox-hyper-orb-inner">
-                        <i class="fa-solid fa-brain"></i>
-                      </div>
-                    </div>
-                    <div class="toolbox-hyper-title">Chế Độ Thức Tỉnh Trí Tuệ</div>
-                    <div class="toolbox-hyper-desc">
-                      Tập trung 200% khả năng tư duy sâu (Chain-of-Thought), phân tích bản chất và giải quyết xuất sắc các bài tập Toán, Lý, Hóa, Code phức tạp.
-                    </div>
-                    <button type="button" class="btn-toolbox-enter-hyper" id="btnToolboxEnterHyper">
-                      <i class="fa-solid fa-bolt"></i> Vào Không Gian Hyper Najimez
-                    </button>
-                  </div>
-                </div>
-              </div>
-
             </div>
           </div>
         </section>
@@ -1261,7 +1272,8 @@
             <div class="friends-add-bar-wrap">
               <div class="friends-input-group">
                 <i class="fa-solid fa-user-plus"></i>
-                <input type="text" id="friendSearchInput" class="friends-search-input" placeholder="Nhập Mã Najimez ID (VD: NJ-849201) hoặc Email Google của bạn bè..." autocomplete="off" />
+                <input type="text" id="friendSearchInput" class="friends-search-input"
+                  placeholder="Nhập Mã Najimez ID (VD: NJ-849201) hoặc Email Google của bạn bè..." autocomplete="off" />
               </div>
               <button type="button" class="btn-social-action primary" id="btnSendFriendRequest">
                 <i class="fa-solid fa-paper-plane"></i>
@@ -1277,9 +1289,11 @@
               <div class="friends-section-title">
                 <i class="fa-solid fa-user-group" style="color: #c084fc;"></i>
                 <span>Danh Sách Bạn Bè</span>
-                <span id="friendsCountDisplay" style="color: #94a3b8; font-size: 0.88rem; font-weight: normal;">(0)</span>
+                <span id="friendsCountDisplay"
+                  style="color: #94a3b8; font-size: 0.88rem; font-weight: normal;">(0)</span>
               </div>
-              <input type="text" id="friendsFilterInput" class="friends-filter-input" placeholder="🔍 Lọc nhanh theo tên, ID, email..." />
+              <input type="text" id="friendsFilterInput" class="friends-filter-input"
+                placeholder="🔍 Lọc nhanh theo tên, ID, email..." />
             </div>
 
             <!-- Lưới thẻ bạn bè (Friends Grid) -->
@@ -1293,7 +1307,7 @@
              ================================================================= -->
         <section class="tab-pane" id="tab-hyper">
           <div class="hyper-workspace">
-            
+
             <!-- HUD Header: Banner Thức Tỉnh & Trạng Thái Overclock -->
             <header class="hyper-hud-header">
               <div class="hyper-brand-box">
@@ -1340,7 +1354,8 @@
                   </button>
                 </div>
 
-                <button type="button" class="btn-hyper-notebook" id="btnOpenHyperNotebook" title="Xem các bài tập đã lưu trong sổ tay">
+                <button type="button" class="btn-hyper-notebook" id="btnOpenHyperNotebook"
+                  title="Xem các bài tập đã lưu trong sổ tay">
                   <i class="fa-solid fa-book-bookmark" style="color: #c084fc;"></i>
                   <span>Sổ Tay Bài Tập</span>
                   <span class="hyper-nb-count" id="hyperNotebookCount">0</span>
@@ -1350,7 +1365,7 @@
 
             <!-- Bố cục 2 Cột: Cột Trái (Đầu Vào Đề Bài) - Cột Phải (Sân Khấu Lời Giải) -->
             <div class="hyper-split-grid">
-              
+
               <!-- CỘT TRÁI: KHUNG ĐẦU VÀO ĐỀ BÀI -->
               <div class="hyper-input-panel">
                 <div class="panel-header-row">
@@ -1383,7 +1398,8 @@
 
                 <!-- Textarea nhập đề bài -->
                 <div class="hyper-textarea-wrap">
-                  <textarea id="hyperPromptInput" class="hyper-prompt-textarea" placeholder="Nhập đề bài toán, bài tập lý, hóa, code hoặc bất kỳ câu hỏi hóc búa nào... (Gợi ý: bạn có thể dán ảnh chụp đề bài trực tiếp bằng Ctrl+V)"></textarea>
+                  <textarea id="hyperPromptInput" class="hyper-prompt-textarea"
+                    placeholder="Nhập đề bài toán, bài tập lý, hóa, code hoặc bất kỳ câu hỏi hóc búa nào... (Gợi ý: bạn có thể dán ảnh chụp đề bài trực tiếp bằng Ctrl+V)"></textarea>
                   <div class="hyper-textarea-footer">
                     <span id="hyperCharCount">0 ký tự</span> • <span>Ctrl + Enter để giải</span>
                   </div>
@@ -1391,7 +1407,8 @@
 
                 <!-- Khu vực đính kèm ảnh (Kéo thả, click chọn hoặc dán Ctrl+V) -->
                 <div class="hyper-attach-zone">
-                  <div class="hyper-dropzone" id="hyperDropzone" title="Kéo thả ảnh chụp bài tập vào đây hoặc click để chọn">
+                  <div class="hyper-dropzone" id="hyperDropzone"
+                    title="Kéo thả ảnh chụp bài tập vào đây hoặc click để chọn">
                     <div class="dropzone-hint">
                       <i class="fa-solid fa-camera"></i>
                       <span>Kéo thả ảnh chụp bài tập hoặc click tải lên</span>
@@ -1424,7 +1441,8 @@
                     </label>
                   </div>
                   <div class="option-row">
-                    <span class="option-label"><i class="fa-solid fa-gauge-high" style="color: #38bdf8;"></i> Độ sâu suy nghĩ:</span>
+                    <span class="option-label"><i class="fa-solid fa-gauge-high" style="color: #38bdf8;"></i> Độ sâu suy
+                      nghĩ:</span>
                     <select id="hyperBudgetSelect" class="hyper-budget-select">
                       <option value="1024">⚡ Nhanh Gọn (1024 Tokens)</option>
                       <option value="2048" selected>🧠 Chuẩn Học Thuật (2048 Tokens)</option>
@@ -1441,7 +1459,7 @@
 
               <!-- CỘT PHẢI: SÂN KHẤU LỜI GIẢI & SUY LUẬN SÂU -->
               <div class="hyper-solution-panel">
-                
+
                 <!-- Trạng thái chờ / chưa giải (Placeholder) -->
                 <div class="hyper-empty-state" id="hyperEmptyState">
                   <div class="empty-state-icon-aura">
@@ -1449,13 +1467,15 @@
                   </div>
                   <div class="empty-state-title">Không Gian Tư Duy Sâu Sẵn Sàng</div>
                   <div class="empty-state-desc">
-                    Hãy nhập đề bài hoặc đính kèm ảnh bài tập ở cột bên trái rồi nhấn <strong>Thức Tỉnh Hyper Najimez</strong>. Najime sẽ kích hoạt toàn bộ công lực phân tích bản chất, nháp suy nghĩ sâu và trình bày lời giải hoàn hảo nhất cho bạn!
+                    Hãy nhập đề bài hoặc đính kèm ảnh bài tập ở cột bên trái rồi nhấn <strong>Thức Tỉnh Hyper
+                      Najimez</strong>. Najime sẽ kích hoạt toàn bộ công lực phân tích bản chất, nháp suy nghĩ sâu và
+                    trình bày lời giải hoàn hảo nhất cho bạn!
                   </div>
                 </div>
 
                 <!-- Sân khấu hiển thị lời giải và quá trình suy nghĩ -->
                 <div id="hyperSolutionStage" style="display: none; flex-direction: column; gap: 14px; width: 100%;">
-                  
+
                   <!-- Khung 1: QUÁ TRÌNH SUY NGHĨ SÂU (Deep Reasoning Thoughts) -->
                   <div class="hyper-thoughts-card" id="hyperThoughtsCard" style="display: none;">
                     <div class="hyper-thoughts-header" title="Nhấp để thu gọn / mở rộng quá trình suy nghĩ">
@@ -1477,18 +1497,22 @@
                   <!-- Thanh hành động kết quả (Action Bar) -->
                   <div class="hyper-action-bar">
                     <div class="action-bar-left">
-                      <button type="button" class="btn-hyper-action" id="btnHyperCopySolution" title="Sao chép toàn bộ lời giải">
+                      <button type="button" class="btn-hyper-action" id="btnHyperCopySolution"
+                        title="Sao chép toàn bộ lời giải">
                         <i class="fa-regular fa-copy"></i> Sao chép
                       </button>
-                      <button type="button" class="btn-hyper-action" id="btnHyperSaveNotebook" title="Lưu bài tập này vào sổ tay ôn tập">
+                      <button type="button" class="btn-hyper-action" id="btnHyperSaveNotebook"
+                        title="Lưu bài tập này vào sổ tay ôn tập">
                         <i class="fa-regular fa-bookmark"></i> Lưu Sổ Tay
                       </button>
-                      <button type="button" class="btn-hyper-action" id="btnHyperSpeak" title="Nghe Najimez đọc giải thích bài giải">
+                      <button type="button" class="btn-hyper-action" id="btnHyperSpeak"
+                        title="Nghe Najimez đọc giải thích bài giải">
                         <i class="fa-solid fa-volume-high"></i> Nghe Najimez Giảng
                       </button>
                     </div>
                     <div class="action-bar-right">
-                      <button type="button" class="btn-hyper-action" id="btnHyperExport" title="Tải bài giải về dưới dạng Markdown (.md)">
+                      <button type="button" class="btn-hyper-action" id="btnHyperExport"
+                        title="Tải bài giải về dưới dạng Markdown (.md)">
                         <i class="fa-solid fa-download"></i> Xuất File
                       </button>
                     </div>
@@ -1520,7 +1544,8 @@
         </button>
       </div>
       <div class="modal-body" style="padding: 22px 20px;">
-        <p class="modal-desc" id="appConfirmMessage" style="font-size: 0.94rem; color: #e2e8f0; line-height: 1.5; margin: 0;"></p>
+        <p class="modal-desc" id="appConfirmMessage"
+          style="font-size: 0.94rem; color: #e2e8f0; line-height: 1.5; margin: 0;"></p>
         <div class="modal-actions-row" style="margin-top: 14px;">
           <button type="button" class="btn-modal-action secondary" id="btnAppConfirmCancel">Hủy</button>
           <button type="button" class="btn-modal-action danger" id="btnAppConfirmAccept">
@@ -1753,13 +1778,15 @@
                 <i class="fa-solid fa-arrow-up-from-bracket"></i>
                 <span>Tải ảnh lên</span>
               </button>
-              <button type="button" class="btn-avatar-choice" id="btnPastePersonAvatar" title="Dán ảnh từ clipboard hoặc nhấn tổ hợp phím Ctrl + V">
+              <button type="button" class="btn-avatar-choice" id="btnPastePersonAvatar"
+                title="Dán ảnh từ clipboard hoặc nhấn tổ hợp phím Ctrl + V">
                 <i class="fa-solid fa-paste"></i>
                 <span>Dán ảnh (Ctrl+V)</span>
               </button>
             </div>
             <div class="avatar-url-input-wrap">
-              <input type="url" id="personAvatarUrlInput" class="form-input-custom text-sm" placeholder="Hoặc dán URL ảnh (https://...)" autocomplete="off" />
+              <input type="url" id="personAvatarUrlInput" class="form-input-custom text-sm"
+                placeholder="Hoặc dán URL ảnh (https://...)" autocomplete="off" />
               <button type="button" id="btnApplyAvatarUrl" class="btn-sub-apply">Áp dụng</button>
             </div>
             <button type="button" id="btnResetPersonAvatar" class="btn-reset-avatar-link">
@@ -1778,8 +1805,10 @@
           <label for="personInfoNameInput">
             <i class="fa-solid fa-user-tag"></i> Tên đối tượng:
           </label>
-          <input type="text" id="personInfoNameInput" class="form-input-custom" placeholder="Nhập tên đối tượng..." autocomplete="off" />
-          <small class="form-help">Hệ thống sẽ tự động cập nhật tên mới trên toàn bộ khoản nợ và giao dịch liên quan.</small>
+          <input type="text" id="personInfoNameInput" class="form-input-custom" placeholder="Nhập tên đối tượng..."
+            autocomplete="off" />
+          <small class="form-help">Hệ thống sẽ tự động cập nhật tên mới trên toàn bộ khoản nợ và giao dịch liên
+            quan.</small>
         </div>
 
         <!-- Form Ghi chú -->
@@ -1787,7 +1816,8 @@
           <label for="personInfoNoteInput">
             <i class="fa-regular fa-note-sticky"></i> Ghi chú riêng về người này:
           </label>
-          <textarea id="personInfoNoteInput" class="form-input-custom form-textarea-custom" rows="3" placeholder="Nhập ghi chú cá nhân (VD: Bạn thời cấp 3, SĐT: 098..., STK: MBBank, lưu ý hay mượn tiền...)..."></textarea>
+          <textarea id="personInfoNoteInput" class="form-input-custom form-textarea-custom" rows="3"
+            placeholder="Nhập ghi chú cá nhân (VD: Bạn thời cấp 3, SĐT: 098..., STK: MBBank, lưu ý hay mượn tiền...)..."></textarea>
         </div>
 
         <!-- Nút hành động -->
@@ -1818,7 +1848,8 @@
       <form id="calendarEventModalForm" class="modal-body" style="padding: 18px 20px;">
         <div class="form-group-custom">
           <label for="calEventTitleInput">Tiêu đề sự kiện (*):</label>
-          <input type="text" id="calEventTitleInput" class="form-input-custom" placeholder="VD: Sinh nhật bạn, Họp dự án, Đi khám răng..." required autocomplete="off" />
+          <input type="text" id="calEventTitleInput" class="form-input-custom"
+            placeholder="VD: Sinh nhật bạn, Họp dự án, Đi khám răng..." required autocomplete="off" />
         </div>
 
         <div class="form-group-custom" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
@@ -1844,19 +1875,26 @@
         </div>
 
         <div class="form-group-custom" style="margin-bottom: 10px;">
-          <label for="calEventRepeatCheckbox" style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-size: 0.9rem; font-weight: 600; color: #f1f5f9;">
-            <input type="checkbox" id="calEventRepeatCheckbox" style="width: 17px; height: 17px; cursor: pointer; accent-color: #a855f7;" />
+          <label for="calEventRepeatCheckbox"
+            style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-size: 0.9rem; font-weight: 600; color: #f1f5f9;">
+            <input type="checkbox" id="calEventRepeatCheckbox"
+              style="width: 17px; height: 17px; cursor: pointer; accent-color: #a855f7;" />
             <i class="fa-solid fa-rotate" style="color: #c084fc;"></i> Lặp lại sự kiện
           </label>
         </div>
 
         <!-- Khung cấu hình Mỗi X Ngày / Tuần / Tháng / Năm -->
-        <div id="calEventRepeatConfigBox" style="display: none; margin-top: -6px; margin-bottom: 14px; padding: 12px 14px; background: rgba(168, 85, 247, 0.08); border: 1px dashed rgba(168, 85, 247, 0.35); border-radius: var(--radius-sm);">
+        <div id="calEventRepeatConfigBox"
+          style="display: none; margin-top: -6px; margin-bottom: 14px; padding: 12px 14px; background: rgba(168, 85, 247, 0.08); border: 1px dashed rgba(168, 85, 247, 0.35); border-radius: var(--radius-sm);">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <span style="font-size: 0.86rem; color: #f8fafc; font-weight: 700;"><i class="fa-solid fa-clock-rotate-left" style="color: #c084fc;"></i> Chu kỳ:</span>
+            <span style="font-size: 0.86rem; color: #f8fafc; font-weight: 700;"><i class="fa-solid fa-clock-rotate-left"
+                style="color: #c084fc;"></i> Chu kỳ:</span>
             <span style="font-size: 0.84rem; color: #cbd5e1;">Mỗi</span>
-            <input type="number" id="calEventRepeatIntervalInput" class="form-input-custom" min="1" max="999" value="1" style="width: 76px; text-align: center; padding: 6px 8px; font-weight: 700; color: #fff;" title="Nhập số X (VD: 1, 2, 3...)" />
-            <select id="calEventRepeatUnitSelect" class="form-input-custom form-select-custom" style="width: 115px; padding: 6px 10px; font-weight: 600;">
+            <input type="number" id="calEventRepeatIntervalInput" class="form-input-custom" min="1" max="999" value="1"
+              style="width: 76px; text-align: center; padding: 6px 8px; font-weight: 700; color: #fff;"
+              title="Nhập số X (VD: 1, 2, 3...)" />
+            <select id="calEventRepeatUnitSelect" class="form-input-custom form-select-custom"
+              style="width: 115px; padding: 6px 10px; font-weight: 600;">
               <option value="day">Ngày</option>
               <option value="week">Tuần</option>
               <option value="month">Tháng</option>
@@ -1865,10 +1903,12 @@
           </div>
 
           <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
-            <label for="calEventRepeatEndInput" style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; margin: 0;">
+            <label for="calEventRepeatEndInput"
+              style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; margin: 0;">
               Kết thúc lặp:
             </label>
-            <input type="date" id="calEventRepeatEndInput" class="form-input-custom" style="padding: 5px 10px; font-size: 0.82rem; flex: 1;" title="Để trống nếu lặp vô thời hạn" />
+            <input type="date" id="calEventRepeatEndInput" class="form-input-custom"
+              style="padding: 5px 10px; font-size: 0.82rem; flex: 1;" title="Để trống nếu lặp vô thời hạn" />
           </div>
         </div>
 
@@ -1895,7 +1935,8 @@
 
         <div class="form-group-custom">
           <label for="calEventNoteInput">Ghi chú thêm:</label>
-          <textarea id="calEventNoteInput" class="form-input-custom form-textarea-custom" rows="2" placeholder="Nhập địa điểm, người tham gia hoặc ghi chú thêm..."></textarea>
+          <textarea id="calEventNoteInput" class="form-input-custom form-textarea-custom" rows="2"
+            placeholder="Nhập địa điểm, người tham gia hoặc ghi chú thêm..."></textarea>
         </div>
 
         <div class="modal-actions-row" style="margin-top: 14px;">
@@ -1923,7 +1964,8 @@
 
       <div class="modal-body" style="padding: 20px;">
         <p style="font-size: 0.92rem; color: #e2e8f0; margin-bottom: 14px; line-height: 1.5;">
-          Bạn muốn xóa sự kiện <strong id="calRepeatDeleteTitle" style="color: #c084fc;">"..."</strong> vào ngày <span id="calRepeatDeleteDate" style="color: #fbbf24; font-weight: 700;">...</span>? Vui lòng chọn phạm vi:
+          Bạn muốn xóa sự kiện <strong id="calRepeatDeleteTitle" style="color: #c084fc;">"..."</strong> vào ngày <span
+            id="calRepeatDeleteDate" style="color: #fbbf24; font-weight: 700;">...</span>? Vui lòng chọn phạm vi:
         </p>
 
         <div class="cal-repeat-del-options">
@@ -1936,7 +1978,8 @@
               </div>
               <div class="cal-repeat-del-card-text">
                 <div class="cal-repeat-del-card-title">Chỉ sự kiện này</div>
-                <div class="cal-repeat-del-card-desc">Chỉ xóa lần lặp vào ngày này, các ngày khác trong chuỗi vẫn giữ nguyên.</div>
+                <div class="cal-repeat-del-card-desc">Chỉ xóa lần lặp vào ngày này, các ngày khác trong chuỗi vẫn giữ
+                  nguyên.</div>
               </div>
               <div class="cal-repeat-del-radio-indicator">
                 <div class="cal-repeat-del-radio-dot"></div>
@@ -2013,19 +2056,26 @@
             <span id="txImageMetaDate">Hôm nay</span>
           </div>
           <div class="modal-actions-row" style="margin-top: 14px; gap: 8px; flex-wrap: wrap;">
-            <a href="#" id="btnDownloadTxImage" download="anh-giao-dich.jpg" class="btn-modal-action secondary" style="flex: 1; min-width: 85px;">
+            <a href="#" id="btnDownloadTxImage" download="anh-giao-dich.jpg" class="btn-modal-action secondary"
+              style="flex: 1; min-width: 85px;">
               <i class="fa-solid fa-download"></i> Tải về
             </a>
-            <button type="button" id="btnAutoWebSearchTxImage" class="btn-modal-action secondary" style="flex: 1.2; min-width: 135px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(59, 130, 246, 0.25)); border-color: #38bdf8; color: #38bdf8;" title="Tìm ảnh thực tế trên trình duyệt cho đúng món này">
+            <button type="button" id="btnAutoWebSearchTxImage" class="btn-modal-action secondary"
+              style="flex: 1.2; min-width: 135px; background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(59, 130, 246, 0.25)); border-color: #38bdf8; color: #38bdf8;"
+              title="Tìm ảnh thực tế trên trình duyệt cho đúng món này">
               <i class="fa-solid fa-globe"></i> Tìm ảnh Web
             </button>
-            <button type="button" id="btnGenerateAITxImage" class="btn-modal-action primary" style="flex: 1.2; min-width: 120px; background: linear-gradient(135deg, #a855f7, #6366f1); border-color: #c084fc;" title="Dùng AI sáng tạo bức ảnh chân thực cho món này">
+            <button type="button" id="btnGenerateAITxImage" class="btn-modal-action primary"
+              style="flex: 1.2; min-width: 120px; background: linear-gradient(135deg, #a855f7, #6366f1); border-color: #c084fc;"
+              title="Dùng AI sáng tạo bức ảnh chân thực cho món này">
               <i class="fa-solid fa-wand-magic-sparkles"></i> AI Vẽ
             </button>
-            <button type="button" id="btnReplaceTxImage" class="btn-modal-action secondary" style="flex: 1; min-width: 90px;">
+            <button type="button" id="btnReplaceTxImage" class="btn-modal-action secondary"
+              style="flex: 1; min-width: 90px;">
               <i class="fa-solid fa-rotate"></i> Đổi ảnh
             </button>
-            <button type="button" id="btnDeleteTxImage" class="btn-modal-action danger" style="flex: 1; min-width: 85px;">
+            <button type="button" id="btnDeleteTxImage" class="btn-modal-action danger"
+              style="flex: 1; min-width: 85px;">
               <i class="fa-solid fa-trash-can"></i> Xóa ảnh
             </button>
           </div>
@@ -2035,12 +2085,16 @@
             <div class="tx-web-search-bar-wrap">
               <div class="tx-web-search-input-group">
                 <i class="fa-solid fa-globe" style="color: #38bdf8; font-size: 1.05rem;"></i>
-                <input type="text" id="txWebSearchInputView" class="form-input-custom text-sm" placeholder="Tìm ảnh thực tế trên mạng (bún bò huế, bánh cuốn, cơm tấm...)" />
-                <button type="button" id="btnRunWebSearchView" class="btn-sub-apply" style="background: #0284c7; padding: 0 14px;">
+                <input type="text" id="txWebSearchInputView" class="form-input-custom text-sm"
+                  placeholder="Tìm ảnh thực tế trên mạng (bún bò huế, bánh cuốn, cơm tấm...)" />
+                <button type="button" id="btnRunWebSearchView" class="btn-sub-apply"
+                  style="background: #0284c7; padding: 0 14px;">
                   <i class="fa-solid fa-magnifying-glass"></i> Tìm
                 </button>
               </div>
-              <button type="button" id="btnQuickAutoApplyTopImage" class="btn-sub-apply" style="background: linear-gradient(135deg, #0284c7, #2563eb); border: none; font-size: 0.76rem; padding: 0 12px; white-space: nowrap;" title="Tự động gán ngay bức ảnh đầu tiên">
+              <button type="button" id="btnQuickAutoApplyTopImage" class="btn-sub-apply"
+                style="background: linear-gradient(135deg, #0284c7, #2563eb); border: none; font-size: 0.76rem; padding: 0 12px; white-space: nowrap;"
+                title="Tự động gán ngay bức ảnh đầu tiên">
                 <i class="fa-solid fa-bolt"></i> Gán ảnh đầu tiên
               </button>
             </div>
@@ -2055,33 +2109,39 @@
             <div class="dropzone-content" id="txImageDropzonePrompt">
               <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2.2rem; color: #c084fc; margin-bottom: 8px;"></i>
               <p style="margin: 0; font-weight: 700; color: #fff;">Nhấn để chọn ảnh từ thiết bị</p>
-              <small style="color: var(--text-muted); display: block; margin-top: 4px;">Hỗ trợ ảnh món ăn, tiền cơm, hóa đơn, chuyển khoản...</small>
+              <small style="color: var(--text-muted); display: block; margin-top: 4px;">Hỗ trợ ảnh món ăn, tiền cơm, hóa
+                đơn, chuyển khoản...</small>
             </div>
             <div class="tx-preview-in-dropzone" id="txPreviewInDropzone" style="display: none;">
               <img src="" id="txDropzonePreviewImg" alt="Xem trước ảnh" />
-              <button type="button" id="btnRemoveDropzonePreview" class="btn-remove-preview-badge" title="Bỏ ảnh này">&times;</button>
+              <button type="button" id="btnRemoveDropzonePreview" class="btn-remove-preview-badge"
+                title="Bỏ ảnh này">&times;</button>
             </div>
           </div>
 
           <div style="display: flex; gap: 8px; margin-top: 10px;">
-            <button type="button" id="btnPasteTxImageClip" class="btn-form-attach-paste" style="flex: 1; justify-content: center; padding: 9px;">
+            <button type="button" id="btnPasteTxImageClip" class="btn-form-attach-paste"
+              style="flex: 1; justify-content: center; padding: 9px;">
               <i class="fa-solid fa-paste"></i> Dán từ Clipboard (Ctrl + V)
             </button>
           </div>
 
           <div class="avatar-url-input-wrap" style="margin-top: 10px;">
-            <input type="url" id="txImageUrlInput" class="form-input-custom text-sm" placeholder="Hoặc dán URL ảnh (https://...)" autocomplete="off" />
+            <input type="url" id="txImageUrlInput" class="form-input-custom text-sm"
+              placeholder="Hoặc dán URL ảnh (https://...)" autocomplete="off" />
             <button type="button" id="btnApplyTxImageUrl" class="btn-sub-apply">Áp dụng</button>
           </div>
 
           <!-- Tìm kiếm ảnh thực tế trên mạng (Wikipedia & Commons) -->
           <div class="tx-web-search-tray" style="margin-top: 12px;">
-            <div style="font-size: 0.8rem; font-weight: 600; color: #38bdf8; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
+            <div
+              style="font-size: 0.8rem; font-weight: 600; color: #38bdf8; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
               <span><i class="fa-solid fa-globe"></i> Tìm ảnh thực tế trên mạng:</span>
               <span style="font-size: 0.72rem; color: var(--text-muted);">Wikipedia &amp; Commons</span>
             </div>
             <div class="avatar-url-input-wrap">
-              <input type="text" id="txWebSearchInputEdit" class="form-input-custom text-sm" placeholder="Nhập tên món ăn / đồ vật (bún bò huế, bánh cuốn, cơm tấm...)" />
+              <input type="text" id="txWebSearchInputEdit" class="form-input-custom text-sm"
+                placeholder="Nhập tên món ăn / đồ vật (bún bò huế, bánh cuốn, cơm tấm...)" />
               <button type="button" id="btnRunWebSearchEdit" class="btn-sub-apply" style="background: #0284c7;">
                 <i class="fa-solid fa-magnifying-glass"></i> Tìm ảnh
               </button>
@@ -2129,7 +2189,8 @@
               <i class="fa-solid fa-microphone-lines"></i>
               <span>Công Nghệ Giọng Đọc Trợ Lý Ảo (TTS)</span>
             </div>
-            <span class="voice-badge-tag" id="voiceEngineBadgeTag" style="background: rgba(245, 158, 11, 0.18); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35);">
+            <span class="voice-badge-tag" id="voiceEngineBadgeTag"
+              style="background: rgba(245, 158, 11, 0.18); color: #fbbf24; border-color: rgba(245, 158, 11, 0.35);">
               <i class="fa-solid fa-crown"></i> ElevenLabs AI
             </span>
           </div>
@@ -2143,7 +2204,8 @@
                 <div class="voice-engine-card-icon" style="color: #f59e0b;"><i class="fa-solid fa-crown"></i></div>
                 <div class="voice-engine-card-text">
                   <div class="voice-engine-card-title">ElevenLabs AI <span class="hot-pill">Người Thật 100%</span></div>
-                  <div class="voice-engine-card-desc">Cảm xúc, nhịp thở chân thực (Yêu cầu API Key từ elevenlabs.io)</div>
+                  <div class="voice-engine-card-desc">Cảm xúc, nhịp thở chân thực (Yêu cầu API Key từ elevenlabs.io)
+                  </div>
                 </div>
               </div>
             </label>
@@ -2154,7 +2216,8 @@
               <div class="voice-engine-card-content">
                 <div class="voice-engine-card-icon" style="color: #38bdf8;"><i class="fa-solid fa-cloud"></i></div>
                 <div class="voice-engine-card-text">
-                  <div class="voice-engine-card-title">Microsoft Edge Neural <span class="free-pill">100% Miễn Phí</span></div>
+                  <div class="voice-engine-card-title">Microsoft Edge Neural <span class="free-pill">100% Miễn
+                      Phí</span></div>
                   <div class="voice-engine-card-desc">Nữ Hoài My dịu dàng, phát thanh viên (Không cần API Key)</div>
                 </div>
               </div>
@@ -2165,17 +2228,21 @@
           <div id="elevenSettingsPanel" class="eleven-settings-panel" style="display: flex;">
             <div class="eleven-key-row">
               <div class="eleven-input-label">
-                <span style="font-weight: 600; color: #f8fafc;"><i class="fa-solid fa-key" style="color: #f59e0b;"></i> ElevenLabs API Key:</span>
-                <a href="https://elevenlabs.io" target="_blank" rel="noopener" class="eleven-key-link" title="Mở trang ElevenLabs để lấy key">
+                <span style="font-weight: 600; color: #f8fafc;"><i class="fa-solid fa-key" style="color: #f59e0b;"></i>
+                  ElevenLabs API Key:</span>
+                <a href="https://elevenlabs.io" target="_blank" rel="noopener" class="eleven-key-link"
+                  title="Mở trang ElevenLabs để lấy key">
                   <i class="fa-solid fa-arrow-up-right-from-square"></i> Lấy key miễn phí từ elevenlabs.io
                 </a>
               </div>
               <div class="eleven-key-input-wrap">
-                <input type="password" id="elevenApiKeyInput" class="form-input-custom" placeholder="Dán xi-api-key (51 ký tự) vào đây..." autocomplete="off" />
+                <input type="password" id="elevenApiKeyInput" class="form-input-custom"
+                  placeholder="Dán xi-api-key (51 ký tự) vào đây..." autocomplete="off" />
                 <button type="button" class="btn-toggle-key-visibility" id="btnToggleElevenKey" title="Hiện/Ẩn API Key">
                   <i class="fa-solid fa-eye"></i>
                 </button>
-                <button type="button" class="btn-verify-key" id="btnVerifyElevenKey" title="Kiểm tra tính hợp lệ và xem hạn mức">
+                <button type="button" class="btn-verify-key" id="btnVerifyElevenKey"
+                  title="Kiểm tra tính hợp lệ và xem hạn mức">
                   <i class="fa-solid fa-plug-circle-check"></i> Kiểm tra Key
                 </button>
               </div>
@@ -2184,23 +2251,28 @@
 
             <!-- Chọn Model ElevenLabs -->
             <div class="form-group-custom" style="margin-top: 6px; margin-bottom: 0;">
-              <label for="elevenModelSelect" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
+              <label for="elevenModelSelect"
+                style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
                 Mô hình giọng nói AI (Model):
               </label>
               <select id="elevenModelSelect" class="form-input-custom form-select-custom">
-                <option value="eleven_flash_v2_5">⚡ Eleven Flash v2.5 (Siêu Tốc ~75ms, Giảm Trễ 95%, Tiết Kiệm Ký Tự) ⭐ [Khuyên Dùng]</option>
+                <option value="eleven_flash_v2_5">⚡ Eleven Flash v2.5 (Siêu Tốc ~75ms, Giảm Trễ 95%, Tiết Kiệm Ký Tự) ⭐
+                  [Khuyên Dùng]</option>
                 <option value="eleven_turbo_v2_5">🚀 Eleven Turbo v2.5 (Tốc độ cao ~250ms, đầm ấm)</option>
-                <option value="eleven_multilingual_v2">🌟 Eleven Multilingual v2 (Chất lượng phòng thu cao nhất)</option>
+                <option value="eleven_multilingual_v2">🌟 Eleven Multilingual v2 (Chất lượng phòng thu cao nhất)
+                </option>
               </select>
             </div>
 
             <!-- Chọn Giọng ElevenLabs -->
             <div class="form-group-custom" style="margin-top: 6px; margin-bottom: 0;">
-              <label for="elevenVoiceSelect" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
+              <label for="elevenVoiceSelect"
+                style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
                 Chọn nhân vật giọng đọc ElevenLabs:
               </label>
               <select id="elevenVoiceSelect" class="form-input-custom form-select-custom">
-                <option value="21m00Tcm4TlvDq8ikWAM">🌸 Rachel (Nữ dịu dàng, tự nhiên, thân mật) ⭐ [Chuẩn cho Najimez]</option>
+                <option value="21m00Tcm4TlvDq8ikWAM">🌸 Rachel (Nữ dịu dàng, tự nhiên, thân mật) ⭐ [Chuẩn cho Najimez]
+                </option>
                 <option value="EXAVITQu4vr4xnSDxMaL">🎀 Bella (Nữ trẻ trung, trong sáng, đáng yêu)</option>
                 <option value="MF3mGyEYCl7XYWbV9V6O">🌷 Elli (Nữ ấm áp, đằm thắm, tinh tế)</option>
                 <option value="AZnzlk1XvdvUeBnXmlld">👑 Domi (Nữ tự tin, sắc sảo, hiện đại)</option>
@@ -2212,21 +2284,27 @@
             </div>
 
             <!-- Ô nhập Voice ID tùy chỉnh -->
-            <div id="elevenCustomVoiceWrap" class="form-group-custom" style="display: none; margin-top: 6px; margin-bottom: 0;">
-              <label for="elevenCustomVoiceInput" style="font-size: 0.78rem; color: #f59e0b; display: block; margin-bottom: 4px;">
+            <div id="elevenCustomVoiceWrap" class="form-group-custom"
+              style="display: none; margin-top: 6px; margin-bottom: 0;">
+              <label for="elevenCustomVoiceInput"
+                style="font-size: 0.78rem; color: #f59e0b; display: block; margin-bottom: 4px;">
                 Nhập Custom Voice ID từ Voice Library:
               </label>
-              <input type="text" id="elevenCustomVoiceInput" class="form-input-custom" placeholder="Dán Voice ID từ ElevenLabs Voice Library..." />
+              <input type="text" id="elevenCustomVoiceInput" class="form-input-custom"
+                placeholder="Dán Voice ID từ ElevenLabs Voice Library..." />
             </div>
           </div>
 
           <!-- BẢNG CÀI ĐẶT EDGE NEURAL (MIỄN PHÍ) -->
-          <div id="edgeSettingsPanel" class="form-group-custom" style="display: none; margin-top: 6px; margin-bottom: 0;">
-            <label for="edgeVoiceSelect" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
+          <div id="edgeSettingsPanel" class="form-group-custom"
+            style="display: none; margin-top: 6px; margin-bottom: 0;">
+            <label for="edgeVoiceSelect"
+              style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
               Chọn giọng Microsoft Edge Neural:
             </label>
             <select id="edgeVoiceSelect" class="form-input-custom form-select-custom">
-              <option value="edge:vi-VN-HoaiMyNeural">🌸 Nữ Hoài My (Phát thanh viên ngọt ngào, tự nhiên) ⭐ [Khuyên Dùng]</option>
+              <option value="edge:vi-VN-HoaiMyNeural">🌸 Nữ Hoài My (Phát thanh viên ngọt ngào, tự nhiên) ⭐ [Khuyên
+                Dùng]</option>
               <option value="edge:vi-VN-NamMinhNeural">🎙️ Nam Minh (Trầm ấm, đĩnh đạc, truyền cảm)</option>
             </select>
           </div>
@@ -2237,7 +2315,8 @@
               <span><i class="fa-solid fa-gauge-high"></i> Tốc độ đọc:</span>
               <span class="voice-slider-val" id="voiceRateVal">1.00x</span>
             </div>
-            <input type="range" id="voiceRateSlider" class="voice-range-slider" min="0.75" max="1.35" step="0.05" value="1.0" />
+            <input type="range" id="voiceRateSlider" class="voice-range-slider" min="0.75" max="1.35" step="0.05"
+              value="1.0" />
           </div>
 
           <!-- Âm lượng đọc (Volume) -->
@@ -2246,7 +2325,8 @@
               <span><i class="fa-solid fa-volume-low"></i> Âm lượng giọng đọc:</span>
               <span class="voice-slider-val" id="voiceVolumeVal">85%</span>
             </div>
-            <input type="range" id="voiceVolumeSlider" class="voice-range-slider" min="10" max="100" step="5" value="85" />
+            <input type="range" id="voiceVolumeSlider" class="voice-range-slider" min="10" max="100" step="5"
+              value="85" />
           </div>
 
           <!-- Tự động đọc toggle -->
@@ -2276,7 +2356,9 @@
               <i class="fa-solid fa-bell"></i>
               <span>Hiệu Ứng Âm Thanh Tương Tác</span>
             </div>
-            <span class="voice-badge-tag" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">Web Audio API</span>
+            <span class="voice-badge-tag"
+              style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3);">Web
+              Audio API</span>
           </div>
 
           <!-- Bật tắt hiệu ứng âm thanh -->
@@ -2293,7 +2375,8 @@
 
           <!-- Chọn kiểu âm thanh -->
           <div class="form-group-custom" style="margin-bottom: 0;">
-            <label for="voiceSfxThemeSelect" style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
+            <label for="voiceSfxThemeSelect"
+              style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 4px;">
               Giai điệu âm thanh:
             </label>
             <select id="voiceSfxThemeSelect" class="form-input-custom form-select-custom">
@@ -2310,19 +2393,22 @@
               <span><i class="fa-solid fa-volume-low"></i> Âm lượng hiệu ứng:</span>
               <span class="voice-slider-val" id="voiceSfxVolumeVal">50%</span>
             </div>
-            <input type="range" id="voiceSfxVolumeSlider" class="voice-range-slider" min="10" max="100" step="5" value="50" />
+            <input type="range" id="voiceSfxVolumeSlider" class="voice-range-slider" min="10" max="100" step="5"
+              value="50" />
           </div>
 
           <!-- Nút nghe thử âm thanh hiệu ứng -->
           <div class="voice-test-actions">
-            <button type="button" class="btn-voice-test" id="btnTestSfx" style="background: rgba(56, 189, 248, 0.14); border-color: rgba(56, 189, 248, 0.3); color: #7dd3fc;">
+            <button type="button" class="btn-voice-test" id="btnTestSfx"
+              style="background: rgba(56, 189, 248, 0.14); border-color: rgba(56, 189, 248, 0.3); color: #7dd3fc;">
               <i class="fa-solid fa-volume-high"></i> Nghe thử hiệu ứng
             </button>
           </div>
         </div>
       </div>
 
-      <div class="modal-actions-row" style="padding: 14px 20px; border-top: 1px solid var(--border-color); background: rgba(30, 41, 59, 0.3);">
+      <div class="modal-actions-row"
+        style="padding: 14px 20px; border-top: 1px solid var(--border-color); background: rgba(30, 41, 59, 0.3);">
         <button type="button" class="btn-reset-gentle" id="btnResetVoiceDefault" title="Khôi phục cấu hình chuẩn êm ái">
           <i class="fa-solid fa-rotate-left"></i> Chuẩn Êm Dịu
         </button>
@@ -2364,12 +2450,14 @@
             </div>
             <textarea id="studioPromptInput" class="studio-prompt-textarea" rows="3"
               placeholder="Ví dụ: Một chú mèo phi hành gia bồng bềnh ngoài không gian, ngắm nhìn Trái Đất rực rỡ..."></textarea>
-            
+
             <div class="studio-prompt-actions-row">
-              <button type="button" class="btn-prompt-helper" id="btnStudioEnhancePrompt" title="Dùng AI tối ưu từ khóa nghệ thuật">
+              <button type="button" class="btn-prompt-helper" id="btnStudioEnhancePrompt"
+                title="Dùng AI tối ưu từ khóa nghệ thuật">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ Phù phép Prompt
               </button>
-              <button type="button" class="btn-prompt-helper btn-surprise" id="btnStudioSurprise" title="Gợi ý một chủ đề ngẫu nhiên cực đẹp">
+              <button type="button" class="btn-prompt-helper btn-surprise" id="btnStudioSurprise"
+                title="Gợi ý một chủ đề ngẫu nhiên cực đẹp">
                 <i class="fa-solid fa-shuffle"></i> 🎲 Ý tưởng ngẫu nhiên
               </button>
             </div>
@@ -2448,7 +2536,9 @@
           <div class="studio-field-group" style="margin-bottom: 8px;">
             <div class="studio-field-label">
               <span><i class="fa-solid fa-key"></i> Pollen Key VIP (Tùy chọn):</span>
-              <a href="https://enter.pollinations.ai" target="_blank" style="font-size: 0.72rem; color: #c084fc; text-decoration: underline;" title="Lấy key miễn phí">Lấy key miễn phí</a>
+              <a href="https://enter.pollinations.ai" target="_blank"
+                style="font-size: 0.72rem; color: #c084fc; text-decoration: underline;" title="Lấy key miễn phí">Lấy key
+                miễn phí</a>
             </div>
             <div style="position: relative; display: flex; align-items: center;">
               <input type="password" id="studioPollenKeyInput" class="studio-key-input"
@@ -2496,7 +2586,8 @@
           <span id="copilotLightboxTitle">Xem Ảnh Chi Tiết</span>
         </div>
         <div class="lightbox-actions">
-          <a href="#" id="btnDownloadLightboxImg" download="anh-najimez.jpg" class="btn-lightbox-action" title="Tải ảnh về máy">
+          <a href="#" id="btnDownloadLightboxImg" download="anh-najimez.jpg" class="btn-lightbox-action"
+            title="Tải ảnh về máy">
             <i class="fa-solid fa-download"></i>
             <span>Tải về</span>
           </a>
@@ -2571,10 +2662,12 @@
             </button>
           </div>
           <div class="tt-matcher-date-nav" id="ttMatcherDateNav">
-            <button type="button" class="btn-matcher-nav" id="btnTtMatchPrevDate" title="Ngày trước"><i class="fa-solid fa-chevron-left"></i></button>
+            <button type="button" class="btn-matcher-nav" id="btnTtMatchPrevDate" title="Ngày trước"><i
+                class="fa-solid fa-chevron-left"></i></button>
             <span class="tt-matcher-cur-date" id="ttMatcherDateDisplay">Hôm nay</span>
             <button type="button" class="btn-matcher-today" id="btnTtMatchToday">Hôm Nay</button>
-            <button type="button" class="btn-matcher-nav" id="btnTtMatchNextDate" title="Ngày sau"><i class="fa-solid fa-chevron-right"></i></button>
+            <button type="button" class="btn-matcher-nav" id="btnTtMatchNextDate" title="Ngày sau"><i
+                class="fa-solid fa-chevron-right"></i></button>
           </div>
         </div>
 
@@ -2599,12 +2692,15 @@
   <!-- MODAL: SỔ TAY BÀI TẬP HYPER NAJIMEZ -->
   <div class="hyper-notebook-modal" id="hyperNotebookModal">
     <div class="hyper-notebook-dialog">
-      <div class="modal-header" style="border-bottom: 1px solid rgba(168, 85, 247, 0.3); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
-        <div class="dialog-title" style="display: flex; align-items: center; gap: 10px; font-size: 1.1rem; color: #f8fafc; font-weight: 700;">
+      <div class="modal-header"
+        style="border-bottom: 1px solid rgba(168, 85, 247, 0.3); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+        <div class="dialog-title"
+          style="display: flex; align-items: center; gap: 10px; font-size: 1.1rem; color: #f8fafc; font-weight: 700;">
           <i class="fa-solid fa-book-bookmark" style="color: #c084fc;"></i>
           <span>Sổ Tay Bài Tập Hyper Najimez</span>
         </div>
-        <button type="button" class="btn-close-modal" id="btnCloseHyperNotebook" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">
+        <button type="button" class="btn-close-modal" id="btnCloseHyperNotebook"
+          style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>

@@ -44,8 +44,7 @@ function switchToolboxTool(toolId) {
       'dice-coin': 'quadDiceCoin',
       'pomodoro': 'quadPomodoro',
       'calculator': 'quadCalculator',
-      'currency': 'quadCurrency',
-      'hyper': 'quadHyper'
+      'currency': 'quadCurrency'
     };
     const targetId = targetMap[toolId];
 
@@ -162,7 +161,7 @@ function playDiceSound() {
       osc.start(clickTime);
       osc.stop(clickTime + 0.06);
     }
-  } catch (e) {}
+  } catch (e) { }
 }
 
 /**
@@ -192,7 +191,7 @@ function playPomodoroChime() {
       osc.start(t);
       osc.stop(t + 1.25);
     });
-  } catch (e) {}
+  } catch (e) { }
 }
 
 // ============================================================================
@@ -772,7 +771,7 @@ function copyCalcResult() {
       btn.innerHTML = '<i class="fa-solid fa-check"></i> Đã sao chép!';
       setTimeout(() => { btn.innerHTML = original; }, 1500);
     }
-  }).catch(() => {});
+  }).catch(() => { });
 }
 
 function handleCalcKeyboard(e) {
@@ -899,7 +898,7 @@ function loadCachedCurrencyRates() {
         currRatesLastFetched = data.time ? new Date(data.time) : null;
         updateRatesTimestampUI();
       }
-    } catch (e) {}
+    } catch (e) { }
   }
 }
 
@@ -1118,7 +1117,7 @@ async function fetchLiveCurrencyRates(manual = false) {
           ratesData = data.rates;
         }
       }
-    } catch (err) {}
+    } catch (err) { }
   }
 
   if (ratesData) {
@@ -1209,7 +1208,7 @@ function fallbackCopyText(text) {
       btnCopy.innerHTML = '<i class="fa-solid fa-check" style="color: #4ade80;"></i> Đã chép!';
       setTimeout(() => { if (btnCopy) btnCopy.innerHTML = orig; }, 1500);
     }
-  } catch (e) {}
+  } catch (e) { }
   document.body.removeChild(ta);
 }
 

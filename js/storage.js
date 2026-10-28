@@ -140,13 +140,51 @@ function healLedgerData(data) {
     const initialLen = data.calendarEvents.length;
 
     // 1. Xóa các sự kiện healed tạm thời trước đây nếu có
-    const cleanedList = data.calendarEvents.filter(e => {
+    let cleanedList = data.calendarEvents.filter(e => {
       if (!e) return false;
       if (typeof e.id === 'string' && (e.id.startsWith('cal-healed-wed-') || e.id.startsWith('cal-healed-fri-'))) {
         return false;
       }
       return true;
     });
+
+    // 1b. Tự động chuẩn hóa & giải quyết xung đột giữa sự kiện gộp nhiều thứ và sự kiện tách từng thứ có ghi chú riêng
+    const singleDayMap = new Map();
+    cleanedList.forEach(e => {
+      const rawDays = e.daysOfWeek || e.repeatDays;
+      if (Array.isArray(rawDays) && rawDays.length === 1) {
+        const normTitle = (e.title || '').trim().toLowerCase();
+        const normTime = (e.time || e.startTime || '').trim();
+        const key = `${normTitle}|${normTime}`;
+        if (!singleDayMap.has(key)) singleDayMap.set(key, new Set());
+        singleDayMap.get(key).add(Number(rawDays[0]));
+      }
+    });
+
+    if (singleDayMap.size > 0) {
+      cleanedList = cleanedList.filter(e => {
+        const rawDays = e.daysOfWeek || e.repeatDays;
+        if (!Array.isArray(rawDays) || rawDays.length <= 1) return true;
+        const normTitle = (e.title || '').trim().toLowerCase();
+        const normTime = (e.time || e.startTime || '').trim();
+        const key = `${normTitle}|${normTime}`;
+        const separatedDays = singleDayMap.get(key);
+        if (!separatedDays) return true;
+
+        const numDays = rawDays.map(Number);
+        const remainingDays = numDays.filter(d => !separatedDays.has(d));
+        if (remainingDays.length === 0) {
+          changed = true;
+          return false;
+        }
+        if (remainingDays.length !== numDays.length) {
+          e.daysOfWeek = remainingDays;
+          if (e.repeatDays) e.repeatDays = remainingDays;
+          changed = true;
+        }
+        return true;
+      });
+    }
 
     // 2. Lọc trùng lặp thông minh (Deduplication)
     const recurringMap = new Map();
@@ -174,6 +212,14 @@ function healLedgerData(data) {
           if (e.date && (!existing.date || e.date < existing.date)) {
             existing.date = e.date;
           }
+          if (e.note && !existing.note) {
+            existing.note = e.note;
+            changed = true;
+          }
+          if (e.repeatUntil && !existing.repeatUntil) {
+            existing.repeatUntil = e.repeatUntil;
+            changed = true;
+          }
           return;
         }
         // Đảm bảo thiết lập chuẩn lặp lại
@@ -186,6 +232,18 @@ function healLedgerData(data) {
         // Sự kiện đơn lẻ: lọc theo tiêu đề, ngày, giờ
         const singleKey = `${normTitle}|${e.date}|${normTime}|${normEndTime}|${e.repeat || 'none'}`;
         if (singleSet.has(singleKey)) {
+          const existingSingle = uniqueEvents.find(u => {
+            const uDays = u.daysOfWeek || u.repeatDays;
+            if (Array.isArray(uDays) && uDays.length > 0) return false;
+            const uTitle = (u.title || '').trim().toLowerCase();
+            const uTime = (u.time || u.startTime || '').trim();
+            const uEndTime = (u.endTime || '').trim();
+            return uTitle === normTitle && u.date === e.date && uTime === normTime && uEndTime === normEndTime;
+          });
+          if (existingSingle && e.note && !existingSingle.note) {
+            existingSingle.note = e.note;
+            changed = true;
+          }
           return;
         }
         singleSet.add(singleKey);
@@ -264,6 +322,7 @@ function getLedgerData() {
     }
     return healLedgerData(merged);
   } catch (e) {
+    console.error('[Storage] Lỗi đọc hoặc chữa lành dữ liệu sổ cái:', e);
     return defaultData;
   }
 }

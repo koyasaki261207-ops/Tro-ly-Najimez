@@ -505,8 +505,8 @@ function renderTimetableTab() {
           `;
         } else {
           // Đủ rộng (Scroll Mode >= 45p hoặc 1 Màn Hình >= 85p)
-          const showTag = displayTag && (timetableScrollMode ? durMin >= 65 : durMin >= 95);
-          const showNote = ev.note && (timetableScrollMode ? durMin >= 100 : durMin >= 140);
+          const showTag = displayTag && (timetableScrollMode ? durMin >= 55 : durMin >= 80);
+          const showNote = ev.note && (timetableScrollMode ? durMin >= 75 : durMin >= 100);
 
           blockEl.innerHTML = `
             <div class="tt-event-title">

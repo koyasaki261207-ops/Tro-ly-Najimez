@@ -4,9 +4,46 @@
  */
 
 /* ==========================================================================
-   1. TABLET & MÀN HÌNH VỪA (MAX-WIDTH: 1040PX)
+   1. TABLET & LAPTOP VỪA (MAX-WIDTH: 1180PX)
    ========================================================================== */
-@media (max-width: 1040px) {
+@media (max-width: 1180px) {
+  .omni-header {
+    padding: 0 18px;
+    gap: 10px;
+  }
+
+  .header-left {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .header-greeting {
+    min-width: 0;
+  }
+
+  .header-greeting h2 {
+    font-size: 1.05rem;
+    max-width: 280px;
+  }
+
+  .header-sub {
+    display: none;
+  }
+
+  .stat-bubble {
+    padding: 7px 14px;
+    gap: 10px;
+  }
+
+  .copilot-container {
+    padding: 18px 20px 16px;
+    max-width: 100%;
+  }
+
+  .chat-msg {
+    max-width: 100%;
+  }
+
   .finance-grid {
     grid-template-columns: 1fr;
     overflow-y: auto;

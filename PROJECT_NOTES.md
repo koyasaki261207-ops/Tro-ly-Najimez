@@ -134,7 +134,7 @@
     * **Thanh công cụ ký hiệu toán học nhanh:** Chèn tức thì các ký hiệu phổ biến ($\sqrt{x}$, $x^2$, $\int$, $\sum$, $\lim$, $\pi$, $\theta$, $\Delta$, $\infty$, $\neq$, $\le$, $\ge$, $\rightarrow$) vào đề bài chỉ với 1 click.
     * **Sổ tay bài tập Hyper (Hyper Notebook):** Tự động lưu trữ bài giải vào `LocalStorage`, hỗ trợ tìm kiếm, lọc theo môn học và mở lại bất cứ lúc nào.
     * **Tiện ích đi kèm:** Sao chép bài giải Markdown/LaTeX, đọc bài giảng bằng giọng nói Najimez (TTS), và xuất file Markdown ôn tập.
-  * [`css/hyper-najimez.css`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/css/hyper-najimez.css): Định kiểu Cyber Luxury Overclock Glassmorphism cho Phân Hệ Hyper Najimez: HUD Header phát sáng gradient với avatar có vòng xoay năng lượng, bố cục 2 cột (Input Studio & Solution Arena), hộp tư duy sâu với viền xanh cyber, khối công thức KaTeX căn giữa và thẻ công cụ số 6 trong Hộp Dụng Cụ.
+  * [`css/hyper-najimez.css`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/css/hyper-najimez.css): Định kiểu Cyber Luxury Overclock Glassmorphism cho Phân Hệ Hyper Najimez: HUD Header phát sáng gradient với avatar có vòng xoay năng lượng, bố cục 2 cột (Input Studio & Solution Arena), hộp tư duy sâu với viền xanh cyber và khối công thức KaTeX căn giữa sắc nét.
 
 ---
 
