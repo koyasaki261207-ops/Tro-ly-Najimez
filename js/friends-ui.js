@@ -302,7 +302,7 @@ function renderFriendsGrid() {
             <i class="fa-solid fa-hand-holding-dollar"></i>
             <span>Chia Tiền / Nợ</span>
           </button>
-          <button type="button" class="btn-friend-action" onclick="quickMatchTimetableWithFriend('${escapeHtml(name)}')" title="So khớp thời khóa biểu xem giờ rảnh chung">
+          <button type="button" class="btn-friend-action" onclick="quickMatchTimetableWithFriend('${friend.uid}', '${escapeHtml(name)}')" title="So khớp thời khóa biểu xem giờ rảnh chung">
             <i class="fa-solid fa-calendar-check"></i>
             <span>So TKB</span>
           </button>
@@ -483,14 +483,21 @@ function quickCreateDebtWithFriend(friendName) {
 }
 
 /**
- * Hành động nhanh: So khớp Thời khóa biểu
+ * Hành động nhanh: So khớp Thời khóa biểu cùng bạn bè
  */
-function quickMatchTimetableWithFriend(friendName) {
-  // Chuyển sang Tab Thời khóa biểu
-  const navItem = document.querySelector('.sidebar-nav .nav-item[data-tab="tab-timetable"]');
-  if (navItem) navItem.click();
-
-  showSocialToast(`Đang hiển thị Thời Khóa Biểu. Tính năng so khớp tự động cùng "${friendName}" sắp ra mắt! 🌸`, 'info');
+function quickMatchTimetableWithFriend(friendUid, friendName) {
+  if (!friendName && friendUid) {
+    friendName = friendUid;
+    friendUid = null;
+  }
+  if (typeof openTimetableMatcherModal === 'function') {
+    openTimetableMatcherModal(friendUid, friendName);
+  } else {
+    // Fallback nếu modal chưa khởi tạo xong
+    const navItem = document.querySelector('.sidebar-nav .nav-item[data-tab="tab-timetable"]');
+    if (navItem) navItem.click();
+    showSocialToast(`Đang mở Thời Khóa Biểu để so khớp cùng "${friendName || 'bạn bè'}"... 🌸`, 'info');
+  }
 }
 
 /**

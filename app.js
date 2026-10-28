@@ -60,6 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   try {
+    if (typeof initHyperNajimez === 'function') initHyperNajimez();
+  } catch (err) {
+    console.error('Lỗi khởi tạo Hyper Najimez:', err);
+  }
+
+  try {
     if (typeof initCopilotImageAttachment === 'function') initCopilotImageAttachment();
     initChatEngine();
   } catch (err) {

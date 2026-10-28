@@ -25,8 +25,14 @@
   <!-- Favicon Najimez -->
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
-  <link rel="stylesheet" href="style.css?v=3.76.0">
-  <link rel="stylesheet" href="css/responsive.css?v=3.76.0">
+  <link rel="stylesheet" href="style.css?v=3.80.0">
+  <link rel="stylesheet" href="css/timetable-matcher.css?v=3.78.0">
+  <link rel="stylesheet" href="css/responsive.css?v=3.80.0">
+
+  <!-- KaTeX hỗ trợ render công thức Toán học đẹp mắt cho Hyper Najimez -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
 
   <!-- Style cốt lõi chống cache @import trên trình duyệt di động -->
   <style>
@@ -122,6 +128,11 @@
         <button class="nav-item" id="btnSidebarImageGen" type="button" title="Sáng tạo hình ảnh AI cùng Najimez">
           <i class="fa-solid fa-wand-magic-sparkles"></i>
           <span>Tạo Ảnh AI Najimez</span>
+        </button>
+        <button class="nav-item" data-tab="tab-hyper" id="btnSidebarHyperNajimez" title="Hyper Najimez - Siêu Trí Tuệ &amp; Giải Đề Sâu">
+          <i class="fa-solid fa-bolt-lightning" style="color: #c084fc;"></i>
+          <span>Hyper Najimez</span>
+          <span class="pill-badge" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(59, 130, 246, 0.4)); color: #f3e8ff; border: 1px solid rgba(168, 85, 247, 0.6); box-shadow: 0 0 8px rgba(168, 85, 247, 0.3);">⚡ PRO</span>
         </button>
       </nav>
 
@@ -594,6 +605,10 @@
 
                 <button type="button" class="btn-tt-scroll-nav" id="btnTtScrollToGrid" title="Cuộn xuống Thời khóa biểu tuần toàn màn hình">
                   <i class="fa-solid fa-arrow-down"></i> <span>Xem TKB Tuần</span>
+                </button>
+
+                <button type="button" class="btn-tt-match" id="btnTtOpenMatcher" title="So khớp thời khóa biểu cùng bạn bè để tìm giờ rảnh chung">
+                  <i class="fa-solid fa-people-arrows"></i> <span>So TKB Bạn Bè</span>
                 </button>
 
                 <button type="button" class="btn-add-event-primary" id="btnTtAddEvent">
@@ -1198,6 +1213,37 @@
                 </div>
               </div>
 
+              <!-- =============================================================
+                   PHẦN 6: HYPER NAJIMEZ LAUNCHER (KHÔNG GIAN GIẢI ĐỀ SIÊU CẤP)
+                   ============================================================= -->
+              <div class="toolbox-quad-card quad-hyper" id="quadHyper">
+                <div class="quad-card-header">
+                  <div class="quad-card-title">
+                    <i class="fa-solid fa-bolt-lightning" style="color: #c084fc;"></i>
+                    <span>6. Hyper Najimez: Siêu Trí Tuệ</span>
+                  </div>
+                  <button type="button" class="btn-quad-maximize" data-tool="hyper" title="Phóng to công cụ này">
+                    <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                  </button>
+                </div>
+                <div class="quad-card-body">
+                  <div class="toolbox-hyper-card-body">
+                    <div class="toolbox-hyper-orb">
+                      <div class="toolbox-hyper-orb-inner">
+                        <i class="fa-solid fa-brain"></i>
+                      </div>
+                    </div>
+                    <div class="toolbox-hyper-title">Chế Độ Thức Tỉnh Trí Tuệ</div>
+                    <div class="toolbox-hyper-desc">
+                      Tập trung 200% khả năng tư duy sâu (Chain-of-Thought), phân tích bản chất và giải quyết xuất sắc các bài tập Toán, Lý, Hóa, Code phức tạp.
+                    </div>
+                    <button type="button" class="btn-toolbox-enter-hyper" id="btnToolboxEnterHyper">
+                      <i class="fa-solid fa-bolt"></i> Vào Không Gian Hyper Najimez
+                    </button>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </section>
@@ -1238,6 +1284,221 @@
 
             <!-- Lưới thẻ bạn bè (Friends Grid) -->
             <div class="friends-grid" id="friendsListGrid"></div>
+
+          </div>
+        </section>
+
+        <!-- =================================================================
+             TAB 8: HYPER NAJIMEZ (CHẾ ĐỘ SIÊU TRÍ TUỆ & TƯ DUY SÂU)
+             ================================================================= -->
+        <section class="tab-pane" id="tab-hyper">
+          <div class="hyper-workspace">
+            
+            <!-- HUD Header: Banner Thức Tỉnh & Trạng Thái Overclock -->
+            <header class="hyper-hud-header">
+              <div class="hyper-brand-box">
+                <div class="hyper-avatar-aura">
+                  <img src="assets/najimez.jpg" alt="Hyper Najimez" class="hyper-avatar-img" />
+                </div>
+                <div class="hyper-brand-title-wrap">
+                  <div class="hyper-title-row">
+                    <span class="hyper-title-text">HYPER NAJIMEZ</span>
+                    <span class="hyper-status-badge">
+                      <span class="hyper-pulse-dot"></span> OVERCLOCK 2.0
+                    </span>
+                  </div>
+                  <div class="hyper-brand-desc">
+                    <span><i class="fa-solid fa-microchip"></i> Chế độ Siêu Trí Tuệ</span>
+                    <span>•</span>
+                    <span><i class="fa-solid fa-brain"></i> Tư duy sâu Chain-of-Thought</span>
+                    <span>•</span>
+                    <span><i class="fa-solid fa-square-root-variable"></i> Chuẩn học thuật</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thanh điều khiển: Chọn môn học & Mở sổ tay -->
+              <div class="hyper-hud-controls">
+                <div class="hyper-subject-selector" title="Chọn lĩnh vực học thuật">
+                  <button type="button" class="btn-subject-chip active" data-subject="math">
+                    <i class="fa-solid fa-calculator" style="color: #c084fc;"></i> Toán Học
+                  </button>
+                  <button type="button" class="btn-subject-chip" data-subject="physics">
+                    <i class="fa-solid fa-atom" style="color: #38bdf8;"></i> Vật Lý
+                  </button>
+                  <button type="button" class="btn-subject-chip" data-subject="chemistry">
+                    <i class="fa-solid fa-flask-vial" style="color: #34d399;"></i> Hóa Học
+                  </button>
+                  <button type="button" class="btn-subject-chip" data-subject="code">
+                    <i class="fa-solid fa-code" style="color: #fbbf24;"></i> Tin &amp; Code
+                  </button>
+                  <button type="button" class="btn-subject-chip" data-subject="literature">
+                    <i class="fa-solid fa-book-open" style="color: #f472b6;"></i> Ngữ Văn
+                  </button>
+                  <button type="button" class="btn-subject-chip" data-subject="general">
+                    <i class="fa-solid fa-microscope" style="color: #a78bfa;"></i> Đa Môn
+                  </button>
+                </div>
+
+                <button type="button" class="btn-hyper-notebook" id="btnOpenHyperNotebook" title="Xem các bài tập đã lưu trong sổ tay">
+                  <i class="fa-solid fa-book-bookmark" style="color: #c084fc;"></i>
+                  <span>Sổ Tay Bài Tập</span>
+                  <span class="hyper-nb-count" id="hyperNotebookCount">0</span>
+                </button>
+              </div>
+            </header>
+
+            <!-- Bố cục 2 Cột: Cột Trái (Đầu Vào Đề Bài) - Cột Phải (Sân Khấu Lời Giải) -->
+            <div class="hyper-split-grid">
+              
+              <!-- CỘT TRÁI: KHUNG ĐẦU VÀO ĐỀ BÀI -->
+              <div class="hyper-input-panel">
+                <div class="panel-header-row">
+                  <div class="panel-heading">
+                    <i class="fa-solid fa-pen-nib" style="color: #c084fc;"></i>
+                    <span>Đề Bài &amp; Dữ Liệu</span>
+                  </div>
+                  <button type="button" class="panel-sub-action" id="btnClearHyperInput" title="Xóa trắng đề bài">
+                    <i class="fa-regular fa-trash-can"></i> Xóa
+                  </button>
+                </div>
+
+                <!-- Thanh công thức toán học nhanh -->
+                <div class="hyper-math-toolbar" title="Chèn nhanh ký hiệu toán học vào đề bài">
+                  <span class="hyper-math-toolbar-label"><i class="fa-solid fa-wand-magic-sparkles"></i> Ký hiệu:</span>
+                  <button type="button" class="btn-math-sym" data-insert="√" title="Căn bậc hai">√</button>
+                  <button type="button" class="btn-math-sym" data-insert="^2" title="Mũ 2">x²</button>
+                  <button type="button" class="btn-math-sym" data-insert="∫" title="Tích phân">∫</button>
+                  <button type="button" class="btn-math-sym" data-insert="∑" title="Tổng Sigma">∑</button>
+                  <button type="button" class="btn-math-sym" data-insert="lim_{x \to 0}" title="Giới hạn">lim</button>
+                  <button type="button" class="btn-math-sym" data-insert="π" title="Số Pi">π</button>
+                  <button type="button" class="btn-math-sym" data-insert="θ" title="Góc Theta">θ</button>
+                  <button type="button" class="btn-math-sym" data-insert="Δ" title="Delta">Δ</button>
+                  <button type="button" class="btn-math-sym" data-insert="∞" title="Vô cực">∞</button>
+                  <button type="button" class="btn-math-sym" data-insert="≠" title="Khác">≠</button>
+                  <button type="button" class="btn-math-sym" data-insert="≤" title="Nhỏ hơn hoặc bằng">≤</button>
+                  <button type="button" class="btn-math-sym" data-insert="≥" title="Lớn hơn hoặc bằng">≥</button>
+                  <button type="button" class="btn-math-sym" data-insert="→" title="Mũi tên phản ứng">→</button>
+                </div>
+
+                <!-- Textarea nhập đề bài -->
+                <div class="hyper-textarea-wrap">
+                  <textarea id="hyperPromptInput" class="hyper-prompt-textarea" placeholder="Nhập đề bài toán, bài tập lý, hóa, code hoặc bất kỳ câu hỏi hóc búa nào... (Gợi ý: bạn có thể dán ảnh chụp đề bài trực tiếp bằng Ctrl+V)"></textarea>
+                  <div class="hyper-textarea-footer">
+                    <span id="hyperCharCount">0 ký tự</span> • <span>Ctrl + Enter để giải</span>
+                  </div>
+                </div>
+
+                <!-- Khu vực đính kèm ảnh (Kéo thả, click chọn hoặc dán Ctrl+V) -->
+                <div class="hyper-attach-zone">
+                  <div class="hyper-dropzone" id="hyperDropzone" title="Kéo thả ảnh chụp bài tập vào đây hoặc click để chọn">
+                    <div class="dropzone-hint">
+                      <i class="fa-solid fa-camera"></i>
+                      <span>Kéo thả ảnh chụp bài tập hoặc click tải lên</span>
+                    </div>
+                    <span class="dropzone-kbd">Ctrl + V</span>
+                  </div>
+                  <input type="file" id="hyperFileInput" accept="image/*" style="display: none;" />
+
+                  <!-- Thumbnail xem trước ảnh đã tải lên -->
+                  <div class="hyper-img-preview-box" id="hyperImgPreviewWrap" style="display: none;">
+                    <img id="hyperPreviewImg" src="" alt="Ảnh bài tập" />
+                    <button type="button" class="btn-remove-hyper-img" id="btnRemoveHyperImg" title="Xóa ảnh này">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Tùy chọn cấu hình tư duy -->
+                <div class="hyper-options-group">
+                  <div class="option-row">
+                    <label class="hyper-checkbox-label">
+                      <input type="checkbox" id="hyperChkStep" checked />
+                      <span>Trình bày chi tiết từng bước &amp; lý do biến đổi</span>
+                    </label>
+                  </div>
+                  <div class="option-row">
+                    <label class="hyper-checkbox-label">
+                      <input type="checkbox" id="hyperChkVerify" checked />
+                      <span>Kiểm tra chéo kết quả &amp; Chỉ ra bẫy thường gặp</span>
+                    </label>
+                  </div>
+                  <div class="option-row">
+                    <span class="option-label"><i class="fa-solid fa-gauge-high" style="color: #38bdf8;"></i> Độ sâu suy nghĩ:</span>
+                    <select id="hyperBudgetSelect" class="hyper-budget-select">
+                      <option value="1024">⚡ Nhanh Gọn (1024 Tokens)</option>
+                      <option value="2048" selected>🧠 Chuẩn Học Thuật (2048 Tokens)</option>
+                      <option value="4096">🚀 Cực Đại Overclock (4096 Tokens)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Nút Kích Hoạt Thức Tỉnh (CTA) -->
+                <button type="button" class="btn-hyper-solve" id="btnHyperSolve">
+                  <i class="fa-solid fa-bolt"></i> THỨC TỈNH HYPER NAJIMEZ • GIẢI BÀI NGAY
+                </button>
+              </div>
+
+              <!-- CỘT PHẢI: SÂN KHẤU LỜI GIẢI & SUY LUẬN SÂU -->
+              <div class="hyper-solution-panel">
+                
+                <!-- Trạng thái chờ / chưa giải (Placeholder) -->
+                <div class="hyper-empty-state" id="hyperEmptyState">
+                  <div class="empty-state-icon-aura">
+                    <i class="fa-solid fa-brain"></i>
+                  </div>
+                  <div class="empty-state-title">Không Gian Tư Duy Sâu Sẵn Sàng</div>
+                  <div class="empty-state-desc">
+                    Hãy nhập đề bài hoặc đính kèm ảnh bài tập ở cột bên trái rồi nhấn <strong>Thức Tỉnh Hyper Najimez</strong>. Najime sẽ kích hoạt toàn bộ công lực phân tích bản chất, nháp suy nghĩ sâu và trình bày lời giải hoàn hảo nhất cho bạn!
+                  </div>
+                </div>
+
+                <!-- Sân khấu hiển thị lời giải và quá trình suy nghĩ -->
+                <div id="hyperSolutionStage" style="display: none; flex-direction: column; gap: 14px; width: 100%;">
+                  
+                  <!-- Khung 1: QUÁ TRÌNH SUY NGHĨ SÂU (Deep Reasoning Thoughts) -->
+                  <div class="hyper-thoughts-card" id="hyperThoughtsCard" style="display: none;">
+                    <div class="hyper-thoughts-header" title="Nhấp để thu gọn / mở rộng quá trình suy nghĩ">
+                      <div class="hyper-thoughts-title">
+                        <i class="fa-solid fa-brain hyper-brain-pulse"></i>
+                        <span>QUÁ TRÌNH TƯ DUY SÂU (DEEP REASONING)</span>
+                      </div>
+                      <div class="hyper-thoughts-meta" id="hyperThoughtsMeta">
+                        <i class="fa-regular fa-clock"></i>
+                        <span id="hyperThinkingTimer">0.0s</span>
+                      </div>
+                    </div>
+                    <div class="hyper-thoughts-body" id="hyperThoughtsBody"></div>
+                  </div>
+
+                  <!-- Khung 2: LỜI GIẢI HOÀN CHỈNH (Master Solution Content) -->
+                  <div class="hyper-solution-content" id="hyperSolutionContent"></div>
+
+                  <!-- Thanh hành động kết quả (Action Bar) -->
+                  <div class="hyper-action-bar">
+                    <div class="action-bar-left">
+                      <button type="button" class="btn-hyper-action" id="btnHyperCopySolution" title="Sao chép toàn bộ lời giải">
+                        <i class="fa-regular fa-copy"></i> Sao chép
+                      </button>
+                      <button type="button" class="btn-hyper-action" id="btnHyperSaveNotebook" title="Lưu bài tập này vào sổ tay ôn tập">
+                        <i class="fa-regular fa-bookmark"></i> Lưu Sổ Tay
+                      </button>
+                      <button type="button" class="btn-hyper-action" id="btnHyperSpeak" title="Nghe Najimez đọc giải thích bài giải">
+                        <i class="fa-solid fa-volume-high"></i> Nghe Najimez Giảng
+                      </button>
+                    </div>
+                    <div class="action-bar-right">
+                      <button type="button" class="btn-hyper-action" id="btnHyperExport" title="Tải bài giải về dưới dạng Markdown (.md)">
+                        <i class="fa-solid fa-download"></i> Xuất File
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
 
           </div>
         </section>
@@ -2282,6 +2543,75 @@
     </div>
   </div>
 
+  <!-- MODAL: SO KHỚP THỜI KHÓA BIỂU CÙNG BẠN BÈ (TIMETABLE MATCHER) -->
+  <div class="modal-backdrop" id="timetableMatcherModal">
+    <div class="modal-dialog timetable-matcher-dialog">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-people-arrows" style="color: #38bdf8;"></i>
+          <span>So Khớp Thời Khóa Biểu Cùng Bạn Bè</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCloseTimetableMatcherModal" title="Đóng">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body timetable-matcher-body">
+        <!-- Toolbar điều khiển -->
+        <div class="tt-matcher-toolbar">
+          <div class="tt-matcher-friend-picker">
+            <label for="ttMatcherFriendSelect"><i class="fa-solid fa-user-group"></i> Bạn bè:</label>
+            <select id="ttMatcherFriendSelect" class="tt-matcher-select"></select>
+          </div>
+          <div class="tt-matcher-view-tabs">
+            <button type="button" class="tt-matcher-tab active" data-mode="day" id="btnTtMatchModeDay">
+              <i class="fa-solid fa-calendar-day"></i> <span>Xem Theo Ngày</span>
+            </button>
+            <button type="button" class="tt-matcher-tab" data-mode="week" id="btnTtMatchModeWeek">
+              <i class="fa-solid fa-calendar-week"></i> <span>Tổng Quan Cả Tuần</span>
+            </button>
+          </div>
+          <div class="tt-matcher-date-nav" id="ttMatcherDateNav">
+            <button type="button" class="btn-matcher-nav" id="btnTtMatchPrevDate" title="Ngày trước"><i class="fa-solid fa-chevron-left"></i></button>
+            <span class="tt-matcher-cur-date" id="ttMatcherDateDisplay">Hôm nay</span>
+            <button type="button" class="btn-matcher-today" id="btnTtMatchToday">Hôm Nay</button>
+            <button type="button" class="btn-matcher-nav" id="btnTtMatchNextDate" title="Ngày sau"><i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+
+        <!-- AI Insights Card từ Najimez -->
+        <div class="tt-matcher-ai-card" id="ttMatcherAiCard">
+          <div class="tt-matcher-ai-avatar">
+            <img src="assets/najimez.jpg" alt="Najimez" />
+            <span class="tt-ai-sparkle"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+          </div>
+          <div class="tt-matcher-ai-content">
+            <div class="tt-matcher-ai-title">Trợ Lý Najimez Phân Tích Lịch Trình</div>
+            <div class="tt-matcher-ai-desc" id="ttMatcherAiText">Đang so khớp thời khóa biểu cùng bạn bè...</div>
+          </div>
+        </div>
+
+        <!-- Dynamic Content: Render Day View hoặc Week View -->
+        <div id="ttMatcherDynamicContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SỔ TAY BÀI TẬP HYPER NAJIMEZ -->
+  <div class="hyper-notebook-modal" id="hyperNotebookModal">
+    <div class="hyper-notebook-dialog">
+      <div class="modal-header" style="border-bottom: 1px solid rgba(168, 85, 247, 0.3); padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;">
+        <div class="dialog-title" style="display: flex; align-items: center; gap: 10px; font-size: 1.1rem; color: #f8fafc; font-weight: 700;">
+          <i class="fa-solid fa-book-bookmark" style="color: #c084fc;"></i>
+          <span>Sổ Tay Bài Tập Hyper Najimez</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCloseHyperNotebook" style="background: transparent; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="notebook-list-body" id="hyperNotebookList"></div>
+    </div>
+  </div>
+
   <!-- Firebase SDK Compat v10 (Chạy mượt mà trực tiếp không cần npm build) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
@@ -2314,6 +2644,8 @@
   <script src="js/firebase-sync.js?v=3.55.0"></script>
   <script src="js/friends.js?v=3.77.0"></script>
   <script src="js/friends-ui.js?v=3.77.0"></script>
+  <script src="js/timetable-matcher.js?v=3.78.0"></script>
+  <script src="js/hyper-najimez.js?v=1.0.2"></script>
   <!-- Entrypoint khởi động -->
   <script src="app.js?v=3.77.0"></script>
 </body>

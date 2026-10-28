@@ -1,0 +1,649 @@
+/**
+ * css/timetable-matcher.css - Giao Diện Phân Hệ So Khớp Thời Khóa Biểu Cùng Bạn Bè
+ * Thiết kế theo phong cách Cyber Luxury & Vũ Trụ Sao, Glassmorphism mờ ảo cao cấp.
+ */
+
+/* ==========================================================================
+   1. DIALOG CONTAINER & BACKDROP
+   ========================================================================== */
+.timetable-matcher-dialog {
+  max-width: 920px;
+  width: 95%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.22) 0%, rgba(13, 19, 40, 0.95) 100%),
+              rgba(10, 15, 34, 0.96);
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 35px rgba(99, 102, 241, 0.18);
+  border-radius: var(--radius-lg, 20px);
+  overflow: hidden;
+  animation: modalScaleIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.timetable-matcher-body {
+  padding: 16px 20px 22px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==========================================================================
+   2. TOOLBAR: CHỌN BẠN BÈ & CHẾ ĐỘ XEM & ĐIỀU HƯỚNG NGÀY
+   ========================================================================== */
+.tt-matcher-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(18, 26, 56, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-md, 14px);
+  backdrop-filter: blur(10px);
+}
+
+.tt-matcher-friend-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 260px;
+}
+
+.tt-matcher-friend-picker label {
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.86rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.tt-matcher-select {
+  flex: 1;
+  background: rgba(14, 21, 44, 0.9);
+  color: #ffffff;
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm, 8px);
+  font-size: 0.88rem;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tt-matcher-select:hover,
+.tt-matcher-select:focus {
+  border-color: var(--primary, #6366f1);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+}
+
+.tt-matcher-view-tabs {
+  display: flex;
+  background: rgba(10, 15, 32, 0.8);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 4px;
+}
+
+.tt-matcher-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-muted, #94a3b8);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.tt-matcher-tab.active {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.85), rgba(168, 85, 247, 0.85));
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+}
+
+.tt-matcher-date-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-matcher-nav {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-main, #f1f5f9);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.btn-matcher-nav:hover {
+  background: rgba(99, 102, 241, 0.3);
+  border-color: var(--primary, #6366f1);
+  color: #fff;
+}
+
+.tt-matcher-cur-date {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+  min-width: 130px;
+  text-align: center;
+}
+
+.btn-matcher-today {
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: rgba(99, 102, 241, 0.2);
+  color: #c7d2fe;
+  border: 1px solid rgba(99, 102, 241, 0.4);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-matcher-today:hover {
+  background: var(--primary, #6366f1);
+  color: #fff;
+}
+
+/* ==========================================================================
+   3. AI INSIGHTS CARD TỪ NAJIMEZ
+   ========================================================================== */
+.tt-matcher-ai-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(56, 189, 248, 0.08));
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: var(--radius-md, 14px);
+  position: relative;
+  overflow: hidden;
+}
+
+.tt-matcher-ai-avatar {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.tt-matcher-ai-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #c084fc;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+}
+
+.tt-ai-sparkle {
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a855f7, #38bdf8);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+.tt-matcher-ai-content {
+  flex: 1;
+}
+
+.tt-matcher-ai-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #c084fc;
+  margin-bottom: 4px;
+}
+
+.tt-matcher-ai-desc {
+  font-size: 0.9rem;
+  color: #e2e8f0;
+  line-height: 1.45;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   4. MUTUAL FREE SLOTS LIST (KHUNG GIỜ RẢNH CHUNG)
+   ========================================================================== */
+.tt-free-slots-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tt-free-slots-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tt-free-slots-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.tt-free-slots-count {
+  font-size: 0.78rem;
+  background: rgba(52, 211, 153, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 700;
+}
+
+.tt-free-slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.tt-free-slot-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(6, 182, 212, 0.08));
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.tt-free-slot-card:hover {
+  transform: translateY(-2px);
+  border-color: #34d399;
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.2);
+}
+
+.tt-slot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.tt-slot-time {
+  font-size: 0.94rem;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tt-slot-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6ee7b7;
+}
+
+.tt-slot-badge.golden {
+  color: #fde047;
+  font-weight: 700;
+}
+
+.btn-book-slot {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #ffffff;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-book-slot:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.tt-slots-empty {
+  padding: 16px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: var(--text-muted, #94a3b8);
+  font-size: 0.88rem;
+}
+
+/* ==========================================================================
+   5. DUAL-LANE DAY TIMELINE VISUALIZER (BẢNG SO KHỚP SONG SONG 2 LÀN)
+   ========================================================================== */
+.tt-day-parallel-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.tt-parallel-header {
+  display: grid;
+  grid-template-columns: 70px 1fr 1fr;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(14, 21, 44, 0.75);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tt-col-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-muted, #94a3b8);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tt-col-title.my-col {
+  color: #a78bfa;
+}
+
+.tt-col-title.friend-col {
+  color: #38bdf8;
+}
+
+.tt-parallel-canvas {
+  position: relative;
+  background: rgba(10, 15, 34, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  height: 480px;
+  overflow-y: auto;
+}
+
+.tt-canvas-inner {
+  position: relative;
+  height: 900px; /* 15 giờ x 60px/giờ: 07:00 - 22:00 */
+  display: grid;
+  grid-template-columns: 70px 1fr 1fr;
+}
+
+.tt-canvas-ruler {
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  position: relative;
+}
+
+.tt-ruler-hour {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #64748b;
+  text-align: center;
+  transform: translateY(-50%);
+  user-select: none;
+}
+
+.tt-canvas-grid-lines {
+  position: absolute;
+  left: 70px;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  pointer-events: none;
+}
+
+.tt-canvas-grid-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+.tt-canvas-lane {
+  position: relative;
+  padding: 0 4px;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.tt-canvas-lane:last-child {
+  border-right: none;
+}
+
+/* Thẻ sự kiện bận trên Timeline */
+.tt-event-block {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  overflow: hidden;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  z-index: 2;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.tt-event-block:hover {
+  z-index: 10;
+  transform: scale(1.02);
+}
+
+.tt-event-block.my-event {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.85), rgba(99, 102, 241, 0.85));
+  border: 1px solid rgba(192, 132, 252, 0.5);
+  color: #ffffff;
+}
+
+.tt-event-block.friend-event {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.85), rgba(14, 165, 233, 0.85));
+  border: 1px solid rgba(125, 211, 252, 0.5);
+  color: #ffffff;
+}
+
+.tt-ev-title {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tt-ev-time {
+  font-size: 0.7rem;
+  opacity: 0.9;
+}
+
+/* Vùng Rảnh Chung Nổi Bật (Mutual Free Glow Ribbon) */
+.tt-mutual-free-ribbon {
+  position: absolute;
+  left: 70px;
+  right: 0;
+  background: rgba(16, 185, 129, 0.14);
+  border-top: 1px solid rgba(52, 211, 153, 0.45);
+  border-bottom: 1px solid rgba(52, 211, 153, 0.45);
+  pointer-events: none;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+}
+
+.tt-free-ribbon-tag {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #34d399;
+  background: rgba(6, 78, 59, 0.8);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(52, 211, 153, 0.5);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+/* ==========================================================================
+   6. WEEK OVERVIEW GRID (TỔNG QUAN 7 NGÀY TRONG TUẦN)
+   ========================================================================== */
+.tt-week-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.tt-week-day-card {
+  background: rgba(14, 21, 44, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.tt-week-day-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.tt-week-day-card.has-free {
+  border-color: rgba(52, 211, 153, 0.35);
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.08) 0%, rgba(14, 21, 44, 0.8) 100%);
+}
+
+.tt-week-day-card.today {
+  border-color: var(--primary, #6366f1);
+  box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+}
+
+.tt-wd-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.tt-wd-day-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.tt-wd-date {
+  font-size: 0.78rem;
+  color: var(--text-muted, #94a3b8);
+}
+
+.tt-wd-hours {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: #34d399;
+  font-weight: 700;
+}
+
+.tt-wd-slots-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tt-wd-slot-pill {
+  font-size: 0.74rem;
+  font-weight: 600;
+  background: rgba(52, 211, 153, 0.12);
+  color: #a7f3d0;
+  padding: 3px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(52, 211, 153, 0.2);
+}
+
+/* ==========================================================================
+   7. RESPONSIVE DESIGN
+   ========================================================================== */
+@media (max-width: 768px) {
+  .tt-matcher-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .tt-matcher-friend-picker {
+    width: 100%;
+  }
+  .tt-matcher-date-nav {
+    justify-content: space-between;
+  }
+  .tt-parallel-canvas {
+    height: 380px;
+  }
+  .tt-parallel-header {
+    grid-template-columns: 50px 1fr 1fr;
+  }
+  .tt-canvas-inner {
+    grid-template-columns: 50px 1fr 1fr;
+  }
+  .tt-canvas-grid-lines,
+  .tt-mutual-free-ribbon {
+}
+
+/* Nút Mở So TKB trên Header Thời Khóa Biểu */
+.btn-tt-match {
+  padding: 0 12px;
+  height: 34px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.22), rgba(99, 102, 241, 0.22));
+  border: 1px solid rgba(168, 85, 247, 0.45);
+  color: #c084fc;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.btn-tt-match:hover {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.45), rgba(99, 102, 241, 0.45));
+  border-color: #a855f7;
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.4);
+}
+

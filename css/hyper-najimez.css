@@ -1,0 +1,1071 @@
+/**
+ * css/hyper-najimez.css - Giao diện Chế độ Siêu Trí Tuệ & Tư Duy Sâu "Hyper Najimez"
+ * Thiết kế theo ngôn ngữ Cyber Luxury Overclock, Neon Quantum, Glassmorphism mờ ảo cao cấp.
+ */
+
+/* ==========================================================================
+   1. WORKSPACE CONTAINER CHÍNH
+   ========================================================================== */
+#tab-hyper {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+#tab-hyper.active {
+  display: flex !important;
+  flex-direction: column;
+}
+
+.hyper-workspace {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  width: 100%;
+  padding: 16px 22px 28px;
+  box-sizing: border-box;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  gap: 16px;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.45) rgba(15, 23, 42, 0.6);
+}
+
+.hyper-workspace::-webkit-scrollbar {
+  width: 7px;
+}
+.hyper-workspace::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #a855f7, #3b82f6);
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   2. HUD HEADER: KHỐI THỨC TỈNH NĂNG LƯỢNG (OVERCLOCK BANNER)
+   ========================================================================== */
+.hyper-hud-header {
+  flex-shrink: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 22px;
+  background: radial-gradient(ellipse 90% 80% at 20% -30%, rgba(168, 85, 247, 0.28) 0%, rgba(30, 27, 75, 0.45) 50%, rgba(15, 23, 42, 0.85) 100%),
+              rgba(13, 17, 38, 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: 20px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5), 0 0 25px rgba(168, 85, 247, 0.18);
+  position: relative;
+  overflow: hidden;
+}
+
+.hyper-hud-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 200%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(192, 132, 252, 0.8), rgba(56, 189, 248, 0.9), transparent);
+  animation: hyperScanLine 4s linear infinite;
+}
+
+@keyframes hyperScanLine {
+  0% { transform: translateX(-40%); }
+  100% { transform: translateX(40%); }
+}
+
+.hyper-brand-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hyper-avatar-aura {
+  position: relative;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hyper-avatar-aura::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #a855f7, #06b6d4, #f59e0b, #a855f7);
+  animation: hyperSpinRing 6s linear infinite;
+  filter: blur(2px);
+  opacity: 0.85;
+}
+
+@keyframes hyperSpinRing {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.hyper-avatar-img {
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  object-fit: cover;
+  position: relative;
+  z-index: 2;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.6);
+}
+
+.hyper-brand-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hyper-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hyper-title-text {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, #ffffff 10%, #e9d5ff 40%, #c084fc 75%, #38bdf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 20px rgba(192, 132, 252, 0.4);
+}
+
+.hyper-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(6, 182, 212, 0.25));
+  border: 1px solid rgba(192, 132, 252, 0.5);
+  color: #f3e8ff;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);
+}
+
+.hyper-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22d3ee;
+  box-shadow: 0 0 8px #22d3ee;
+  animation: hyperPulseDot 1.6s ease-in-out infinite;
+}
+
+@keyframes hyperPulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+.hyper-brand-desc {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hyper-hud-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Selector môn học */
+.hyper-subject-selector {
+  display: flex;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 4px;
+}
+
+.btn-subject-chip {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-subject-chip:hover {
+  color: #f1f5f9;
+  background: rgba(168, 85, 247, 0.15);
+}
+
+.btn-subject-chip.active {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.4), rgba(59, 130, 246, 0.4));
+  color: #ffffff;
+  border: 1px solid rgba(192, 132, 252, 0.5);
+  box-shadow: 0 2px 8px rgba(168, 85, 247, 0.3);
+}
+
+/* Nút sổ tay bài tập */
+.btn-hyper-notebook {
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #e2e8f0;
+  padding: 8px 14px;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.btn-hyper-notebook:hover {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: rgba(192, 132, 252, 0.6);
+  color: #ffffff;
+  box-shadow: 0 0 14px rgba(168, 85, 247, 0.25);
+}
+
+.hyper-nb-count {
+  background: rgba(168, 85, 247, 0.4);
+  color: #f3e8ff;
+  border-radius: 8px;
+  padding: 1px 6px;
+  font-size: 0.74rem;
+}
+
+/* ==========================================================================
+   3. BỐ CỤC 2 CỘT CHÍNH (SPLIT STUDIO)
+   ========================================================================== */
+.hyper-split-grid {
+  display: grid;
+  grid-template-columns: minmax(360px, 440px) 1fr;
+  gap: 18px;
+  align-items: start;
+  flex-shrink: 0;
+}
+
+@media (max-width: 1200px) {
+  .hyper-hud-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .hyper-hud-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 1024px) {
+  .hyper-split-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .hyper-subject-selector {
+    overflow-x: auto;
+    max-width: 100%;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .hyper-subject-selector::-webkit-scrollbar {
+    display: none;
+  }
+  .hyper-workspace {
+    padding: 12px 14px 20px;
+  }
+}
+
+/* ==========================================================================
+   4. CỘT TRÁI: KHUNG ĐẦU VÀO ĐỀ BÀI (INPUT STUDIO)
+   ========================================================================== */
+.hyper-input-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 20px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+}
+
+.panel-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panel-heading {
+  font-size: 0.96rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.panel-sub-action {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.18s ease;
+}
+
+.panel-sub-action:hover {
+  color: #f43f5e;
+  background: rgba(244, 63, 94, 0.1);
+}
+
+/* Thanh công thức toán học nhanh */
+.hyper-math-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-wrap: wrap;
+  background: rgba(30, 41, 59, 0.55);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+.hyper-math-toolbar-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  font-weight: 600;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-math-sym {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(168, 85, 247, 0.22);
+  color: #c084fc;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-math-sym:hover {
+  background: rgba(168, 85, 247, 0.3);
+  color: #ffffff;
+  border-color: rgba(192, 132, 252, 0.5);
+  transform: translateY(-1px);
+}
+
+/* Ô nhập đề bài */
+.hyper-textarea-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.hyper-prompt-textarea {
+  width: 100%;
+  min-height: 130px;
+  max-height: 320px;
+  background: rgba(10, 15, 30, 0.85);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 14px;
+  padding: 14px 14px 28px;
+  color: #f8fafc;
+  font-family: inherit;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: all 0.22s ease;
+  outline: none;
+}
+
+.hyper-prompt-textarea:focus {
+  border-color: rgba(192, 132, 252, 0.8);
+  box-shadow: 0 0 16px rgba(168, 85, 247, 0.35);
+  background: rgba(10, 15, 30, 0.95);
+}
+
+.hyper-prompt-textarea::placeholder {
+  color: #64748b;
+  font-size: 0.86rem;
+}
+
+.hyper-textarea-footer {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  font-size: 0.72rem;
+  color: #64748b;
+  pointer-events: none;
+}
+
+/* Khu vực ảnh đính kèm (Dropzone & Paste Preview) */
+.hyper-attach-zone {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hyper-dropzone {
+  border: 1.5px dashed rgba(168, 85, 247, 0.35);
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: rgba(168, 85, 247, 0.06);
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.hyper-dropzone:hover, .hyper-dropzone.dragover {
+  border-color: rgba(192, 132, 252, 0.75);
+  background: rgba(168, 85, 247, 0.15);
+  box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+}
+
+.dropzone-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+
+.dropzone-hint i {
+  color: #c084fc;
+  font-size: 1.1rem;
+}
+
+.dropzone-kbd {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: monospace;
+  font-size: 0.72rem;
+  color: #e2e8f0;
+}
+
+/* Thumbnail ảnh đã chọn */
+.hyper-img-preview-box {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  max-height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000000;
+}
+
+.hyper-img-preview-box img {
+  max-width: 100%;
+  max-height: 140px;
+  object-fit: contain;
+}
+
+.btn-remove-hyper-img {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(225, 29, 72, 0.85);
+  border: none;
+  color: #ffffff;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: transform 0.18s ease;
+}
+
+.btn-remove-hyper-img:hover {
+  transform: scale(1.12);
+}
+
+/* Tùy chọn cấu hình tư duy */
+.hyper-options-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: rgba(30, 41, 59, 0.4);
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.option-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: #cbd5e1;
+}
+
+.option-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hyper-budget-select {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: #e2e8f0;
+  border-radius: 6px;
+  padding: 3px 8px;
+  font-size: 0.78rem;
+  outline: none;
+}
+
+.hyper-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.hyper-checkbox-label input[type="checkbox"] {
+  accent-color: #a855f7;
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+/* Nút Kích Hoạt Thức Tỉnh (CTA Button) */
+.btn-hyper-solve {
+  background: linear-gradient(135deg, #a855f7 0%, #7c3aed 50%, #2563eb 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 14px;
+  padding: 13px 20px;
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(168, 85, 247, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-hyper-solve::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+  transform: skewX(-20deg);
+  animation: hyperButtonGleam 3.5s infinite;
+}
+
+@keyframes hyperButtonGleam {
+  0% { left: -100%; }
+  35%, 100% { left: 160%; }
+}
+
+.btn-hyper-solve:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(168, 85, 247, 0.55), 0 0 20px rgba(37, 99, 235, 0.4);
+}
+
+.btn-hyper-solve:active {
+  transform: translateY(1px);
+}
+
+.btn-hyper-solve:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ==========================================================================
+   5. CỘT PHẢI: SÂN KHẤU LỜI GIẢI & SUY LUẬN SÂU (ARENA)
+   ========================================================================== */
+.hyper-solution-panel {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 20px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 480px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  position: relative;
+}
+
+/* Trạng thái trống (Placeholder State) */
+.hyper-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 400px;
+  padding: 40px 20px;
+  gap: 16px;
+}
+
+.empty-state-icon-aura {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(15, 23, 42, 0.8) 70%);
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.2rem;
+  color: #c084fc;
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.3);
+  animation: emptyAuraFloat 4s ease-in-out infinite alternate;
+}
+
+@keyframes emptyAuraFloat {
+  from { transform: translateY(0); }
+  to { transform: translateY(-8px); }
+}
+
+.empty-state-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #f1f5f9;
+}
+
+.empty-state-desc {
+  max-width: 480px;
+  font-size: 0.88rem;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+/* Hộp Trình Bày Quá Trình Suy Nghĩ Sâu (Deep Reasoning Box) */
+.hyper-thoughts-card {
+  background: radial-gradient(ellipse 90% 60% at 10% 0%, rgba(56, 189, 248, 0.12) 0%, rgba(15, 23, 42, 0.85) 100%),
+              rgba(10, 15, 30, 0.9);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
+.hyper-thoughts-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: rgba(30, 41, 59, 0.4);
+  border-bottom: 1px solid rgba(56, 189, 248, 0.2);
+  cursor: pointer;
+  user-select: none;
+}
+
+.hyper-thoughts-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.03em;
+}
+
+.hyper-brain-pulse {
+  animation: brainGlow 2s infinite alternate;
+}
+
+@keyframes brainGlow {
+  0% { transform: scale(1); filter: drop-shadow(0 0 2px #38bdf8); }
+  100% { transform: scale(1.15); filter: drop-shadow(0 0 8px #38bdf8); }
+}
+
+.hyper-thoughts-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.76rem;
+  color: #94a3b8;
+}
+
+.hyper-thoughts-body {
+  padding: 14px 16px;
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: #cbd5e1;
+  background: rgba(8, 12, 24, 0.75);
+  max-height: 240px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  border-top: 1px solid rgba(56, 189, 248, 0.1);
+  display: block;
+}
+
+.hyper-thoughts-card.collapsed .hyper-thoughts-body {
+  display: none;
+}
+
+/* Hộp Lời Giải Hoàn Chỉnh (Master Solution Content) */
+.hyper-solution-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  color: #e2e8f0;
+  font-size: 0.94rem;
+  line-height: 1.7;
+}
+
+/* Định dạng Markdown trong lời giải */
+.hyper-solution-content h1,
+.hyper-solution-content h2,
+.hyper-solution-content h3 {
+  color: #f8fafc;
+  font-weight: 700;
+  margin: 14px 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.25);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hyper-solution-content h1 { font-size: 1.15rem; color: #c084fc; }
+.hyper-solution-content h2 { font-size: 1.05rem; color: #38bdf8; }
+.hyper-solution-content h3 { font-size: 0.95rem; color: #fbbf24; }
+
+.hyper-solution-content p {
+  margin: 6px 0;
+}
+
+.hyper-solution-content ul,
+.hyper-solution-content ol {
+  padding-left: 22px;
+  margin: 8px 0;
+}
+
+.hyper-solution-content li {
+  margin-bottom: 6px;
+}
+
+.hyper-solution-content pre {
+  background: rgba(10, 15, 30, 0.95);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  color: #a5f3fc;
+}
+
+.hyper-solution-content code {
+  background: rgba(168, 85, 247, 0.15);
+  color: #c084fc;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.86rem;
+}
+
+/* Khối công thức KaTeX căn giữa và nổi bật */
+.hyper-solution-content .katex-display {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  border-radius: 10px;
+  padding: 12px;
+  margin: 10px 0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  overflow-x: auto;
+}
+
+/* Thanh Hành Động Lời Giải (Action Bar) */
+.hyper-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 14px;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
+  margin-top: auto;
+}
+
+.action-bar-left, .action-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-hyper-action {
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #cbd5e1;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.18s ease;
+}
+
+.btn-hyper-action:hover {
+  background: rgba(168, 85, 247, 0.25);
+  color: #ffffff;
+  border-color: rgba(192, 132, 252, 0.5);
+}
+
+.btn-hyper-action.active {
+  background: rgba(16, 185, 129, 0.25);
+  color: #6ee7b7;
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+/* ==========================================================================
+   6. MODAL SỔ TAY BÀI TẬP (HYPER NOTEBOOK MODAL)
+   ========================================================================== */
+.hyper-notebook-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 20, 0.78);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 1500;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.hyper-notebook-modal.active {
+  display: flex;
+}
+
+.hyper-notebook-dialog {
+  background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(168, 85, 247, 0.22) 0%, rgba(15, 23, 42, 0.95) 100%),
+              rgba(10, 15, 34, 0.96);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: 20px;
+  width: 95%;
+  max-width: 820px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(168, 85, 247, 0.2);
+  animation: modalScaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.notebook-list-body {
+  padding: 16px 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.notebook-item-card {
+  background: rgba(30, 41, 59, 0.55);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notebook-item-card:hover {
+  background: rgba(168, 85, 247, 0.18);
+  border-color: rgba(192, 132, 252, 0.5);
+  transform: translateX(4px);
+}
+
+.nb-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+
+.nb-item-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nb-item-meta {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.nb-item-tag {
+  background: rgba(168, 85, 247, 0.3);
+  color: #e9d5ff;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.btn-delete-nb-item {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.18s ease;
+}
+
+.btn-delete-nb-item:hover {
+  color: #fb7185;
+  background: rgba(251, 113, 133, 0.15);
+}
+
+/* ==========================================================================
+   7. THẺ CÔNG CỤ SỐ 6 TRONG HỘP DỤNG CỤ (TOOLBOX CARD #6)
+   ========================================================================== */
+.quad-hyper {
+  background: radial-gradient(ellipse 90% 60% at 50% -20%, rgba(168, 85, 247, 0.25) 0%, rgba(15, 23, 42, 0.85) 100%),
+              rgba(13, 17, 38, 0.75);
+  border-color: rgba(168, 85, 247, 0.35);
+}
+
+.toolbox-hyper-card-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 18px;
+  gap: 14px;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.toolbox-hyper-orb {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #a855f7, #06b6d4, #a855f7);
+  padding: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 25px rgba(168, 85, 247, 0.4);
+  animation: hyperSpinRing 8s linear infinite;
+}
+
+.toolbox-hyper-orb-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #c084fc;
+  font-size: 1.6rem;
+}
+
+.toolbox-hyper-title {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.toolbox-hyper-desc {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  max-width: 280px;
+  line-height: 1.5;
+}
+
+.btn-toolbox-enter-hyper {
+  background: linear-gradient(135deg, #a855f7, #3b82f6);
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  color: #ffffff;
+  font-size: 0.86rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+  transition: all 0.22s ease;
+}
+
+.btn-toolbox-enter-hyper:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
+}

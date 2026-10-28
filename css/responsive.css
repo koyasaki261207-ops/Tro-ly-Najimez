@@ -596,6 +596,8 @@
 .calendar-workspace-layout,
 .timetable-grid-card,
 .toolbox-workspace-layout,
+.hyper-workspace,
+.notebook-list-body,
 .studio-modal-body,
 .modal-body,
 .sidebar-nav {
@@ -615,5 +617,185 @@
 
   .cal-day-cell {
     touch-action: manipulation;
+  }
+}
+
+/* ==========================================================================
+   5. TỐI ƯU HÓA PHÂN HỆ HYPER NAJIMEZ TRÊN DI ĐỘNG & TABLET
+   ========================================================================== */
+@media (max-width: 860px) {
+  .hyper-workspace {
+    padding: 10px 12px 24px !important;
+    gap: 12px;
+  }
+
+  .hyper-hud-header {
+    padding: 12px 14px !important;
+    border-radius: 14px !important;
+    gap: 12px;
+  }
+
+  .hyper-avatar-aura {
+    width: 46px;
+    height: 46px;
+  }
+
+  .hyper-avatar-img {
+    width: 42px;
+    height: 42px;
+  }
+
+  .hyper-title-text {
+    font-size: 1.15rem;
+  }
+
+  .hyper-status-badge {
+    font-size: 0.68rem;
+    padding: 2px 7px;
+  }
+
+  .hyper-brand-desc {
+    font-size: 0.76rem;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .hyper-hud-controls {
+    width: 100% !important;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .hyper-subject-selector {
+    width: 100%;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding: 3px;
+    gap: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    box-sizing: border-box;
+  }
+
+  .hyper-subject-selector::-webkit-scrollbar {
+    display: none;
+  }
+
+  .btn-subject-chip {
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding: 5px 9px;
+    font-size: 0.76rem;
+  }
+
+  .btn-hyper-notebook {
+    width: 100%;
+    justify-content: center;
+    padding: 7px 12px;
+    font-size: 0.8rem;
+  }
+
+  .hyper-split-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px;
+  }
+
+  .hyper-input-panel {
+    padding: 14px 12px;
+    border-radius: 14px;
+  }
+
+  .hyper-math-toolbar {
+    padding: 5px 6px;
+    gap: 4px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .hyper-math-toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hyper-math-toolbar-label {
+    flex-shrink: 0;
+  }
+
+  .btn-math-sym {
+    flex-shrink: 0;
+    padding: 3px 8px;
+    font-size: 0.82rem;
+    min-height: 28px;
+  }
+
+  .hyper-prompt-textarea {
+    min-height: 110px;
+    font-size: 0.88rem;
+    padding: 10px 10px 24px;
+  }
+
+  .hyper-dropzone {
+    padding: 8px 10px;
+  }
+
+  .dropzone-hint {
+    font-size: 0.78rem;
+    gap: 6px;
+  }
+
+  .btn-hyper-solve {
+    padding: 12px 14px;
+    font-size: 0.88rem;
+  }
+
+  .hyper-solution-panel {
+    padding: 14px 12px;
+    border-radius: 14px;
+    min-height: 320px;
+  }
+
+  .hyper-action-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .action-bar-left,
+  .action-bar-right {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .action-bar-right .btn-hyper-action {
+    grid-column: 1 / -1;
+  }
+
+  .btn-hyper-action {
+    justify-content: center;
+    padding: 8px 6px;
+    font-size: 0.76rem;
+  }
+
+  .hyper-notebook-dialog {
+    width: 95% !important;
+    max-height: 88vh !important;
+    border-radius: 16px !important;
+  }
+
+  .notebook-list-body {
+    padding: 12px 14px !important;
+    gap: 8px;
+  }
+
+  .notebook-item-card {
+    padding: 10px 12px;
+  }
+
+  .nb-item-title {
+    font-size: 0.85rem;
   }
 }

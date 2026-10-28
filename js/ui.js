@@ -136,6 +136,8 @@ function initTabNavigation() {
           if (typeof renderToolboxTab === 'function') renderToolboxTab();
         } else if (targetTabId === 'tab-friends') {
           if (typeof renderFriendsTab === 'function') renderFriendsTab();
+        } else if (targetTabId === 'tab-hyper') {
+          if (typeof renderHyperTab === 'function') renderHyperTab();
         }
 
         // Tự động gõ lời nhắc tắt nếu có
