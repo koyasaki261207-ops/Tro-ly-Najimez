@@ -333,8 +333,8 @@ function renderTimetableTab() {
             e.stopPropagation();
             const id = pill.dataset.id;
             const ev = allEvents.find(x => x.id === id);
-            if (ev && typeof openCalendarEventModal === 'function') {
-              openCalendarEventModal(ev.date, ev);
+            if (ev) {
+              showTimetableEventDetailModal(ev, ev.date);
             }
           });
         });
@@ -377,14 +377,14 @@ function renderTimetableTab() {
           `;
         }).join('');
 
-        // Bắt sự kiện click vào capsule sự kiện đêm để xem/chỉnh sửa (không tạo sự kiện khi bấm ô trống)
+        // Bắt sự kiện click vào capsule sự kiện đêm để xem thông tin chi tiết (chế độ chỉ xem)
         nightColsEl.querySelectorAll('.tt-night-event-capsule').forEach(capsule => {
           capsule.addEventListener('click', (e) => {
             e.stopPropagation();
             const id = capsule.dataset.id;
             const ev = allEvents.find(x => x.id === id);
-            if (ev && typeof openCalendarEventModal === 'function') {
-              openCalendarEventModal(ev.date, ev);
+            if (ev) {
+              showTimetableEventDetailModal(ev, ev.date);
             }
           });
         });
@@ -534,13 +534,11 @@ function renderTimetableTab() {
         blockEl.addEventListener('mousemove', (e) => positionEventHoverTooltip(e));
         blockEl.addEventListener('mouseleave', hideEventHoverTooltip);
 
-        // Bắt sự kiện click chỉnh sửa
+        // Bắt sự kiện click xem chi tiết thông tin sự kiện (Chỉ xem - không cho phép chỉnh sửa ở đây)
         blockEl.addEventListener('click', (e) => {
           e.stopPropagation();
           hideEventHoverTooltip();
-          if (typeof openCalendarEventModal === 'function') {
-            openCalendarEventModal(day.dateKey, ev);
-          }
+          showTimetableEventDetailModal(ev, day.dateKey);
         });
 
         colEl.appendChild(blockEl);
@@ -654,6 +652,143 @@ function hideEventHoverTooltip() {
     tooltip.style.display = 'none';
   }
 }
+
+/**
+ * Hiển thị Modal Xem Thông Tin Chi Tiết Sự Kiện Thời Khóa Biểu (Chỉ xem - Không cho phép chỉnh sửa tại đây)
+ */
+function showTimetableEventDetailModal(ev, dateKey) {
+  if (!ev) return;
+  const modal = document.getElementById('timetableEventDetailModal');
+  if (!modal) return;
+
+  const titleEl = document.getElementById('ttViewDetailTitle');
+  const catEl = document.getElementById('ttViewDetailCat');
+  const dayBadgeEl = document.getElementById('ttViewDetailDayBadge');
+  const timeEl = document.getElementById('ttViewDetailTime');
+  const dateEl = document.getElementById('ttViewDetailDate');
+  const repeatItemEl = document.getElementById('ttViewDetailRepeatItem');
+  const repeatEl = document.getElementById('ttViewDetailRepeat');
+  const noteCardEl = document.getElementById('ttViewDetailNoteCard');
+  const noteEl = document.getElementById('ttViewDetailNote');
+  const iconWrapEl = document.getElementById('ttViewDetailIcon');
+
+  const theme = (typeof getSmartEventTheme === 'function')
+    ? getSmartEventTheme(ev)
+    : { color: ev.color || '#6366f1', icon: 'fa-solid fa-graduation-cap' };
+  const evColor = theme.color || ev.color || '#6366f1';
+
+  // 1. Tiêu đề & Biểu tượng
+  if (titleEl) titleEl.textContent = ev.title || 'Lịch học / Sự kiện';
+  if (iconWrapEl) {
+    iconWrapEl.style.background = `${evColor}22`;
+    iconWrapEl.style.color = evColor;
+    iconWrapEl.style.borderColor = `${evColor}55`;
+    iconWrapEl.innerHTML = `<i class="${theme.icon || 'fa-solid fa-graduation-cap'}"></i>`;
+  }
+
+  // 2. Phân loại danh mục
+  if (catEl) {
+    catEl.textContent = ev.category || 'Học tập';
+    catEl.style.background = `${evColor}20`;
+    catEl.style.color = evColor;
+    catEl.style.borderColor = `${evColor}40`;
+  }
+
+  // 3. Thứ trong tuần & Ngày diễn ra
+  const effectiveDate = dateKey || ev.date || '';
+  let dayName = '';
+  let fullDateStr = effectiveDate;
+  if (effectiveDate) {
+    const [y, m, d] = effectiveDate.split('-').map(Number);
+    const dt = new Date(y, m - 1, d);
+    const dayOfWeekNames = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    dayName = dayOfWeekNames[dt.getDay()];
+    fullDateStr = `${dayName}, ngày ${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`;
+  }
+  if (dayBadgeEl) {
+    if (dayName) {
+      dayBadgeEl.textContent = dayName;
+      dayBadgeEl.style.display = 'inline-block';
+    } else {
+      dayBadgeEl.style.display = 'none';
+    }
+  }
+  if (dateEl) {
+    dateEl.textContent = fullDateStr || 'Chưa định ngày';
+  }
+
+  // 4. Thời gian diễn ra & Thời lượng
+  if (timeEl) {
+    const sTime = ev.time || ev.startTime || '';
+    const eTime = ev.endTime || '';
+    if (sTime && eTime) {
+      const [sh, sm] = sTime.split(':').map(Number);
+      const [eh, em] = eTime.split(':').map(Number);
+      let durM = (eh * 60 + em) - (sh * 60 + sm);
+      let durText = '';
+      if (durM > 0) {
+        const h = Math.floor(durM / 60);
+        const m = durM % 60;
+        durText = ` (${h > 0 ? h + ' tiếng ' : ''}${m > 0 ? m + ' phút' : ''})`.trim();
+      }
+      timeEl.textContent = `${sTime} – ${eTime}${durText}`;
+    } else if (sTime) {
+      timeEl.textContent = `${sTime} (Chưa đặt giờ kết thúc)`;
+    } else {
+      timeEl.textContent = 'Cả ngày';
+    }
+  }
+
+  // 5. Chu kỳ lặp lại
+  const rLabel = (typeof getRepeatLabel === 'function')
+    ? getRepeatLabel(ev)
+    : (ev.repeat && ev.repeat !== 'none' ? `Lặp ${ev.repeat}` : '');
+  const repeatUntil = ev.repeatUntil || ev.repeatEnd || '';
+  const rawDays = ev.daysOfWeek || ev.repeatDays;
+  let daysStr = '';
+  if (Array.isArray(rawDays) && rawDays.length > 0) {
+    const dayMap = { 0: 'Chủ Nhật', 1: 'Thứ 2', 2: 'Thứ 3', 3: 'Thứ 4', 4: 'Thứ 5', 5: 'Thứ 6', 6: 'Thứ 7' };
+    daysStr = rawDays.map(d => dayMap[d] || d).join(', ');
+  }
+
+  if (rLabel || repeatUntil || daysStr) {
+    let repDesc = rLabel || 'Lặp lại định kỳ';
+    if (daysStr) {
+      repDesc = `Các ngày ${daysStr} hàng tuần`;
+    }
+    if (repeatUntil) {
+      repDesc += ` • Đến ngày ${repeatUntil.split('-').reverse().join('/')}`;
+    }
+    if (repeatEl) repeatEl.textContent = repDesc;
+    if (repeatItemEl) repeatItemEl.style.display = 'flex';
+  } else {
+    if (repeatItemEl) repeatItemEl.style.display = 'none';
+  }
+
+  // 6. Ghi chú & Giảng viên / Phòng học
+  if (noteCardEl && noteEl) {
+    if (ev.note && ev.note.trim()) {
+      noteEl.textContent = ev.note;
+      noteCardEl.style.display = 'block';
+    } else {
+      noteCardEl.style.display = 'none';
+    }
+  }
+
+  modal.classList.add('active');
+  modal.style.display = 'flex';
+}
+
+function closeTimetableEventDetailModal() {
+  const modal = document.getElementById('timetableEventDetailModal');
+  if (modal) {
+    modal.classList.remove('active');
+    modal.style.display = 'none';
+  }
+}
+
+window.showTimetableEventDetailModal = showTimetableEventDetailModal;
+window.closeTimetableEventDetailModal = closeTimetableEventDetailModal;
 
 /**
  * Cập nhật vị trí vạch giờ thực tế mỗi phút
@@ -797,6 +932,23 @@ function initTimetable() {
       if (layout) layout.scrollTo({ top: 0, behavior: 'smooth' });
     });
   }
+
+  // Gắn sự kiện đóng Modal xem chi tiết sự kiện thời khóa biểu
+  const modalDetail = document.getElementById('timetableEventDetailModal');
+  const btnCloseDetail = document.getElementById('btnCloseTimetableEventDetailModal');
+  const btnConfirmCloseDetail = document.getElementById('btnConfirmCloseTimetableDetail');
+  if (btnCloseDetail) btnCloseDetail.onclick = closeTimetableEventDetailModal;
+  if (btnConfirmCloseDetail) btnConfirmCloseDetail.onclick = closeTimetableEventDetailModal;
+  if (modalDetail) {
+    modalDetail.onclick = (e) => {
+      if (e.target === modalDetail) closeTimetableEventDetailModal();
+    };
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modalDetail && modalDetail.classList.contains('active')) {
+      closeTimetableEventDetailModal();
+    }
+  });
 
   // Khởi động đồng hồ thời gian thực mỗi 60 giây
   if (timetableRealtimeTimer) clearInterval(timetableRealtimeTimer);

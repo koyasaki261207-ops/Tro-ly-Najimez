@@ -2032,6 +2032,82 @@
     </div>
   </div>
 
+  <!-- MODAL: XEM THÔNG TIN SỰ KIỆN / LỊCH HỌC THỜI KHÓA BIỂU (CHỈ XEM - READ-ONLY) -->
+  <div class="modal-backdrop" id="timetableEventDetailModal">
+    <div class="modal-dialog tt-view-detail-dialog" style="max-width: 460px;">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-circle-info" style="color: #c084fc;"></i>
+          <span>Chi Tiết Lịch Học &amp; Sự Kiện</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCloseTimetableEventDetailModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body tt-view-detail-body" style="padding: 18px 20px;">
+        <div class="tt-view-header-card">
+          <div class="tt-view-icon-wrap" id="ttViewDetailIcon">
+            <i class="fa-solid fa-graduation-cap"></i>
+          </div>
+          <div class="tt-view-header-info">
+            <h3 class="tt-view-title" id="ttViewDetailTitle">Tiêu đề môn học</h3>
+            <div class="tt-view-badges">
+              <span class="tt-view-cat-badge" id="ttViewDetailCat">Học tập</span>
+              <span class="tt-view-day-badge" id="ttViewDetailDayBadge">Thứ Hai</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="tt-view-info-list">
+          <div class="tt-view-info-item">
+            <div class="tt-view-info-icon"><i class="fa-regular fa-clock"></i></div>
+            <div class="tt-view-info-content">
+              <div class="tt-view-info-label">Thời gian</div>
+              <div class="tt-view-info-val" id="ttViewDetailTime">08:15 – 11:15</div>
+            </div>
+          </div>
+
+          <div class="tt-view-info-item">
+            <div class="tt-view-info-icon"><i class="fa-solid fa-calendar-day"></i></div>
+            <div class="tt-view-info-content">
+              <div class="tt-view-info-label">Ngày diễn ra</div>
+              <div class="tt-view-info-val" id="ttViewDetailDate">Thứ Hai, 02/11/2026</div>
+            </div>
+          </div>
+
+          <div class="tt-view-info-item" id="ttViewDetailRepeatItem">
+            <div class="tt-view-info-icon"><i class="fa-solid fa-arrows-rotate"></i></div>
+            <div class="tt-view-info-content">
+              <div class="tt-view-info-label">Chu kỳ lịch trình</div>
+              <div class="tt-view-info-val" id="ttViewDetailRepeat">Lặp lại mỗi tuần</div>
+            </div>
+          </div>
+
+          <div class="tt-view-note-card" id="ttViewDetailNoteCard">
+            <div class="tt-view-note-header">
+              <i class="fa-regular fa-note-sticky"></i>
+              <span>Ghi chú &amp; Phòng học / Giảng viên</span>
+            </div>
+            <div class="tt-view-note-body" id="ttViewDetailNote">
+              gv: vũ đình bảo, phòng : A304
+            </div>
+          </div>
+        </div>
+
+        <div class="tt-view-notice">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>Thời Khóa Biểu ở chế độ xem thông tin bảo toàn lịch. Nếu cần chỉnh sửa sự kiện, bạn vui lòng chuyển sang tab <strong>Lịch &amp; Sự Kiện</strong> hoặc bảo Najimez nhé!</span>
+        </div>
+
+        <div class="tt-view-footer-actions">
+          <button type="button" class="btn-tt-view-close" id="btnConfirmCloseTimetableDetail">
+            <i class="fa-solid fa-check"></i> Đã Hiểu
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: XEM & ĐÍNH KÈM ẢNH GIAO DỊCH (HÓA ĐƠN / TIỀN CƠM / BẰNG CHỨNG) -->
   <div class="modal-backdrop" id="transactionImageModal">
     <div class="modal-dialog" style="max-width: 520px;">

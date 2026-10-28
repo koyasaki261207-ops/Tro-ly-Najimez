@@ -268,8 +268,10 @@ function renderTimetableDailyTimeline(activeDateKey, weekDays) {
         pill.addEventListener('click', (e) => {
           e.stopPropagation();
           const ev = allEvents.find(x => x.id === pill.dataset.id);
-          if (ev && typeof openCalendarEventModal === 'function') {
-            openCalendarEventModal(ev.date, ev);
+          if (ev) {
+            if (typeof showTimetableEventDetailModal === 'function') {
+              showTimetableEventDetailModal(ev, ev.date);
+            }
           }
         });
       });
@@ -495,12 +497,12 @@ function renderTimetableDailyTimeline(activeDateKey, weekDays) {
         }
       });
 
-      // Click chỉnh sửa sự kiện
+      // Click xem chi tiết thông tin sự kiện (Chỉ xem - không cho phép chỉnh sửa ở đây)
       blockEl.addEventListener('click', (e) => {
         e.stopPropagation();
         if (typeof hideEventHoverTooltip === 'function') hideEventHoverTooltip();
-        if (typeof openCalendarEventModal === 'function') {
-          openCalendarEventModal(effectiveDateKey, ev);
+        if (typeof showTimetableEventDetailModal === 'function') {
+          showTimetableEventDetailModal(ev, effectiveDateKey);
         }
       });
 
