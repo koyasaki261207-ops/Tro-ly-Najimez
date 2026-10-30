@@ -424,6 +424,23 @@ function buildDynamicSystemPrompt() {
   // Phân tích công việc
   const pendingTasks = tasks.filter(t => !t.done);
 
+  // Phân tích Sổ Từ Vựng Ngoại Ngữ Cá Nhân (My Vocabulary Notebook)
+  let vocabNotebook = [];
+  try {
+    if (typeof window.getVocabNotebook === 'function') {
+      vocabNotebook = window.getVocabNotebook();
+    } else {
+      const rawNb = localStorage.getItem('NAJIMEZ_VOCAB_NOTEBOOK_V1');
+      vocabNotebook = rawNb ? JSON.parse(rawNb) : [];
+    }
+  } catch (e) { vocabNotebook = []; }
+
+  const langNamesMap = { en: 'Tiếng Anh', ja: 'Tiếng Nhật', ko: 'Tiếng Hàn', zh: 'Tiếng Trung', fr: 'Tiếng Pháp', de: 'Tiếng Đức' };
+  const vocabSummary = vocabNotebook.slice(0, 40).map(v => {
+    const lName = langNamesMap[v.lang] || v.lang || 'Ngoại ngữ';
+    return `  + [${lName}] ${v.word}${v.phonetic ? ' (' + v.phonetic + ')' : ''}: ${v.meaning}${v.example ? ' (Ví dụ: ' + v.example + ')' : ''}`;
+  });
+
   return `${APP_CONFIG.systemPrompt}
 
 ============================================================
@@ -474,6 +491,13 @@ ${upcomingEventsSummary.length > 0 ? upcomingEventsSummary.join('\n') : '  (Khô
 
 - Toàn bộ danh sách sự kiện & thời khóa biểu đã lưu trong Tiện ích Lịch:
 ${allEventsList.length > 0 ? allEventsList.join('\n') : '  (Chưa có sự kiện nào)'}
+
+[5. SỔ TỪ VỰNG NGOẠI NGỮ CÁ NHÂN ("TỪ VỰNG CỦA TÔI")]
+- Tổng số từ vựng người dùng đã lưu: ${vocabNotebook.length} từ.
+${vocabSummary.length > 0 ? vocabSummary.join('\n') : '  (Hiện chưa có từ vựng nào được lưu trong sổ từ)'}
+- VAI TRÒ GIA SƯ NGOẠI NGỮ CỦA NAJIMEZ:
+  + Bạn nắm rõ toàn bộ các từ vựng này. Khi người dùng hỏi "tôi đã lưu những từ gì?", "hãy kiểm tra từ vựng", "đố tôi từ vựng trong sổ", bạn hãy dùng chính xác danh sách này để trả lời, giải thích, đặt câu hoặc đố bài tập tương tác.
+  + Khi người dùng hỏi một từ ngoại ngữ (tiếng Anh, Nhật, Hàn, Trung, Pháp, Đức...) hoặc nhờ giải thích từ và muốn lưu lại, hãy giải thích cặn kẽ và đính kèm thẻ add_vocab để lưu ngay vào sổ từ cho họ!
 
 ============================================================
 QUYỀN HẠN ĐIỀU KHIỂN & HÀNH ĐỘNG NÂNG CAO (ACTION PROTOCOL):
@@ -541,15 +565,20 @@ Khi người dùng yêu cầu hành động, hãy giải thích chu đáo và đ
       <!--NAJIMEZ_ACTION:{"type":"calendar_event","title":"Thi Python","oldDate":"2026-10-25","date":"2026-11-25","time":"13:00","endTime":"15:00","category":"Học tập"}-->
     - Cách 3: Xuất đồng thời cả 2 thẻ delete_calendar_event cho ngày cũ và calendar_event cho ngày mới.
     TUYỆT ĐỐI KHÔNG CHỈ TẠO LỊCH MỚI MÀ QUÊN XÓA NGÀY CŨ!
-13. SÁNG TẠO HÌNH ẢNH / VẼ TRANH AI:
-    Khi người dùng bảo bạn "vẽ cho tôi...", "tạo ảnh...", "vẽ tranh...", "hãy vẽ...", "vẽ hình...", "vẽ Najimez", "generate image...":
-    BẠN BẮT BUỘC ĐÍNH KÈM THẺ TẠO ẢNH với prompt tiếng Anh chi tiết, sống động:
-    <!--NAJIMEZ_ACTION:{"type":"generate_image","prompt":"<detailed artistic English prompt>","title":"<tiêu đề tiếng Việt ngắn gọn>","style":"anime|najimez|photorealistic|cyberpunk|fantasy|oil_painting|3d_render|watercolor|general","aspectRatio":"1:1|16:9|9:16|4:3|3:4"}-->
-14. TẠO VÒNG QUAY MAY MẮN (LUCKY WHEEL / VÒNG QUAY LỰA CHỌN):
+13. TẠO VÒNG QUAY MAY MẮN (LUCKY WHEEL / VÒNG QUAY LỰA CHỌN):
     Khi người dùng bảo bạn tạo vòng quay may mắn (ví dụ: "tạo vòng quay may mắn có đùi gà, cánh gà, ức gà", "làm vòng quay chọn món ăn: phở, bún chả, cơm tấm", "tạo vòng quay may mắn gồm...", "vòng quay may mắn..."):
     BẠN BẮT BUỘC ĐÍNH KÈM THẺ create_lucky_wheel với danh sách các mục:
     <!--NAJIMEZ_ACTION:{"type":"create_lucky_wheel","title":"<Tiêu đề vòng quay ngắn gọn>","items":["Mục 1","Mục 2","Mục 3"]}-->
     (Lưu ý: items là mảng các chuỗi lựa chọn được tách biệt rõ ràng từ câu của người dùng, tối thiểu 2 mục. Trong phản hồi, hãy khen ngợi hoặc hào hứng giới thiệu về vòng quay và mời người dùng bấm nút bên dưới để mở vòng quay trong Hộp Dụng Cụ!)
+14. THAO TÁC VỚI SỔ TỪ VỰNG NGOẠI NGỮ ("TỪ VỰNG CỦA TÔI"):
+    a) THÊM TỪ VỰNG MỚI VÀO SỔ TỪ:
+       Khi người dùng yêu cầu "lưu từ này vào sổ từ", "thêm từ ... vào sổ từ", "nhớ từ này giúp tôi", hoặc khi bạn giải thích một từ và người dùng muốn lưu lại:
+       BẮT BUỘC ĐÍNH KÈM THẺ:
+       <!--NAJIMEZ_ACTION:{"type":"add_vocab","lang":"en","word":"Serendipity","phonetic":"/ˌser.ənˈdɪp.ə.ti/","meaning":"Cơ duyên tình cờ, sự may mắn bất ngờ","example":"Finding this cafe was pure serendipity."}-->
+       (Trong đó: "lang" là mã ngôn ngữ: "en" (Anh), "ja" (Nhật), "ko" (Hàn), "zh" (Trung), "fr" (Pháp), "de" (Đức). "phonetic" và "example" có thể để trống nếu không rõ).
+    b) XÓA TỪ VỰNG KHỎI SỔ TỪ:
+       Khi người dùng yêu cầu "xóa từ ... khỏi sổ từ", "bỏ từ ... trong sổ từ đi":
+       <!--NAJIMEZ_ACTION:{"type":"delete_vocab","word":"Serendipity"}-->
 
 ============================================================
 QUY TẮC BẢO VỆ TÍNH TOÀN VẸN & ĐỐI CHIẾU XUNG ĐỘT LOGIC SỔ NỢ (CRITICAL LOGIC VALIDATION):
@@ -2246,17 +2275,149 @@ function executeAction(action, data) {
     }
   }
 
-  // 13. Sáng tạo hình ảnh AI (generate_image)
-  if (action.type === 'generate_image') {
-    if (typeof renderImageGenCard === 'function') {
-      return renderImageGenCard(action);
-    }
-  }
-
-  // 14. Tạo Vòng Quay May Mắn (create_lucky_wheel / lucky_wheel)
+  // 13. Tạo Vòng Quay May Mắn (create_lucky_wheel / lucky_wheel)
   if (action.type === 'create_lucky_wheel' || action.type === 'lucky_wheel') {
     if (typeof window.renderLuckyWheelActionCard === 'function') {
       return window.renderLuckyWheelActionCard(action);
+    }
+  }
+
+  // 14. Thêm từ vựng vào Sổ Từ Vựng Cá Nhân (add_vocab / vocab)
+  if (action.type === 'add_vocab' || action.type === 'vocab') {
+    const word = (action.word || '').trim();
+    if (!word) return null;
+
+    const meaning = (action.meaning || '').trim();
+    const lang = (action.lang || 'en').toLowerCase().trim();
+    const phonetic = (action.phonetic || '').trim();
+    const example = (action.example || '').trim();
+
+    let notebook = [];
+    if (typeof window.getVocabNotebook === 'function') {
+      notebook = window.getVocabNotebook();
+    } else {
+      try {
+        const raw = localStorage.getItem('NAJIMEZ_VOCAB_NOTEBOOK_V1');
+        notebook = raw ? JSON.parse(raw) : [];
+      } catch (e) { notebook = []; }
+    }
+
+    const vocabId = 'ai-' + Date.now();
+    const vocabItem = {
+      id: vocabId,
+      lang: lang,
+      word: word,
+      phonetic: phonetic,
+      meaning: meaning || 'Đã lưu từ trò chuyện cùng Najimez',
+      example: example
+    };
+
+    const existingIdx = notebook.findIndex(n => n.word.toLowerCase() === word.toLowerCase() && n.lang === lang);
+    if (existingIdx >= 0) {
+      notebook[existingIdx] = { ...notebook[existingIdx], ...vocabItem, id: notebook[existingIdx].id };
+    } else {
+      notebook.unshift(vocabItem);
+    }
+
+    if (typeof window.saveVocabNotebook === 'function') {
+      window.saveVocabNotebook(notebook);
+    } else {
+      try {
+        localStorage.setItem('NAJIMEZ_VOCAB_NOTEBOOK_V1', JSON.stringify(notebook));
+      } catch (e) {}
+    }
+
+    if (typeof window.renderNotebookUI === 'function') {
+      window.renderNotebookUI();
+    }
+
+    const langMap = { en: 'Tiếng Anh', ja: 'Tiếng Nhật', ko: 'Tiếng Hàn', zh: 'Tiếng Trung', fr: 'Tiếng Pháp', de: 'Tiếng Đức' };
+    const langName = langMap[lang] || 'Ngoại ngữ';
+
+    const card = document.createElement('div');
+    card.className = 'action-card vocab-action-card';
+    card.dataset.id = vocabId;
+    card.style.border = '1px solid rgba(6, 182, 212, 0.45)';
+    card.style.background = 'linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(15, 23, 42, 0.88))';
+
+    card.innerHTML = `
+      <div class="action-card-left">
+        <div class="action-card-icon" style="background: rgba(6, 182, 212, 0.2); color: #38bdf8;">
+          <i class="fa-solid fa-book-bookmark"></i>
+        </div>
+        <div class="action-card-info">
+          <div class="action-card-title">
+            <span style="font-weight: 800; color: #fff;">${escapeHTML(word)}</span>
+            ${phonetic ? `<span style="font-size: 0.76rem; color: #38bdf8; font-family: monospace;">${escapeHTML(phonetic)}</span>` : ''}
+            <span class="card-category-badge" style="background: rgba(6, 182, 212, 0.2); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.4);">${escapeHTML(langName)}</span>
+          </div>
+          <div class="action-card-sub" style="color: #cbd5e1;">${escapeHTML(meaning)}</div>
+          ${example ? `<div style="font-size: 0.74rem; color: #94a3b8; font-style: italic; margin-top: 2px;">"${escapeHTML(example)}"</div>` : ''}
+        </div>
+      </div>
+      <div class="action-card-right">
+        <button type="button" class="btn-card-action undo" title="Hủy bỏ / Xóa khỏi Sổ từ vựng">
+          <i class="fa-solid fa-rotate-left"></i>
+        </button>
+      </div>
+    `;
+
+    card.querySelector('.undo').addEventListener('click', () => {
+      let nb = [];
+      if (typeof window.getVocabNotebook === 'function') nb = window.getVocabNotebook();
+      else {
+        try { nb = JSON.parse(localStorage.getItem('NAJIMEZ_VOCAB_NOTEBOOK_V1') || '[]'); } catch (e) {}
+      }
+      nb = nb.filter(n => n.id !== vocabId && n.word.toLowerCase() !== word.toLowerCase());
+      if (typeof window.saveVocabNotebook === 'function') window.saveVocabNotebook(nb);
+      else {
+        try { localStorage.setItem('NAJIMEZ_VOCAB_NOTEBOOK_V1', JSON.stringify(nb)); } catch (e) {}
+      }
+      if (typeof window.renderNotebookUI === 'function') window.renderNotebookUI();
+      card.remove();
+    });
+
+    return card;
+  }
+
+  // 15. Xóa từ vựng khỏi Sổ Từ Vựng Cá Nhân (delete_vocab)
+  if (action.type === 'delete_vocab') {
+    const word = (action.word || '').trim().toLowerCase();
+    if (!word) return null;
+
+    let notebook = [];
+    if (typeof window.getVocabNotebook === 'function') notebook = window.getVocabNotebook();
+    else {
+      try { notebook = JSON.parse(localStorage.getItem('NAJIMEZ_VOCAB_NOTEBOOK_V1') || '[]'); } catch (e) {}
+    }
+
+    const beforeLen = notebook.length;
+    notebook = notebook.filter(n => n.word.toLowerCase() !== word);
+    const deleted = beforeLen - notebook.length;
+
+    if (deleted > 0) {
+      if (typeof window.saveVocabNotebook === 'function') window.saveVocabNotebook(notebook);
+      else {
+        try { localStorage.setItem('NAJIMEZ_VOCAB_NOTEBOOK_V1', JSON.stringify(notebook)); } catch (e) {}
+      }
+      if (typeof window.renderNotebookUI === 'function') window.renderNotebookUI();
+
+      const card = document.createElement('div');
+      card.className = 'action-card';
+      card.style.border = '1px solid rgba(239, 68, 68, 0.4)';
+      card.style.background = 'rgba(239, 68, 68, 0.1)';
+      card.innerHTML = `
+        <div class="action-card-left">
+          <div class="action-card-icon" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">
+            <i class="fa-solid fa-trash-can"></i>
+          </div>
+          <div class="action-card-info">
+            <div class="action-card-title"><span>Đã xóa từ: "${escapeHTML(action.word)}"</span></div>
+            <div class="action-card-sub">Đã gỡ khỏi Sổ từ vựng cá nhân</div>
+          </div>
+        </div>
+      `;
+      return card;
     }
   }
 
@@ -2267,27 +2428,12 @@ function getNaturalAIResponse(userText) {
   const raw = userText.trim();
   const lower = raw.toLowerCase().trim();
 
-  // Sáng tạo hình ảnh AI / Vẽ tranh
+  // Sáng tạo hình ảnh / Vẽ tranh (Đã ngừng hỗ trợ tính năng tạo ảnh AI)
   if (
     /(?:vẽ\s+(?:cho\s+)?(?:tôi|mình|em|anh|giúp)|tạo\s+(?:hình\s+)?ảnh|vẽ\s+tranh|vẽ\s+hình|hãy\s+vẽ|generate\s+image|vẽ\s+najimez)/i.test(lower)
   ) {
-    let cleanPrompt = raw
-      .replace(/^(?:hãy\s+)?(?:vẽ\s+(?:cho\s+)?(?:tôi|mình|em|anh|giúp|nhé)?|tạo\s+(?:hình\s+)?ảnh(?:\s+cho\s+tôi)?|generate\s+image|draw)\s*/i, '')
-      .trim();
-    if (!cleanPrompt) cleanPrompt = 'bức tranh nghệ thuật tuyệt đẹp';
-
-    let detectedStyle = 'anime';
-    if (/najimez/i.test(cleanPrompt)) detectedStyle = 'najimez';
-    else if (/siêu\s+thực|chụp\s+ảnh|8k|chân\s+dung/i.test(cleanPrompt)) detectedStyle = 'photorealistic';
-    else if (/cyberpunk|tương\s+lai|neon/i.test(cleanPrompt)) detectedStyle = 'cyberpunk';
-    else if (/fantasy|huyền\s+ảo|phép\s+thuật/i.test(cleanPrompt)) detectedStyle = 'fantasy';
-    else if (/sơn\s+dầu/i.test(cleanPrompt)) detectedStyle = 'oil_painting';
-    else if (/3d|pixar|hoạt\s+hình/i.test(cleanPrompt)) detectedStyle = '3d_render';
-    else if (/màu\s+nước/i.test(cleanPrompt)) detectedStyle = 'watercolor';
-
-    const safeTitle = cleanPrompt.substring(0, 45);
     return {
-      text: `Dạ được chứ! Ý tưởng bức tranh **"${escapeHTML(safeTitle)}"** của bạn thật tuyệt vời. Najimez sẽ vẽ bức tranh này cho bạn ngay đây nhé! 🥰\n\n<!--NAJIMEZ_ACTION:{"type":"generate_image","prompt":"${escapeHTML(cleanPrompt)}","title":"${escapeHTML(safeTitle)}","style":"${detectedStyle}","aspectRatio":"1:1"}-->`
+      text: `Dạ hiện tại Najimez không hỗ trợ tính năng tạo ảnh AI nữa bạn nhé. Mình luôn sẵn sàng đồng hành cùng bạn trò chuyện, giải bài tập, quản lý chi tiêu, ghi chép sổ nợ và quản lý lịch trình nha! 🥰`
     };
   }
 
@@ -2692,7 +2838,6 @@ function getNaturalAIResponse(userText) {
           <button type="button" class="action-chip chip-green" data-action="debts">💛 Sổ nợ &amp; VietQR</button>
           <button type="button" class="action-chip chip-pink" data-action="schedule">📅 Lên lịch trình To-Do</button>
           <button type="button" class="action-chip chip-orange" data-action="study">💡 Giải đáp thắc mắc &amp; Code</button>
-          <button type="button" class="action-chip chip-purple" data-action="draw">🎨 Sáng tạo ảnh AI</button>
           <button type="button" class="action-chip chip-cyan" data-action="chat">💬 Đàm thoại cùng Gemini</button>
         </div>
         <p class="copilot-footer">Gõ trực tiếp các khoản thu chi, sổ nợ hoặc câu hỏi để tương tác ngay nhé!</p>
@@ -3070,9 +3215,6 @@ function initChatEngine() {
             break;
           case 'study':
             reply = `**💡 Giải đáp thắc mắc & Lập trình:**\n\nBạn có thể hỏi mọi thắc mắc học thuật, giải bài tập hoặc nhờ tôi viết và gỡ lỗi code: HTML, CSS, JavaScript, Python, C++, v.v.`;
-            break;
-          case 'draw':
-            reply = `**🎨 Sáng tạo hình ảnh AI cùng Najimez:**\n\nBạn có thể yêu cầu tôi vẽ bất kỳ bức tranh nào bạn muốn, ví dụ:\n- *"Vẽ cho mình chú mèo phi hành gia trong không gian"*\n- *"Vẽ Najimez phong cách anime tóc tím cài hoa lung linh"*\n- *"Tạo ảnh thành phố cyberpunk mưa đêm rực rỡ ánh đèn neon"*\n- *"Vẽ tranh phong cảnh hoàng hôn trên biển"* \n\nHoặc bạn hãy bấm vào biểu tượng cây đũa thần ✨ trên thanh chat để mở **Studio Sáng Tạo Ảnh AI** chuyên nghiệp nhé!`;
             break;
           case 'chat':
             reply = `**💬 Đàm thoại cùng Gemini:**\n\nTôi luôn ở đây để lắng nghe, trao đổi tri thức và chia sẻ cùng bạn mọi ý tưởng trong công việc và cuộc sống.`;

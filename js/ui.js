@@ -134,6 +134,8 @@ function initTabNavigation() {
           if (typeof autoScrollTimetableToCurrentTime === 'function') autoScrollTimetableToCurrentTime();
         } else if (targetTabId === 'tab-toolbox') {
           if (typeof renderToolboxTab === 'function') renderToolboxTab();
+        } else if (targetTabId === 'tab-language') {
+          if (typeof renderLanguageTab === 'function') renderLanguageTab();
         } else if (targetTabId === 'tab-friends') {
           if (typeof renderFriendsTab === 'function') renderFriendsTab();
         } else if (targetTabId === 'tab-hyper') {
@@ -158,6 +160,25 @@ function initTabNavigation() {
     });
   });
 }
+
+/**
+ * Chuyển tab giao diện theo ID từ bất kỳ module nào
+ * @param {string} tabId - ID của tab ('tab-copilot', 'tab-language', 'tab-finance',...)
+ */
+function switchTab(tabId) {
+  if (!tabId) return;
+  const navBtn = document.querySelector(`.sidebar-nav .nav-item[data-tab="${tabId}"]`);
+  if (navBtn) {
+    navBtn.click();
+  } else {
+    // Fallback nếu không có nút nav
+    const panes = document.querySelectorAll('.tab-pane');
+    panes.forEach(pane => {
+      pane.classList.toggle('active', pane.id === tabId);
+    });
+  }
+}
+window.switchTab = switchTab;
 
 /**
  * Hệ thống lời chào phong phú, sống động và duyên dáng của Najimez theo từng khung giờ

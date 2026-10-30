@@ -262,7 +262,6 @@
   .btn-voice-settings,
   .btn-voice-input,
   .btn-attach-image,
-  .btn-create-image,
   .btn-send-cmd {
     width: 36px;
     height: 36px;
@@ -317,7 +316,6 @@
   .btn-voice-settings,
   .btn-voice-input,
   .btn-attach-image,
-  .btn-create-image,
   .btn-send-cmd {
     width: 33px;
     height: 33px;
@@ -579,37 +577,6 @@
     flex: 1 1 calc(50% - 8px);
   }
 
-  /* Studio Sáng Tạo Ảnh AI trên điện thoại */
-  .image-studio-modal {
-    padding: 6px;
-    align-items: flex-end;
-  }
-
-  .studio-modal-box {
-    max-width: 100%;
-    width: 100%;
-    border-radius: 18px 18px 10px 10px;
-    max-height: 94vh;
-    max-height: 94dvh;
-  }
-
-  .studio-modal-header {
-    padding: 12px 14px;
-  }
-
-  .studio-modal-header h3 {
-    font-size: 0.98rem;
-  }
-
-  .studio-header-sub {
-    font-size: 0.7rem;
-  }
-
-  .studio-modal-body {
-    grid-template-columns: 1fr;
-    padding: 12px 14px;
-    gap: 14px;
-  }
 }
 
 /* ==========================================================================
@@ -620,8 +587,7 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
-  .modal-backdrop,
-  .image-studio-modal {
+  .modal-backdrop {
     padding-bottom: max(10px, env(safe-area-inset-bottom));
   }
 }
@@ -635,7 +601,6 @@
 .toolbox-workspace-layout,
 .hyper-workspace,
 .notebook-list-body,
-.studio-modal-body,
 .modal-body,
 .sidebar-nav {
   -webkit-overflow-scrolling: touch;

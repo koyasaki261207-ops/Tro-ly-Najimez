@@ -25,7 +25,8 @@
   <!-- Favicon Najimez -->
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
-  <link rel="stylesheet" href="style.css?v=3.81.0">
+  <link rel="stylesheet" href="style.css?v=3.92.1">
+  <link rel="stylesheet" href="css/language-learning.css?v=3.92.1">
   <link rel="stylesheet" href="css/timetable-matcher.css?v=3.78.0">
   <link rel="stylesheet" href="css/responsive.css?v=3.81.0">
 
@@ -125,15 +126,18 @@
             style="background: rgba(168, 85, 247, 0.25); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">Tiện
             Ích</span>
         </button>
+        <button class="nav-item" data-tab="tab-language">
+          <i class="fa-solid fa-language" style="color: #06b6d4;"></i>
+          <span>Ngoại Ngữ</span>
+          <span class="pill-badge"
+            style="background: rgba(6, 182, 212, 0.25); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.4);">Học
+            Tập</span>
+        </button>
         <button class="nav-item" data-tab="tab-friends">
           <i class="fa-solid fa-user-group"></i>
           <span>Bạn Bè &amp; Kết Nối</span>
           <span class="pill-badge" id="friendRequestsBadge"
             style="display: none; background: rgba(239, 68, 68, 0.25); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4);">0</span>
-        </button>
-        <button class="nav-item" id="btnSidebarImageGen" type="button" title="Sáng tạo hình ảnh AI cùng Najimez">
-          <i class="fa-solid fa-wand-magic-sparkles"></i>
-          <span>Tạo Ảnh AI Najimez</span>
         </button>
         <button class="nav-item" data-tab="tab-hyper" id="btnSidebarHyperNajimez"
           title="Hyper Najimez - Siêu Trí Tuệ &amp; Giải Đề Sâu">
@@ -290,10 +294,6 @@
                 <button type="button" class="btn-attach-image" id="btnCopilotAttachImg"
                   title="Gửi hình ảnh cho Najimez (chọn ảnh, chụp ảnh hoặc dán Ctrl+V)">
                   <i class="fa-regular fa-image"></i>
-                </button>
-                <button type="button" class="btn-create-image" id="btnOpenImageGenModal"
-                  title="Sáng tạo hình ảnh AI cùng Najimez (Vẽ tranh theo ý muốn)">
-                  <i class="fa-solid fa-wand-magic-sparkles"></i>
                 </button>
                 <div class="input-inner-wrap">
                   <input type="text" id="copilotInput"
@@ -1246,6 +1246,349 @@
         </section>
 
         <!-- =================================================================
+             TAB: TRUNG TÂM NGOẠI NGỮ (LANGUAGE LEARNING HUB WORKSPACE)
+             ================================================================= -->
+        <section class="tab-pane" id="tab-language">
+          <div class="lang-workspace-layout">
+
+            <!-- HUD Header: Banner Trung Tâm Ngoại Ngữ Najimez -->
+            <header class="lang-hud-header">
+              <div class="lang-brand-box">
+                <div class="lang-avatar-aura">
+                  <img src="assets/najimez.jpg" alt="Najimez Language" class="lang-avatar-img" />
+                </div>
+                <div class="lang-brand-title-wrap">
+                  <div class="lang-title-row">
+                    <span class="lang-title-text">TRUNG TÂM NGOẠI NGỮ</span>
+                    <span class="lang-status-badge">
+                      <span class="lang-pulse-dot"></span> POLYGLOT 6-IN-1
+                    </span>
+                  </div>
+                  <div class="lang-brand-desc">
+                    <span><i class="fa-solid fa-earth-americas"></i> 6 Ngôn Ngữ Phổ Biến</span>
+                    <span>•</span>
+                    <span><i class="fa-solid fa-clone"></i> Thẻ Flashcard 3D</span>
+                    <span>•</span>
+                    <span><i class="fa-solid fa-trophy"></i> Trắc Nghiệm Phản Xạ</span>
+                    <span>•</span>
+                    <span><i class="fa-solid fa-book-bookmark"></i> Sổ Từ Cá Nhân</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Ô đại diện ngôn ngữ hiện tại & Dropdown chọn ngôn ngữ phía bên phải -->
+              <div class="lang-hud-controls">
+                <div class="lang-dropdown-wrapper" id="langDropdownWrapper">
+                  <button type="button" class="btn-curr-lang-picker" id="btnCurrLangPicker" onclick="toggleLangPickerMenu(event)" title="Bấm để đổi ngôn ngữ học tập">
+                    <span class="curr-lang-flag" id="currLangFlag">
+                      <span class="lang-flag-circle flag-en">EN</span>
+                    </span>
+                    <div class="curr-lang-info">
+                      <span class="curr-lang-label">Đang học:</span>
+                      <span class="curr-lang-name" id="currLangName">Tiếng Anh</span>
+                    </div>
+                    <i class="fa-solid fa-chevron-down curr-lang-arrow" id="currLangArrow"></i>
+                  </button>
+
+                  <!-- Menu bung ra cho phép đổi ngôn ngữ -->
+                  <div class="lang-picker-menu" id="langPickerMenu">
+                    <div class="lang-picker-menu-header">
+                      <i class="fa-solid fa-language"></i>
+                      <span>Chọn Ngôn Ngữ Học Tập</span>
+                    </div>
+                    <div class="lang-options-list">
+                      <button type="button" class="lang-opt-item active" data-lang="en" onclick="switchLanguage('en', event)">
+                        <span class="lang-opt-flag"><span class="lang-flag-circle flag-en">EN</span></span>
+                        <div class="lang-opt-text">
+                          <span class="lang-opt-name">Tiếng Anh</span>
+                          <span class="lang-opt-desc">English • Giao tiếp &amp; IELTS</span>
+                        </div>
+                        <i class="fa-solid fa-circle-check lang-opt-badge"></i>
+                      </button>
+                      <button type="button" class="lang-opt-item" data-lang="ja" onclick="switchLanguage('ja', event)">
+                        <span class="lang-opt-flag"><span class="lang-flag-circle flag-ja">JA</span></span>
+                        <div class="lang-opt-text">
+                          <span class="lang-opt-name">Tiếng Nhật</span>
+                          <span class="lang-opt-desc">日本語 • Giao tiếp &amp; JLPT</span>
+                        </div>
+                        <i class="fa-solid fa-circle-check lang-opt-badge"></i>
+                      </button>
+                      <button type="button" class="lang-opt-item" data-lang="ko" onclick="switchLanguage('ko', event)">
+                        <span class="lang-opt-flag"><span class="lang-flag-circle flag-ko">KO</span></span>
+                        <div class="lang-opt-text">
+                          <span class="lang-opt-name">Tiếng Hàn</span>
+                          <span class="lang-opt-desc">한국어 • Đời sống &amp; TOPIK</span>
+                        </div>
+                        <i class="fa-solid fa-circle-check lang-opt-badge"></i>
+                      </button>
+                      <button type="button" class="lang-opt-item" data-lang="zh" onclick="switchLanguage('zh', event)">
+                        <span class="lang-opt-flag"><span class="lang-flag-circle flag-zh">ZH</span></span>
+                        <div class="lang-opt-text">
+                          <span class="lang-opt-name">Tiếng Trung</span>
+                          <span class="lang-opt-desc">中文 • Giao tiếp &amp; HSK</span>
+                        </div>
+                        <i class="fa-solid fa-circle-check lang-opt-badge"></i>
+                      </button>
+                      <button type="button" class="lang-opt-item" data-lang="fr" onclick="switchLanguage('fr', event)">
+                        <span class="lang-opt-flag"><span class="lang-flag-circle flag-fr">FR</span></span>
+                        <div class="lang-opt-text">
+                          <span class="lang-opt-name">Tiếng Pháp</span>
+                          <span class="lang-opt-desc">Français • Lãng mạn &amp; Du lịch</span>
+                        </div>
+                        <i class="fa-solid fa-circle-check lang-opt-badge"></i>
+                      </button>
+                      <button type="button" class="lang-opt-item" data-lang="de" onclick="switchLanguage('de', event)">
+                        <span class="lang-opt-flag"><span class="lang-flag-circle flag-de">DE</span></span>
+                        <div class="lang-opt-text">
+                          <span class="lang-opt-name">Tiếng Đức</span>
+                          <span class="lang-opt-desc">Deutsch • Triết lý &amp; Công việc</span>
+                        </div>
+                        <i class="fa-solid fa-circle-check lang-opt-badge"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </header>
+
+            <!-- Vùng không gian làm việc (Body) -->
+            <div class="lang-workspace-body" id="langWorkspaceBody">
+              <!-- Khung bo tròn nhỏ gọn chứa 3 nút icon dọc theo rìa trái phía dưới Avatar Najimez -->
+              <aside class="lang-sidebar-nav-card" id="langSidebarNavCard">
+                <div class="lang-nav-vertical-group">
+                  <button type="button" class="lang-nav-vbtn active" data-view="flashcard" id="btnLangNav1" onclick="switchNavRailView('flashcard', event)" title="Thẻ Flashcard 3D (Học từ Sổ Từ)" aria-label="Thẻ Flashcard 3D">
+                    <i class="fa-solid fa-clone"></i>
+                  </button>
+                  <button type="button" class="lang-nav-vbtn" data-view="quiz" id="btnLangNav2" onclick="switchNavRailView('quiz', event)" title="Trắc Nghiệm Phản Xạ" aria-label="Trắc Nghiệm Phản Xạ">
+                    <i class="fa-solid fa-fire"></i>
+                  </button>
+                  <button type="button" class="lang-nav-vbtn" data-view="my-vocab" id="btnLangNav3" onclick="switchNavRailView('my-vocab', event)" title="Từ Vựng Của Tôi" aria-label="Từ Vựng Của Tôi">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                  </button>
+                </div>
+              </aside>
+
+              <!-- Vùng hiển thị nội dung bên phải -->
+              <main class="lang-main-stage" id="langMainStage">
+                <!-- PANE 1: THẺ FLASHCARD 3D (HỌC TỪ VỰNG TỪ SỔ TỪ CỦA TÔI) -->
+                <div class="lang-view-pane active" id="paneFlashcard">
+                  <div class="flashcard-studio-card">
+                    <!-- Thanh công cụ trên cùng -->
+                    <div class="flashcard-top-bar">
+                      <div class="flashcard-title-group">
+                        <div class="flashcard-badge-icon">
+                          <i class="fa-solid fa-clone"></i>
+                        </div>
+                        <div class="flashcard-title-text-wrap">
+                          <span class="flashcard-main-title">Học Từ Vựng Flashcard</span>
+                          <span class="flashcard-source-badge">
+                            <i class="fa-solid fa-book-bookmark"></i> Nguồn: Từ Vựng Của Tôi
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="flashcard-top-actions">
+                        <div class="flashcard-scope-box">
+                          <label for="flashcardScopeSelect" class="flashcard-scope-label">Phạm vi:</label>
+                          <select id="flashcardScopeSelect" class="flashcard-topic-select" onchange="changeFlashcardScope(this.value)">
+                            <option value="current">Ngôn ngữ hiện tại</option>
+                            <option value="all">Toàn bộ sổ từ</option>
+                          </select>
+                        </div>
+                        <span class="flashcard-stats-pill" id="flashcardStatsPill">Từ <strong>0</strong> / 0</span>
+                      </div>
+                    </div>
+
+                    <!-- Khung Thông Báo Khi Sổ Từ Rỗng (Empty State) -->
+                    <div class="flashcard-empty-state" id="flashcardEmptyState" style="display: none;">
+                      <div class="fc-empty-icon">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                      </div>
+                      <h3 class="fc-empty-title">Chưa có từ vựng nào trong Sổ từ!</h3>
+                      <p class="fc-empty-desc">
+                        Tính năng Flashcard lấy câu hỏi trực tiếp từ <strong>Từ Vựng Của Tôi</strong> để giúp bạn ôn luyện đúng trọng tâm những từ bạn quan tâm.
+                      </p>
+                      <div class="fc-empty-actions">
+                        <button type="button" class="btn-fc-action primary" onclick="addSampleVocabToNotebook()">
+                          <i class="fa-solid fa-wand-magic-sparkles"></i> Nạp từ mẫu vào sổ để học ngay
+                        </button>
+                        <button type="button" class="btn-fc-action secondary" onclick="switchNavRailView('my-vocab')">
+                          <i class="fa-solid fa-book-bookmark"></i> Mở Từ Vựng Của Tôi để thêm từ
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Khung Học Flashcard Hoạt Động (Active Studio) -->
+                    <div class="flashcard-active-content" id="flashcardActiveContent">
+                      <!-- Sân khấu lật thẻ 3D -->
+                      <div class="flashcard-stage-workspace" id="langFlashcardStage" onclick="flipFlashcard()" title="Nhấp vào thẻ để lật mặt trước/mặt sau">
+                        <div class="flashcard-3d-card" id="langFlashcard3D">
+                          <!-- MẶT TRƯỚC (Front: Từ vựng + Phiên âm + Phát âm) -->
+                          <div class="flashcard-face flashcard-front">
+                            <div class="flashcard-face-top">
+                              <span class="flashcard-type-tag" id="flashcardTypeTag">TỪ VỰNG</span>
+                              <div class="flashcard-face-top-right">
+                                <span class="flashcard-level-tag" id="flashcardLevelTag">🌱 Đang học</span>
+                                <button type="button" class="btn-card-bookmark" id="btnLangBookmarkCard" onclick="event.stopPropagation(); toggleBookmarkCurrentCard();" title="Bỏ từ này khỏi sổ từ nếu đã nhớ sâu">
+                                  <i class="fa-solid fa-star"></i>
+                                </button>
+                              </div>
+                            </div>
+
+                            <div class="flashcard-face-center">
+                              <div class="flashcard-word-row">
+                                <span class="flashcard-word-text" id="flashcardWordText">--</span>
+                                <button type="button" class="btn-speak-vocab" id="btnFrontVocabSpeak" onclick="event.stopPropagation(); speakCurrentFlashcard();" title="Nghe phát âm chuẩn">
+                                  <i class="fa-solid fa-volume-high"></i>
+                                </button>
+                              </div>
+                              <div class="flashcard-phonetic" id="flashcardPhoneticText">--</div>
+                            </div>
+
+                            <div class="flashcard-face-bottom">
+                              <div class="flashcard-hint-text">
+                                <i class="fa-solid fa-arrow-rotate-right"></i>
+                                <span>Chạm hoặc nhấp vào thẻ để lật xem giải nghĩa &amp; ví dụ</span>
+                              </div>
+                              <span class="flashcard-eye-badge"><i class="fa-regular fa-eye"></i> Xem nghĩa</span>
+                            </div>
+                          </div>
+
+                          <!-- MẶT SAU (Back: Ý nghĩa tiếng Việt + Câu ví dụ + Dịch) -->
+                          <div class="flashcard-face flashcard-back">
+                            <div class="flashcard-face-top">
+                              <span class="flashcard-type-tag" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border-color: rgba(56, 189, 248, 0.4);">GIẢI NGHĨA</span>
+                              <div class="flashcard-face-top-right">
+                                <span class="flashcard-badge-back">Mặt sau</span>
+                              </div>
+                            </div>
+
+                            <div class="flashcard-face-center">
+                              <div class="flashcard-meaning-box">
+                                <div class="flashcard-meaning-text" id="flashcardMeaningText">--</div>
+                              </div>
+
+                              <div class="flashcard-example-box" id="flashcardExampleBox">
+                                <div class="flashcard-example-orig">
+                                  <span id="flashcardExampleOrig">--</span>
+                                  <button type="button" class="btn-speak-vocab small" id="btnBackExampleSpeak" onclick="event.stopPropagation(); speakCurrentExample();" title="Nghe đọc câu ví dụ">
+                                    <i class="fa-solid fa-volume-high"></i>
+                                  </button>
+                                </div>
+                                <div class="flashcard-example-trans" id="flashcardExampleTrans">--</div>
+                              </div>
+                            </div>
+
+                            <div class="flashcard-face-bottom">
+                              <div class="flashcard-hint-text">
+                                <i class="fa-solid fa-arrow-rotate-left"></i>
+                                <span>Chạm hoặc nhấp để quay lại mặt trước</span>
+                              </div>
+                              <span class="flashcard-eye-badge"><i class="fa-solid fa-rotate"></i> Quay lại</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Thanh tiến độ bài học -->
+                      <div class="flashcard-progress-track">
+                        <div class="flashcard-progress-bar" id="flashcardProgressBar" style="width: 0%;"></div>
+                      </div>
+
+                      <!-- Thanh điều khiển & Đánh giá trí nhớ -->
+                      <div class="flashcard-controls-bar">
+                        <button type="button" class="btn-card-nav" id="btnLangPrevCard" onclick="prevFlashcard()" title="Xem từ trước (Phím mũi tên trái)">
+                          <i class="fa-solid fa-chevron-left"></i>
+                          <span>Trước</span>
+                        </button>
+
+                        <div class="flashcard-status-btns">
+                          <button type="button" class="btn-card-status practice" id="btnLangNeedPractice" onclick="markVocabLearned(false)" title="Chưa nhớ rõ - Cần ôn thêm">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span>Chưa nhớ</span>
+                          </button>
+                          <button type="button" class="btn-card-status mastered" id="btnLangMastered" onclick="markVocabLearned(true)" title="Đã thuộc từ này">
+                            <i class="fa-solid fa-check"></i>
+                            <span>Đã thuộc</span>
+                          </button>
+                          <button type="button" class="btn-card-nav icon-only" id="btnLangShuffleCard" onclick="shuffleFlashcards()" title="Trộn ngẫu nhiên thứ tự từ vựng">
+                            <i class="fa-solid fa-shuffle"></i>
+                          </button>
+                        </div>
+
+                        <button type="button" class="btn-card-nav" id="btnLangNextCard" onclick="nextFlashcard()" title="Xem từ tiếp theo (Phím mũi tên phải)">
+                          <span>Tiếp</span>
+                          <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- PANE 2: Quiz / Trắc nghiệm (Chờ bạn hướng dẫn thiết kế tiếp) -->
+                <div class="lang-view-pane" id="paneQuiz"></div>
+
+                <!-- PANE 3: TỪ VỰNG CỦA TÔI (MY VOCABULARY) -->
+                <div class="lang-view-pane" id="paneMyVocab">
+                  <div class="my-vocab-card">
+                    <!-- Header của Sổ từ vựng -->
+                    <div class="my-vocab-header">
+                      <div class="my-vocab-title-wrap">
+                        <div class="my-vocab-title">
+                          <i class="fa-solid fa-book-bookmark"></i>
+                          <span>Từ Vựng Của Tôi</span>
+                        </div>
+                        <span class="badge-tag-count" id="notebookStatsText">0 từ đã lưu</span>
+                      </div>
+
+                      <div class="my-vocab-actions">
+                        <!-- Ô tìm kiếm từ vựng -->
+                        <div class="my-vocab-search-wrap">
+                          <i class="fa-solid fa-magnifying-glass"></i>
+                          <input type="text" id="myVocabSearchInput" placeholder="Tìm từ, phát âm, nghĩa..." autocomplete="off" />
+                        </div>
+
+                        <!-- Nút Thêm Từ Mới -->
+                        <button type="button" class="btn-mini-add primary" id="btnToggleAddVocabForm">
+                          <i class="fa-solid fa-plus"></i>
+                          <span>Thêm Từ Mới</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Form nhập từ vựng mới (Collapsible Drawer) -->
+                    <div class="my-vocab-form-box" id="myVocabFormBox" style="display: none;">
+                      <div class="my-vocab-form-header">
+                        <span><i class="fa-solid fa-pen-to-square"></i> Thêm từ vựng mới vào sổ từ cá nhân</span>
+                        <button type="button" class="btn-close-record" id="btnCloseAddVocabForm">&times;</button>
+                      </div>
+                      <div class="form-grid-3">
+                        <input type="text" id="newVocabWord" class="form-ctrl" placeholder="Từ vựng (VD: Serendipity, Epiphany)..." />
+                        <input type="text" id="newVocabPhonetic" class="form-ctrl" placeholder="Phiên âm IPA (VD: /ˌser.ənˈdɪp.ə.ti/)..." />
+                        <input type="text" id="newVocabMeaning" class="form-ctrl" placeholder="Ý nghĩa tiếng Việt (VD: Cơ duyên tình cờ)..." />
+                      </div>
+                      <input type="text" id="newVocabExample" class="form-ctrl" placeholder="Câu ví dụ minh họa (VD: Finding this cafe was pure serendipity)..." />
+                      <div class="form-actions-inline">
+                        <button type="button" class="btn-confirm-record" id="btnSaveNewVocab">
+                          <i class="fa-solid fa-check"></i> Lưu Vào Sổ Từ
+                        </button>
+                        <button type="button" class="btn-cancel-record" id="btnCancelAddVocab">Hủy</button>
+                      </div>
+                    </div>
+
+                    <!-- Danh sách thẻ từ vựng đã lưu -->
+                    <div class="my-vocab-list-box" id="notebookListContainer">
+                      <!-- Rendered by JS -->
+                    </div>
+                  </div>
+                </div>
+              </main>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- =================================================================
              TAB 7: BẠN BÈ & KẾT NỐI (NAJIMEZ SOCIAL CONNECT)
              ================================================================= -->
         <section class="tab-pane" id="tab-friends">
@@ -2127,11 +2470,6 @@
               title="Tìm ảnh thực tế trên trình duyệt cho đúng món này">
               <i class="fa-solid fa-globe"></i> Tìm ảnh Web
             </button>
-            <button type="button" id="btnGenerateAITxImage" class="btn-modal-action primary"
-              style="flex: 1.2; min-width: 120px; background: linear-gradient(135deg, #a855f7, #6366f1); border-color: #c084fc;"
-              title="Dùng AI sáng tạo bức ảnh chân thực cho món này">
-              <i class="fa-solid fa-wand-magic-sparkles"></i> AI Vẽ
-            </button>
             <button type="button" id="btnReplaceTxImage" class="btn-modal-action secondary"
               style="flex: 1; min-width: 90px;">
               <i class="fa-solid fa-rotate"></i> Đổi ảnh
@@ -2483,162 +2821,6 @@
     </div>
   </div>
 
-  <!-- MODAL: STUDIO SÁNG TẠO HÌNH ẢNH AI NAJIMEZ -->
-  <div class="image-studio-modal" id="imageStudioModal">
-    <div class="studio-modal-box">
-      <div class="studio-modal-header">
-        <div class="studio-title-wrap">
-          <div class="studio-header-icon">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-          </div>
-          <div>
-            <h3>Studio Sáng Tạo Hình Ảnh AI</h3>
-            <div class="studio-header-sub">Họa sĩ ảo Najimez &bull; Hỗ trợ Pollinations Flux &amp; Google Imagen 3</div>
-          </div>
-        </div>
-        <button type="button" class="btn-studio-close" id="btnCloseImageStudioModal" title="Đóng (ESC)">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-
-      <div class="studio-modal-body">
-        <!-- Cột trái: Điều khiển & Cấu hình -->
-        <div class="studio-controls-col">
-          <!-- Nhập mô tả tranh (Prompt) -->
-          <div class="studio-field-group">
-            <div class="studio-field-label">
-              <span><i class="fa-solid fa-pen-nib"></i> Ý tưởng bức tranh:</span>
-              <span style="font-size: 0.72rem; color: var(--text-dim);">Hỗ trợ tiếng Việt &amp; tiếng Anh</span>
-            </div>
-            <textarea id="studioPromptInput" class="studio-prompt-textarea" rows="3"
-              placeholder="Ví dụ: Một chú mèo phi hành gia bồng bềnh ngoài không gian, ngắm nhìn Trái Đất rực rỡ..."></textarea>
-
-            <div class="studio-prompt-actions-row">
-              <button type="button" class="btn-prompt-helper" id="btnStudioEnhancePrompt"
-                title="Dùng AI tối ưu từ khóa nghệ thuật">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> ✨ Phù phép Prompt
-              </button>
-              <button type="button" class="btn-prompt-helper btn-surprise" id="btnStudioSurprise"
-                title="Gợi ý một chủ đề ngẫu nhiên cực đẹp">
-                <i class="fa-solid fa-shuffle"></i> 🎲 Ý tưởng ngẫu nhiên
-              </button>
-            </div>
-          </div>
-
-          <!-- Chọn phong cách nghệ thuật -->
-          <div class="studio-field-group">
-            <div class="studio-field-label">
-              <span><i class="fa-solid fa-palette"></i> Phong cách nghệ thuật:</span>
-            </div>
-            <div class="studio-style-grid">
-              <div class="studio-style-card active" data-style="anime">
-                <i class="fa-solid fa-wand-magic-sparkles"></i>
-                <span class="style-card-name">Anime</span>
-              </div>
-              <div class="studio-style-card" data-style="najimez">
-                <i class="fa-solid fa-heart"></i>
-                <span class="style-card-name">Najimez Tóc Tím</span>
-              </div>
-              <div class="studio-style-card" data-style="photorealistic">
-                <i class="fa-solid fa-camera"></i>
-                <span class="style-card-name">Ảnh Chụp 8K</span>
-              </div>
-              <div class="studio-style-card" data-style="cyberpunk">
-                <i class="fa-solid fa-city"></i>
-                <span class="style-card-name">Cyberpunk</span>
-              </div>
-              <div class="studio-style-card" data-style="fantasy">
-                <i class="fa-solid fa-dragon"></i>
-                <span class="style-card-name">Epic Fantasy</span>
-              </div>
-              <div class="studio-style-card" data-style="oil_painting">
-                <i class="fa-solid fa-palette"></i>
-                <span class="style-card-name">Sơn Dầu</span>
-              </div>
-              <div class="studio-style-card" data-style="3d_render">
-                <i class="fa-solid fa-cube"></i>
-                <span class="style-card-name">3D Pixar</span>
-              </div>
-              <div class="studio-style-card" data-style="watercolor">
-                <i class="fa-solid fa-paintbrush"></i>
-                <span class="style-card-name">Màu Nước</span>
-              </div>
-              <div class="studio-style-card" data-style="general">
-                <i class="fa-solid fa-sparkles"></i>
-                <span class="style-card-name">Tự Nhiên</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Chọn tỷ lệ khung hình -->
-          <div class="studio-field-group">
-            <div class="studio-field-label">
-              <span><i class="fa-solid fa-crop-simple"></i> Tỷ lệ khung hình:</span>
-            </div>
-            <div class="studio-ratio-row">
-              <button type="button" class="studio-ratio-btn active" data-ratio="1:1">
-                <i class="fa-solid fa-square"></i> 1:1
-              </button>
-              <button type="button" class="studio-ratio-btn" data-ratio="16:9">
-                <i class="fa-solid fa-tv"></i> 16:9
-              </button>
-              <button type="button" class="studio-ratio-btn" data-ratio="9:16">
-                <i class="fa-solid fa-mobile-screen"></i> 9:16
-              </button>
-              <button type="button" class="studio-ratio-btn" data-ratio="4:3">
-                <i class="fa-solid fa-window-maximize"></i> 4:3
-              </button>
-              <button type="button" class="studio-ratio-btn" data-ratio="3:4">
-                <i class="fa-solid fa-file-image"></i> 3:4
-              </button>
-            </div>
-          </div>
-
-          <!-- Cấu hình nâng cao: Pollen Key VIP (Tùy chọn) -->
-          <div class="studio-field-group" style="margin-bottom: 8px;">
-            <div class="studio-field-label">
-              <span><i class="fa-solid fa-key"></i> Pollen Key VIP (Tùy chọn):</span>
-              <a href="https://enter.pollinations.ai" target="_blank"
-                style="font-size: 0.72rem; color: #c084fc; text-decoration: underline;" title="Lấy key miễn phí">Lấy key
-                miễn phí</a>
-            </div>
-            <div style="position: relative; display: flex; align-items: center;">
-              <input type="password" id="studioPollenKeyInput" class="studio-key-input"
-                placeholder="sk_... (Để trống nếu dùng mặc định)"
-                style="width: 100%; padding: 8px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(168,85,247,0.25); border-radius: 8px; color: #f8fafc; font-size: 0.8rem; font-family: monospace;" />
-            </div>
-          </div>
-
-          <!-- Nút bắt đầu tạo ảnh -->
-          <button type="button" class="btn-studio-generate-main" id="btnStudioGenerate">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            <span>Bắt Đầu Sáng Tạo Tác Phẩm</span>
-          </button>
-        </div>
-
-        <!-- Cột phải: Xem trước kết quả & Bộ sưu tập gần đây -->
-        <div class="studio-preview-col">
-          <div class="studio-preview-box" id="studioPreviewArea">
-            <div class="studio-empty-state">
-              <i class="fa-solid fa-palette"></i>
-              <p>Nhập mô tả ý tưởng và nhấn nút tạo ảnh để chiêm ngưỡng tác phẩm do Najimez vẽ nhé!</p>
-            </div>
-          </div>
-
-          <!-- Bộ sưu tập ảnh gần đây -->
-          <div class="studio-recent-section">
-            <div class="studio-recent-title">
-              <span><i class="fa-regular fa-clock"></i> Tác phẩm gần đây:</span>
-            </div>
-            <div class="studio-recent-gallery" id="studioRecentGallery">
-              <!-- Render tự động bởi image-gen.js -->
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
   <!-- MODAL: XEM PHÓNG TO ẢNH TRÒ CHUYỆN COPILOT (LIGHTBOX) -->
   <div class="copilot-img-lightbox-modal" id="copilotImgLightboxModal">
     <div class="lightbox-content-box">
@@ -2793,10 +2975,10 @@
   <script src="js/timetable-timeline.js?v=3.66.0"></script>
   <script src="js/lucky-wheel.js?v=3.70.0"></script>
   <script src="js/toolbox.js?v=3.75.0"></script>
+  <script src="js/language-learning.js?v=3.92.0"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
-  <script src="js/image-gen.js?v=3.62.0"></script>
   <script src="js/copilot-image.js?v=3.60.1"></script>
-  <script src="js/copilot.js?v=3.62.0"></script>
+  <script src="js/copilot.js?v=3.63.0"></script>
   <script src="js/stars.js?v=3.55.0"></script>
   <script src="js/auth.js?v=3.77.0"></script>
   <script src="js/firebase-sync.js?v=3.55.0"></script>

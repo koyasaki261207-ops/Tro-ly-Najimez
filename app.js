@@ -23,7 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
   if (typeof initLuckyWheel === 'function') initLuckyWheel();
   if (typeof initBillImageModule === 'function') initBillImageModule();
   if (typeof initFirebaseSyncModule === 'function') initFirebaseSyncModule();
-  if (typeof initImageGenModule === 'function') initImageGenModule();
 
   // 3. Sổ cái & Thống kê dữ liệu
   initLedgerAndStats();
@@ -63,6 +62,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof initHyperNajimez === 'function') initHyperNajimez();
   } catch (err) {
     console.error('Lỗi khởi tạo Hyper Najimez:', err);
+  }
+
+  try {
+    if (typeof initLanguageLearning === 'function') initLanguageLearning();
+  } catch (err) {
+    console.error('Lỗi khởi tạo Language Learning:', err);
   }
 
   try {

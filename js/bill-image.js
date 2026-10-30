@@ -1475,27 +1475,6 @@ function initBillImageModule() {
     });
   }
 
-  const btnGenAI = document.getElementById('btnGenerateAITxImage');
-  if (btnGenAI) {
-    btnGenAI.addEventListener('click', () => {
-      const data = getLedgerData();
-      let targetItem = null;
-      if (currentModalTargetType === 'debt') {
-        targetItem = (data.debts || []).find(d => String(d.id) === String(currentModalTargetId));
-      } else {
-        targetItem = (data.transactions || []).find(t => String(t.id) === String(currentModalTargetId));
-      }
-      const rawNote = targetItem && (targetItem.note || (targetItem.category ? targetItem.category : '')) || '';
-      const promptText = rawNote.trim() ? rawNote.trim() : 'Món ăn Việt Nam';
-      closeTransactionImageModal();
-      if (typeof openImageGenModal === 'function') {
-        openImageGenModal(`Chụp ảnh món ${promptText} thơm ngon bày trên đĩa, phong cách ẩm thực cao cấp, ánh sáng tự nhiên chân thực, sắc nét 8k`, 'photorealistic', '1:1');
-      } else {
-        alert(`Bạn có thể dùng tính năng Tạo Ảnh AI để vẽ món: ${promptText}`);
-      }
-    });
-  }
-
   // Nút Tìm ảnh Web trong View Modal
   const btnAutoWeb = document.getElementById('btnAutoWebSearchTxImage');
   const trayView = document.getElementById('txWebSearchTrayView');

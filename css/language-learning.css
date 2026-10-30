@@ -1,0 +1,1968 @@
+/**
+ * css/language-learning.css - Trung Tâm Ngoại Ngữ Najimez (Language Learning Hub Workspace)
+ * Phân hệ độc lập trong "TRUNG TÂM TIỆN ÍCH" (Cyber Luxury Glassmorphism)
+ * Nhận diện thương hiệu: Xanh Cyan Neon (#06b6d4) & Sky Blue (#38bdf8)
+ */
+
+/* ==========================================================================
+   1. BỐ CỤC CHÍNH WORKSPACE TRUNG TÂM NGOẠI NGỮ
+   ========================================================================== */
+.lang-workspace-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  height: 100%;
+  padding: 14px 18px 24px;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(6, 182, 212, 0.4) rgba(15, 23, 42, 0.6);
+}
+
+.lang-workspace-layout::-webkit-scrollbar {
+  width: 7px;
+}
+
+.lang-workspace-layout::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.lang-workspace-layout::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.4);
+  border-radius: 4px;
+}
+
+.lang-workspace-layout::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.7);
+}
+
+/* ==========================================================================
+   2. HUD HEADER: BANNER TRUNG TÂM NGOẠI NGỮ NAJIMEZ
+   ========================================================================== */
+.lang-hud-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(8, 14, 28, 0.94));
+  border: 1px solid rgba(6, 182, 212, 0.28);
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 100;
+  overflow: visible !important;
+}
+
+.lang-brand-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.lang-avatar-aura {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(135deg, #06b6d4, #38bdf8, #6366f1);
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.45);
+  flex-shrink: 0;
+}
+
+.lang-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.lang-brand-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lang-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lang-title-text {
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  background: linear-gradient(135deg, #ffffff, #67e8f9, #38bdf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 20px rgba(6, 182, 212, 0.35);
+}
+
+.lang-status-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: rgba(6, 182, 212, 0.15);
+  border: 1px solid rgba(6, 182, 212, 0.4);
+  color: #38bdf8;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  letter-spacing: 0.5px;
+}
+
+.lang-pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #06b6d4;
+  box-shadow: 0 0 8px #06b6d4;
+  animation: pulseCyan 1.8s infinite;
+}
+
+@keyframes pulseCyan {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; box-shadow: 0 0 12px #38bdf8; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+.lang-brand-desc {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lang-brand-desc span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ==========================================================================
+   2.1. Ô ĐẠI DIỆN NGÔN NGỮ HIỆN TẠI & DROPDOWN PICKER (BÊN PHẢI HEADER)
+   ========================================================================== */
+.lang-hud-controls {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.lang-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+/* Nút bấm hiển thị ngôn ngữ hiện tại */
+.btn-curr-lang-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(16, 26, 48, 0.95), rgba(11, 18, 34, 0.98));
+  border: 1px solid rgba(6, 182, 212, 0.45);
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.btn-curr-lang-picker:hover {
+  border-color: #06b6d4;
+  background: linear-gradient(135deg, rgba(20, 32, 60, 0.98), rgba(13, 22, 42, 1));
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 16px rgba(6, 182, 212, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-curr-lang-picker.open {
+  border-color: #38bdf8;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+}
+
+.curr-lang-flag {
+  font-size: 1.45rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.curr-lang-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.curr-lang-label {
+  font-size: 0.66rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.curr-lang-name {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.curr-lang-arrow {
+  font-size: 0.78rem;
+  color: #38bdf8;
+  margin-left: 4px;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-curr-lang-picker.open .curr-lang-arrow {
+  transform: rotate(180deg);
+  color: #06b6d4;
+}
+
+/* Menu bung ra (Dropdown Menu) */
+.lang-picker-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 280px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(8, 14, 28, 0.99));
+  border: 1px solid rgba(6, 182, 212, 0.45);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 24px rgba(6, 182, 212, 0.25);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 8px;
+  z-index: 99999 !important;
+  transform-origin: top right;
+  animation: langDropdownOpen 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lang-picker-menu.show {
+  display: flex !important;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Huy hiệu cờ quốc kỳ Cyber Luxury (Tương thích sắc nét 100% trên Windows & Mobile) */
+.lang-flag-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.flag-en {
+  background: linear-gradient(135deg, #1e3a8a, #0284c7);
+  color: #ffffff;
+  border: 1.5px solid #ef4444;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.flag-ja {
+  background: #f8fafc;
+  color: #dc2626;
+  border: 1.5px solid #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
+}
+
+.flag-ko {
+  background: #f8fafc;
+  color: #2563eb;
+  border: 1.5px solid #dc2626;
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.4);
+}
+
+.flag-zh {
+  background: #dc2626;
+  color: #facc15;
+  border: 1.5px solid #eab308;
+  box-shadow: 0 0 8px rgba(220, 38, 38, 0.4);
+}
+
+.flag-fr {
+  background: linear-gradient(90deg, #1d4ed8 33%, #f8fafc 33% 66%, #ef4444 66%);
+  color: #0f172a;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+}
+
+.flag-de {
+  background: linear-gradient(180deg, #0f172a 33%, #dc2626 33% 66%, #eab308 66%);
+  color: #f8fafc;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+}
+
+@keyframes langDropdownOpen {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.lang-picker-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: #38bdf8;
+}
+
+.lang-options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.lang-opt-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.lang-opt-item:hover {
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.3);
+  transform: translateX(3px);
+}
+
+.lang-opt-item.active {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.22), rgba(14, 165, 233, 0.28));
+  border-color: rgba(6, 182, 212, 0.55);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
+}
+
+.lang-opt-flag {
+  font-size: 1.35rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.lang-opt-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+}
+
+.lang-opt-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.lang-opt-desc {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.lang-opt-badge {
+  font-size: 0.88rem;
+  color: #06b6d4;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  flex-shrink: 0;
+}
+
+.lang-opt-item.active .lang-opt-badge {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   3. KHUNG KHÔNG GIAN LÀM VIỆC (WORKSPACE BODY) & KHUNG 3 NÚT DỌC
+   ========================================================================== */
+.lang-workspace-body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Khung bo tròn nhỏ gọn bao bọc 3 nút icon dọc theo rìa trái phía dưới Avatar Najimez */
+.lang-sidebar-nav-card {
+  width: auto;
+  flex-shrink: 0;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(8, 14, 28, 0.94));
+  border: 1px solid rgba(6, 182, 212, 0.28);
+  border-radius: 18px;
+  padding: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lang-sidebar-nav-card:hover {
+  border-color: rgba(6, 182, 212, 0.45);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 18px rgba(6, 182, 212, 0.15);
+}
+
+.lang-nav-vertical-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Nút icon nhỏ gọn */
+.lang-nav-vbtn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 11px;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  user-select: none;
+}
+
+.lang-nav-vbtn i {
+  font-size: 0.92rem;
+  color: #94a3b8;
+  transition: color 0.2s ease, transform 0.2s ease;
+  line-height: 1;
+}
+
+.lang-nav-vbtn:hover {
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.45);
+  color: #ffffff;
+  transform: translateY(-1px) scale(1.05);
+}
+
+.lang-nav-vbtn:hover i {
+  color: #38bdf8;
+  transform: scale(1.1);
+}
+
+.lang-nav-vbtn.active {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.28), rgba(56, 189, 248, 0.18));
+  border-color: rgba(6, 182, 212, 0.75);
+  color: #38bdf8;
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.lang-nav-vbtn.active i {
+  color: #38bdf8;
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.7);
+}
+
+/* Vùng hiển thị chính bên phải */
+.lang-main-stage {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Các khung màn hình tương ứng với từng icon điều hướng */
+.lang-view-pane {
+  display: none;
+  width: 100%;
+  flex: 1;
+  animation: fadeInPane 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lang-view-pane.active {
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes fadeInPane {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   4. GIAO DIỆN "TỪ VỰNG CỦA TÔI" (MY VOCABULARY WORKSPACE)
+   ========================================================================== */
+.my-vocab-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.88), rgba(8, 14, 28, 0.94));
+  border: 1px solid rgba(6, 182, 212, 0.28);
+  border-radius: 20px;
+  padding: 18px 20px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+  min-height: 480px;
+}
+
+.my-vocab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.my-vocab-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.my-vocab-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #ffffff;
+}
+
+.my-vocab-title i {
+  color: #06b6d4;
+  text-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+  font-size: 1.15rem;
+}
+
+.my-vocab-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.my-vocab-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.my-vocab-search-wrap i {
+  position: absolute;
+  left: 10px;
+  font-size: 0.78rem;
+  color: #64748b;
+  pointer-events: none;
+}
+
+.my-vocab-search-wrap input {
+  padding: 7px 12px 7px 30px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.6);
+  color: #ffffff;
+  font-size: 0.82rem;
+  width: 220px;
+  transition: all 0.2s ease;
+}
+
+.my-vocab-search-wrap input:focus {
+  outline: none;
+  border-color: #06b6d4;
+  background: rgba(15, 23, 42, 0.9);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);
+  width: 260px;
+}
+
+/* Form thêm từ nhanh */
+.my-vocab-form-box {
+  background: rgba(11, 18, 36, 0.75);
+  border: 1px dashed rgba(6, 182, 212, 0.35);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  animation: fadeInPane 0.2s ease;
+}
+
+.my-vocab-form-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+/* Danh sách từ vựng */
+.my-vocab-list-box {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+  gap: 12px;
+  overflow-y: auto;
+  max-height: calc(100vh - 310px);
+  padding-right: 4px;
+}
+
+.my-vocab-item-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(16, 26, 48, 0.82), rgba(11, 18, 34, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.my-vocab-item-card:hover {
+  border-color: rgba(6, 182, 212, 0.45);
+  background: linear-gradient(135deg, rgba(20, 32, 60, 0.92), rgba(13, 22, 42, 0.98));
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 16px rgba(6, 182, 212, 0.15);
+  transform: translateY(-2px);
+}
+
+.my-vocab-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.my-vocab-word-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.my-vocab-word {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+.my-vocab-ipa {
+  font-size: 0.8rem;
+  color: #38bdf8;
+  font-family: monospace;
+}
+
+.my-vocab-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.my-vocab-meaning {
+  font-size: 0.88rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+.my-vocab-example {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-style: italic;
+  padding-left: 8px;
+  border-left: 2px solid rgba(6, 182, 212, 0.45);
+  line-height: 1.35;
+}
+
+/* Empty state */
+.my-vocab-empty-box {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 24px;
+  text-align: center;
+  gap: 12px;
+  color: #64748b;
+}
+
+.my-vocab-empty-box i {
+  font-size: 3rem;
+  color: rgba(6, 182, 212, 0.35);
+  filter: drop-shadow(0 0 16px rgba(6, 182, 212, 0.25));
+}
+
+.my-vocab-empty-box h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin: 0;
+}
+
+.my-vocab-empty-box p {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin: 0;
+  max-width: 420px;
+  line-height: 1.5;
+}
+
+.btn-add-sample-vocab {
+  margin-top: 8px;
+  padding: 8px 18px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(56, 189, 248, 0.15));
+  border: 1px solid rgba(6, 182, 212, 0.45);
+  color: #38bdf8;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-add-sample-vocab:hover {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.35), rgba(56, 189, 248, 0.25));
+  border-color: #38bdf8;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.3);
+}
+
+@media (max-width: 768px) {
+  .lang-workspace-body {
+    flex-direction: column;
+  }
+  .lang-sidebar-nav-card {
+    width: auto;
+    padding: 6px 10px;
+  }
+  .lang-nav-vertical-group {
+    flex-direction: row;
+    gap: 8px;
+  }
+}
+
+/* ==========================================================================
+   3. BỐ CỤC LƯỚI 2 CỘT (DUAL-COLUMN WORKSPACE GRID)
+   ========================================================================== */
+.lang-studio-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 16px;
+  align-items: stretch;
+  flex: 1;
+}
+
+@media (max-width: 1024px) {
+  .lang-studio-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ==========================================================================
+   4. CỘT TRÁI: STUDIO HỌC & LUYỆN TẬP (PRACTICE COL)
+   ========================================================================== */
+.lang-practice-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+}
+
+/* Thanh chuyển chế độ học tập lớn */
+.lang-mode-switcher-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.btn-lang-mode {
+  flex: 1;
+  padding: 8px 14px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.22s ease;
+}
+
+.btn-lang-mode:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
+}
+
+.btn-lang-mode.active {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(56, 189, 248, 0.25));
+  border: 1px solid rgba(6, 182, 212, 0.5);
+  color: #38bdf8;
+  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25);
+}
+
+.lang-mode-pane {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.lang-mode-pane.active {
+  display: flex;
+}
+
+/* ==========================================================================
+   5. KHUNG THẺ FLASHCARD 3D WORKSPACE
+   ========================================================================== */
+.flashcard-studio-card {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(10, 15, 30, 0.94));
+  border: 1px solid rgba(6, 182, 212, 0.32);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  flex: 1;
+}
+
+.flashcard-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+  padding-bottom: 4px;
+}
+
+.flashcard-title-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flashcard-badge-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(6, 182, 212, 0.16);
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  color: #38bdf8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.25);
+}
+
+.flashcard-title-text-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.flashcard-main-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #f8fafc;
+  letter-spacing: 0.3px;
+}
+
+.flashcard-source-badge {
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 7px;
+  background: rgba(168, 85, 247, 0.16);
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.flashcard-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.flashcard-scope-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.flashcard-scope-label {
+  font-size: 0.78rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.flashcard-topic-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flashcard-topic-select {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.flashcard-topic-select:focus {
+  border-color: #06b6d4;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.35);
+}
+
+.flashcard-stats-pill {
+  font-size: 0.82rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.flashcard-stats-pill strong {
+  color: #38bdf8;
+  font-size: 0.95rem;
+}
+
+.flashcard-active-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 1;
+}
+
+/* Khung Empty State khi Sổ từ rỗng */
+.flashcard-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+  min-height: 290px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px dashed rgba(6, 182, 212, 0.35);
+  border-radius: 14px;
+  gap: 14px;
+}
+
+.fc-empty-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(6, 182, 212, 0.14);
+  color: #38bdf8;
+  font-size: 1.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 24px rgba(6, 182, 212, 0.28);
+}
+
+.fc-empty-title {
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin: 0;
+}
+
+.fc-empty-desc {
+  font-size: 0.88rem;
+  color: #94a3b8;
+  max-width: 480px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.fc-empty-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.btn-fc-action {
+  padding: 9px 18px;
+  border-radius: 10px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-fc-action.primary {
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.35);
+}
+
+.btn-fc-action.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(6, 182, 212, 0.5);
+}
+
+.btn-fc-action.secondary {
+  background: rgba(255, 255, 255, 0.06);
+  color: #cbd5e1;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
+.btn-fc-action.secondary:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.flashcard-word-row {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.flashcard-face-top-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.flashcard-badge-back {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+}
+
+.flashcard-eye-badge {
+  font-size: 0.76rem;
+  color: #06b6d4;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.btn-card-nav.icon-only {
+  padding: 8px 12px;
+}
+
+/* Sân khấu 3D Flashcard Workspace */
+.flashcard-stage-workspace {
+  perspective: 1200px;
+  width: 100%;
+  height: 330px;
+  min-height: 330px;
+  display: block;
+  position: relative;
+  cursor: pointer;
+  margin: 4px 0;
+}
+
+.flashcard-3d-card {
+  width: 100%;
+  height: 100%;
+  min-height: 330px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border-radius: 14px;
+}
+
+.flashcard-3d-card.flipped {
+  transform: rotateY(180deg);
+}
+
+.flashcard-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 330px;
+  box-sizing: border-box;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 14px;
+  background: linear-gradient(145deg, rgba(16, 26, 48, 0.96), rgba(11, 18, 34, 0.98));
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+
+.flashcard-face.flashcard-back {
+  transform: rotateY(180deg);
+  border-color: rgba(56, 189, 248, 0.45);
+  background: linear-gradient(145deg, rgba(13, 22, 45, 0.97), rgba(8, 14, 30, 0.99));
+}
+
+.flashcard-face-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.flashcard-type-tag {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  padding: 3px 10px;
+  border-radius: 7px;
+  background: rgba(6, 182, 212, 0.2);
+  color: #38bdf8;
+  border: 1px solid rgba(6, 182, 212, 0.4);
+}
+
+.flashcard-level-tag {
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 7px;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.flashcard-face-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 16px 0;
+  flex: 1;
+}
+
+.flashcard-word-text {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: 0.6px;
+  margin-bottom: 8px;
+  text-shadow: 0 0 18px rgba(6, 182, 212, 0.35);
+}
+
+.flashcard-phonetic {
+  font-size: 1.05rem;
+  color: #38bdf8;
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-speak-vocab {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(6, 182, 212, 0.45);
+  background: rgba(6, 182, 212, 0.18);
+  color: #38bdf8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+}
+
+.btn-speak-vocab:hover {
+  background: #06b6d4;
+  color: #fff;
+  transform: scale(1.1);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+}
+
+.flashcard-face-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: #64748b;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 8px;
+}
+
+.flashcard-hint-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #94a3b8;
+}
+
+/* Mặt sau Flashcard */
+.flashcard-meaning-box {
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 10px;
+  padding: 12px 16px;
+  width: 100%;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.flashcard-meaning-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #38bdf8;
+}
+
+.flashcard-example-box {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 10px 14px;
+  width: 100%;
+  font-size: 0.88rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-left: 4px solid #06b6d4;
+  text-align: left;
+}
+
+.flashcard-example-orig {
+  color: #f1f5f9;
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flashcard-example-trans {
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+
+/* Thanh điều khiển Flashcard */
+.flashcard-controls-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.btn-card-nav {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.75);
+  color: #cbd5e1;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.btn-card-nav:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.22);
+}
+
+.flashcard-status-btns {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-card-status {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-card-status.practice {
+  background: rgba(244, 63, 94, 0.16);
+  color: #fb7185;
+  border: 1px solid rgba(244, 63, 94, 0.35);
+}
+
+.btn-card-status.practice:hover {
+  background: rgba(244, 63, 94, 0.28);
+  color: #fff;
+}
+
+.btn-card-status.mastered {
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+
+.btn-card-status.mastered:hover {
+  background: rgba(16, 185, 129, 0.28);
+  color: #fff;
+}
+
+.btn-card-bookmark {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.btn-card-bookmark:hover {
+  background: rgba(245, 158, 11, 0.3);
+  color: #fff;
+}
+
+.btn-card-bookmark.bookmarked {
+  background: #fbbf24;
+  color: #0f172a;
+}
+
+/* Thanh tiến độ nhỏ */
+.flashcard-progress-track {
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.flashcard-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #06b6d4, #38bdf8);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+/* ==========================================================================
+   6. KHUNG CHẾ ĐỘ 2: MINI QUIZ TRẮC NGHIỆM
+   ========================================================================= */
+.quiz-studio-card {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(10, 15, 30, 0.94));
+  border: 1px solid rgba(6, 182, 212, 0.32);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  flex: 1;
+}
+
+.quiz-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.quiz-streak-pill {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #fb923c;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(251, 146, 60, 0.15);
+  border: 1px solid rgba(251, 146, 60, 0.35);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+.quiz-score-pill {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  padding: 4px 12px;
+  border-radius: 12px;
+}
+
+.quiz-card-prompt {
+  background: linear-gradient(145deg, rgba(16, 26, 48, 0.9), rgba(11, 18, 34, 0.95));
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 14px;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.quiz-target-word {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.quiz-phonetic-hint {
+  font-size: 0.95rem;
+  color: #38bdf8;
+  font-family: monospace;
+}
+
+.quiz-question-guide {
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+.quiz-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  flex: 1;
+}
+
+@media (max-width: 600px) {
+  .quiz-options-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.btn-quiz-option {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: #e2e8f0;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-quiz-option:hover:not(:disabled) {
+  border-color: #06b6d4;
+  background: rgba(6, 182, 212, 0.12);
+  color: #fff;
+  transform: translateY(-2px);
+}
+
+.btn-quiz-option.correct {
+  border-color: #10b981 !important;
+  background: rgba(16, 185, 129, 0.25) !important;
+  color: #34d399 !important;
+  box-shadow: 0 0 14px rgba(16, 185, 129, 0.45);
+}
+
+.btn-quiz-option.wrong {
+  border-color: #f43f5e !important;
+  background: rgba(244, 63, 94, 0.25) !important;
+  color: #fb7185 !important;
+}
+
+.quiz-opt-letter {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   7. KHUNG CHẾ ĐỘ 3: MẪU CÂU GIAO TIẾP
+   ========================================================================== */
+.phrases-studio-card {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(10, 15, 30, 0.94));
+  border: 1px solid rgba(6, 182, 212, 0.32);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45);
+  flex: 1;
+}
+
+.phrases-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.phrase-card-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.phrase-card-item:hover {
+  background: rgba(20, 30, 56, 0.85);
+  border-color: rgba(6, 182, 212, 0.35);
+  transform: translateX(2px);
+}
+
+.phrase-content-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.phrase-orig-text {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.phrase-trans-text {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.phrase-context-tag {
+  font-size: 0.7rem;
+  color: #38bdf8;
+  margin-top: 2px;
+}
+
+/* ==========================================================================
+   8. CỘT PHẢI: TRA CỨU & SỔ TỪ CÁ NHÂN (SIDE COL)
+   ========================================================================== */
+.lang-side-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
+
+.lang-side-card {
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(10, 15, 30, 0.94));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.dict-side-card {
+  border-color: rgba(6, 182, 212, 0.28);
+}
+
+.notebook-side-card {
+  border-color: rgba(245, 158, 11, 0.25);
+  flex: 1;
+  min-height: 250px;
+}
+
+.lang-side-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.lang-side-card-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Tra từ & Dịch */
+.dict-search-box {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.dict-input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.dict-input-wrap i {
+  position: absolute;
+  left: 12px;
+  color: #64748b;
+  font-size: 0.85rem;
+  pointer-events: none;
+}
+
+.dict-input-field {
+  width: 100%;
+  padding: 8px 12px 8px 34px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+  color: #fff;
+  font-size: 0.84rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.dict-input-field:focus {
+  border-color: #06b6d4;
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.35);
+}
+
+.btn-dict-action {
+  padding: 8px 14px;
+  border-radius: 9px;
+  border: none;
+  background: linear-gradient(135deg, #06b6d4, #0284c7);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-dict-action:hover {
+  background: linear-gradient(135deg, #0891b2, #0369a1);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.45);
+}
+
+.dict-result-card {
+  background: linear-gradient(145deg, rgba(16, 26, 48, 0.9), rgba(11, 18, 34, 0.95));
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dict-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dict-result-word {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dict-result-phonetic {
+  font-size: 0.84rem;
+  color: #38bdf8;
+  font-family: monospace;
+}
+
+.dict-meaning-section {
+  font-size: 0.88rem;
+  color: #e2e8f0;
+  line-height: 1.45;
+  background: rgba(6, 182, 212, 0.08);
+  border-left: 3px solid #06b6d4;
+  padding: 8px 12px;
+  border-radius: 0 8px 8px 0;
+}
+
+.dict-example-section {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-style: italic;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dict-bottom-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.btn-ask-najimez {
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  color: #c084fc;
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.btn-ask-najimez:hover {
+  background: rgba(168, 85, 247, 0.3);
+  color: #fff;
+}
+
+/* Sổ từ cá nhân */
+.notebook-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.notebook-stats-text {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.btn-notebook-action {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.7);
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s ease;
+}
+
+.btn-notebook-action.primary {
+  background: rgba(6, 182, 212, 0.2);
+  border-color: rgba(6, 182, 212, 0.4);
+  color: #38bdf8;
+}
+
+.btn-notebook-action:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.notebook-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 280px;
+}
+
+.notebook-item-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.notebook-item-card:hover {
+  border-color: rgba(6, 182, 212, 0.35);
+  background: rgba(20, 30, 56, 0.85);
+}
+
+.notebook-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.notebook-item-word-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notebook-item-word {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.notebook-item-ipa {
+  font-size: 0.78rem;
+  color: #38bdf8;
+  font-family: monospace;
+}
+
+.notebook-item-meaning {
+  font-size: 0.78rem;
+  color: #94a3b8;
+}
+
+.notebook-item-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-nb-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: transparent;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-nb-icon:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.btn-nb-icon.delete:hover {
+  background: rgba(244, 63, 94, 0.25);
+  border-color: rgba(244, 63, 94, 0.4);
+  color: #fb7185;
+}
+
+.notebook-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 16px;
+  text-align: center;
+  gap: 8px;
+  color: #64748b;
+  flex: 1;
+}
+
+.notebook-empty-state i {
+  font-size: 2.2rem;
+  color: rgba(6, 182, 212, 0.35);
+}
