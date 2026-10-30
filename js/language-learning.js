@@ -588,6 +588,87 @@ function removeVietnameseTones(str) {
     .replace(/Đ/g, 'D');
 }
 
+// Bảng tra cứu từ đồng nghĩa tiếng Anh (chống bắt lỗi oan uổng khi kiểm tra Việt ➔ Anh)
+const VOCAB_SYNONYMS_EN = {
+  'parking lot': ['parking lot', 'parking area', 'car park', 'parking'],
+  'parking area': ['parking area', 'parking lot', 'car park', 'parking'],
+  'couch': ['couch', 'sofa', 'settee'],
+  'sofa': ['sofa', 'couch', 'settee'],
+  'cap': ['cap', 'hat', 'baseball cap'],
+  'hat': ['hat', 'cap'],
+  'rug': ['rug', 'carpet', 'mat'],
+  'carpet': ['carpet', 'rug', 'mat'],
+  'fireplace': ['fireplace', 'hearth'],
+  'display': ['display', 'show', 'exhibit', 'exhibition'],
+  'pile up': ['pile up', 'stack', 'pile'],
+  'stack': ['stack', 'pile up', 'pile'],
+  'be stacked': ['be stacked', 'stacked', 'pile up', 'be piled up', 'pile'],
+  'be repaired': ['be repaired', 'repaired', 'be fixed', 'fixed'],
+  'be fixed': ['be fixed', 'fixed', 'be repaired', 'repaired'],
+  'be laid out': ['be laid out', 'laid out', 'be arranged', 'arranged', 'arrange'],
+  'against the wall': ['against the wall', 'on the wall'],
+  'hang': ['hang', 'hung', 'be hung'],
+  'be packed': ['be packed', 'packed', 'pack'],
+  'be rolled up': ['be rolled up', 'rolled up', 'roll up'],
+  'take a ride': ['take a ride', 'ride', 'go for a ride']
+};
+
+function normalizeVietnameseDialect(str) {
+  if (!str) return '';
+  let s = ' ' + str.toLowerCase().replace(/\s+/g, ' ').trim() + ' ';
+  
+  const synPairs = [
+    ['bãi đậu xe', 'bãi đỗ xe'],
+    ['khu đậu xe', 'khu đỗ xe'],
+    ['chỗ đậu xe', 'chỗ đỗ xe'],
+    ['đậu xe', 'đỗ xe'],
+    ['bãi xe', 'bãi đỗ xe'],
+    ['đậu', 'đỗ'],
+    ['nón kết', 'mũ lưỡi trai'],
+    ['nón lưỡi trai', 'mũ lưỡi trai'],
+    ['nón', 'mũ'],
+    ['lọ hoa', 'bình hoa'],
+    ['bình bông', 'bình hoa'],
+    ['lọ bông', 'bình hoa'],
+    ['bông', 'hoa'],
+    ['lọ', 'bình'],
+    ['nền nhà', 'sàn nhà'],
+    ['nền', 'sàn'],
+    ['ghế sa lông', 'ghế sofa'],
+    ['sa lông', 'ghế sofa'],
+    ['ghế bành', 'ghế sofa'],
+    ['ghế dài', 'ghế sofa'],
+    ['chất đống', 'xếp chồng'],
+    ['chất lên', 'xếp chồng'],
+    ['chồng lên', 'xếp chồng'],
+    ['khắc phục', 'sửa chữa'],
+    ['sửa', 'sửa chữa'],
+    ['la phông', 'trần nhà'],
+    ['kế bên', 'bên cạnh'],
+    ['sát bên', 'bên cạnh'],
+    ['tựa vào', 'dựa vào'],
+    ['tựa', 'dựa'],
+    ['bày biện', 'trưng bày'],
+    ['triển lãm', 'trưng bày'],
+    ['bày ra', 'trưng bày'],
+    ['để lại', 'bỏ lại'],
+    ['bỏ quên', 'bỏ lại'],
+    ['sắp đặt', 'sắp xếp'],
+    ['bày trí', 'sắp xếp'],
+    ['bố trí', 'sắp xếp'],
+    ['tràn ra', 'đổ ra'],
+    ['tràn', 'đổ'],
+    ['quấn lại', 'cuộn lại'],
+    ['quấn', 'cuộn']
+  ];
+
+  for (const [fromW, toW] of synPairs) {
+    s = s.replace(new RegExp(`(\\s)${fromW}(\\s)`, 'g'), `$1${toW}$2`);
+  }
+
+  return s.trim();
+}
+
 function checkTypedAnswer(rawInput, vocab, direction) {
   if (!rawInput || !vocab) return false;
   const userInput = normalizeQuizString(rawInput);
@@ -600,16 +681,29 @@ function checkTypedAnswer(rawInput, vocab, direction) {
     // 1. Khớp chính xác
     if (userInput === targetWord) return true;
 
-    // 2. Xử lý các từ ghép gạch chéo: e.g. "couch / sofa", "parking area / lot"
+    // 2. Tra cứu danh sách đồng nghĩa tiếng Anh
+    const targetSyns = VOCAB_SYNONYMS_EN[targetWord] || [];
+    if (targetSyns.includes(userInput)) return true;
+
+    // 3. Xử lý các từ ghép gạch chéo: e.g. "couch / sofa", "parking area / lot"
     const slashParts = vocab.word.split(/[/,;]/).map(p => normalizeQuizString(p)).filter(Boolean);
     if (slashParts.includes(userInput)) return true;
 
-    // 3. Xử lý tiền tố "to " hoặc "be " hoặc mạo từ "a / an / the"
+    for (const part of slashParts) {
+      const partSyns = VOCAB_SYNONYMS_EN[part] || [];
+      if (partSyns.includes(userInput)) return true;
+    }
+
+    // 4. Xử lý tiền tố "to " hoặc "be " hoặc mạo từ "a / an / the"
     const stripPrefixes = (w) => w.replace(/^(to\s+|be\s+|a\s+|an\s+|the\s+)/i, '').trim();
     if (stripPrefixes(userInput) === stripPrefixes(targetWord)) return true;
 
     for (const part of slashParts) {
       if (stripPrefixes(userInput) === stripPrefixes(part)) return true;
+    }
+
+    for (const syn of targetSyns) {
+      if (stripPrefixes(userInput) === stripPrefixes(syn)) return true;
     }
 
     return false;
@@ -619,26 +713,51 @@ function checkTypedAnswer(rawInput, vocab, direction) {
     const targetMeaningNoTone = removeVietnameseTones(targetMeaning);
     const userInputNoTone = removeVietnameseTones(userInput);
 
-    // 1. Khớp chính xác có dấu hoặc không dấu
+    // 1. Khớp chính xác có dấu hoặc không dấu nguyên bản
     if (userInput === targetMeaning || userInputNoTone === targetMeaningNoTone) return true;
 
-    // 2. Tách các cụm nghĩa
+    // 2. Chuẩn hóa phương ngữ & từ đồng nghĩa tiếng Việt (đậu xe <-> đỗ xe, nón <-> mũ...)
+    const userSyn = normalizeVietnameseDialect(userInput);
+    const targetSyn = normalizeVietnameseDialect(targetMeaning);
+    const userSynNoTone = removeVietnameseTones(userSyn);
+    const targetSynNoTone = removeVietnameseTones(targetSyn);
+
+    if (userSyn === targetSyn || userSynNoTone === targetSynNoTone) return true;
+    if (targetSyn.includes(userSyn) && userSyn.length >= 3) return true;
+    if (targetSynNoTone.includes(userSynNoTone) && userSynNoTone.length >= 3) return true;
+
+    // 3. Tách các cụm nghĩa (nghĩa thường có dạng "Bãi đỗ xe (có quy hoạch, kẻ ô)")
     const meaningClauses = vocab.meaning.split(/[,;\/()]/)
       .map(p => normalizeQuizString(p))
       .filter(p => p.length >= 2);
 
-    for (const clause of meaningClauses) {
+    for (const rawClause of meaningClauses) {
+      const clause = rawClause;
       const clauseNoTone = removeVietnameseTones(clause);
+      const clauseSyn = normalizeVietnameseDialect(clause);
+      const clauseSynNoTone = removeVietnameseTones(clauseSyn);
+
       if (userInput === clause || userInputNoTone === clauseNoTone) return true;
-      if (clause.includes(userInput) || userInput.includes(clause)) {
-        if (Math.min(clause.length, userInput.length) >= 3) return true;
+      if (userSyn === clauseSyn || userSynNoTone === clauseSynNoTone) return true;
+
+      // Khớp từ khóa con
+      if (clauseSyn.includes(userSyn) || userSyn.includes(clauseSyn)) {
+        if (Math.min(clauseSyn.length, userSyn.length) >= 3) return true;
       }
-      if (clauseNoTone.includes(userInputNoTone) || userInputNoTone.includes(clauseNoTone)) {
-        if (Math.min(clauseNoTone.length, userInputNoTone.length) >= 3) return true;
+      if (clauseSynNoTone.includes(userSynNoTone) || userSynNoTone.includes(clauseSynNoTone)) {
+        if (Math.min(clauseSynNoTone.length, userSynNoTone.length) >= 3) return true;
       }
     }
 
-    // 3. Kiểm tra nếu input là một cụm từ con có ý nghĩa trong toàn bộ meaning
+    // 4. Kiểm tra độ trùng khớp từ khóa chính (vd: "bãi", "đậu", "xe" vs "bãi", "đỗ", "xe")
+    const userWords = userSyn.split(' ').filter(w => w.length >= 2);
+    const targetWords = targetSyn.split(' ').filter(w => w.length >= 2);
+    if (userWords.length >= 2) {
+      const matchCount = userWords.filter(w => targetWords.includes(w)).length;
+      if (matchCount === userWords.length) return true;
+    }
+
+    // 5. Kiểm tra nếu input là một cụm từ con có ý nghĩa trong toàn bộ meaning
     if (targetMeaning.includes(userInput) && userInput.length >= 3) return true;
     if (targetMeaningNoTone.includes(userInputNoTone) && userInputNoTone.length >= 3) return true;
 
