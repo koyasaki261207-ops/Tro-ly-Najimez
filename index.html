@@ -26,7 +26,7 @@
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
   <link rel="stylesheet" href="style.css?v=3.92.1">
-  <link rel="stylesheet" href="css/language-learning.css?v=3.92.1">
+  <link rel="stylesheet" href="css/language-learning.css?v=3.95.0">
   <link rel="stylesheet" href="css/timetable-matcher.css?v=3.78.0">
   <link rel="stylesheet" href="css/responsive.css?v=3.81.0">
 
@@ -1279,7 +1279,7 @@
               <!-- Ô đại diện ngôn ngữ hiện tại & Dropdown chọn ngôn ngữ phía bên phải -->
               <div class="lang-hud-controls">
                 <div class="lang-dropdown-wrapper" id="langDropdownWrapper">
-                  <button type="button" class="btn-curr-lang-picker" id="btnCurrLangPicker" onclick="toggleLangPickerMenu(event)" title="Bấm để đổi ngôn ngữ học tập">
+                  <button type="button" class="btn-curr-lang-picker" id="btnCurrLangPicker" title="Bấm để đổi ngôn ngữ học tập">
                     <span class="curr-lang-flag" id="currLangFlag">
                       <span class="lang-flag-circle flag-en">EN</span>
                     </span>
@@ -1297,7 +1297,7 @@
                       <span>Chọn Ngôn Ngữ Học Tập</span>
                     </div>
                     <div class="lang-options-list">
-                      <button type="button" class="lang-opt-item active" data-lang="en" onclick="switchLanguage('en', event)">
+                      <button type="button" class="lang-opt-item active" data-lang="en">
                         <span class="lang-opt-flag"><span class="lang-flag-circle flag-en">EN</span></span>
                         <div class="lang-opt-text">
                           <span class="lang-opt-name">Tiếng Anh</span>
@@ -1305,7 +1305,7 @@
                         </div>
                         <i class="fa-solid fa-circle-check lang-opt-badge"></i>
                       </button>
-                      <button type="button" class="lang-opt-item" data-lang="ja" onclick="switchLanguage('ja', event)">
+                      <button type="button" class="lang-opt-item" data-lang="ja">
                         <span class="lang-opt-flag"><span class="lang-flag-circle flag-ja">JA</span></span>
                         <div class="lang-opt-text">
                           <span class="lang-opt-name">Tiếng Nhật</span>
@@ -1313,7 +1313,7 @@
                         </div>
                         <i class="fa-solid fa-circle-check lang-opt-badge"></i>
                       </button>
-                      <button type="button" class="lang-opt-item" data-lang="ko" onclick="switchLanguage('ko', event)">
+                      <button type="button" class="lang-opt-item" data-lang="ko">
                         <span class="lang-opt-flag"><span class="lang-flag-circle flag-ko">KO</span></span>
                         <div class="lang-opt-text">
                           <span class="lang-opt-name">Tiếng Hàn</span>
@@ -1321,7 +1321,7 @@
                         </div>
                         <i class="fa-solid fa-circle-check lang-opt-badge"></i>
                       </button>
-                      <button type="button" class="lang-opt-item" data-lang="zh" onclick="switchLanguage('zh', event)">
+                      <button type="button" class="lang-opt-item" data-lang="zh">
                         <span class="lang-opt-flag"><span class="lang-flag-circle flag-zh">ZH</span></span>
                         <div class="lang-opt-text">
                           <span class="lang-opt-name">Tiếng Trung</span>
@@ -1329,7 +1329,7 @@
                         </div>
                         <i class="fa-solid fa-circle-check lang-opt-badge"></i>
                       </button>
-                      <button type="button" class="lang-opt-item" data-lang="fr" onclick="switchLanguage('fr', event)">
+                      <button type="button" class="lang-opt-item" data-lang="fr">
                         <span class="lang-opt-flag"><span class="lang-flag-circle flag-fr">FR</span></span>
                         <div class="lang-opt-text">
                           <span class="lang-opt-name">Tiếng Pháp</span>
@@ -1337,7 +1337,7 @@
                         </div>
                         <i class="fa-solid fa-circle-check lang-opt-badge"></i>
                       </button>
-                      <button type="button" class="lang-opt-item" data-lang="de" onclick="switchLanguage('de', event)">
+                      <button type="button" class="lang-opt-item" data-lang="de">
                         <span class="lang-opt-flag"><span class="lang-flag-circle flag-de">DE</span></span>
                         <div class="lang-opt-text">
                           <span class="lang-opt-name">Tiếng Đức</span>
@@ -1356,13 +1356,13 @@
               <!-- Khung bo tròn nhỏ gọn chứa 3 nút icon dọc theo rìa trái phía dưới Avatar Najimez -->
               <aside class="lang-sidebar-nav-card" id="langSidebarNavCard">
                 <div class="lang-nav-vertical-group">
-                  <button type="button" class="lang-nav-vbtn active" data-view="flashcard" id="btnLangNav1" onclick="switchNavRailView('flashcard', event)" title="Thẻ Flashcard 3D (Học từ Sổ Từ)" aria-label="Thẻ Flashcard 3D">
+                  <button type="button" class="lang-nav-vbtn active" data-view="flashcard" id="btnLangNav1" title="Thẻ Flashcard 3D (Học từ Sổ Từ)" aria-label="Thẻ Flashcard 3D">
                     <i class="fa-solid fa-clone"></i>
                   </button>
-                  <button type="button" class="lang-nav-vbtn" data-view="quiz" id="btnLangNav2" onclick="switchNavRailView('quiz', event)" title="Trắc Nghiệm Phản Xạ" aria-label="Trắc Nghiệm Phản Xạ">
+                  <button type="button" class="lang-nav-vbtn" data-view="quiz" id="btnLangNav2" title="Trắc Nghiệm Phản Xạ" aria-label="Trắc Nghiệm Phản Xạ">
                     <i class="fa-solid fa-fire"></i>
                   </button>
-                  <button type="button" class="lang-nav-vbtn" data-view="my-vocab" id="btnLangNav3" onclick="switchNavRailView('my-vocab', event)" title="Từ Vựng Của Tôi" aria-label="Từ Vựng Của Tôi">
+                  <button type="button" class="lang-nav-vbtn" data-view="my-vocab" id="btnLangNav3" title="Từ Vựng Của Tôi" aria-label="Từ Vựng Của Tôi">
                     <i class="fa-solid fa-book-bookmark"></i>
                   </button>
                 </div>
@@ -1421,7 +1421,7 @@
                     <!-- Khung Học Flashcard Hoạt Động (Active Studio) -->
                     <div class="flashcard-active-content" id="flashcardActiveContent">
                       <!-- Sân khấu lật thẻ 3D -->
-                      <div class="flashcard-stage-workspace" id="langFlashcardStage" onclick="flipFlashcard()" title="Nhấp vào thẻ để lật mặt trước/mặt sau">
+                      <div class="flashcard-stage-workspace" id="langFlashcardStage" title="Nhấp vào thẻ để lật mặt trước/mặt sau">
                         <div class="flashcard-3d-card" id="langFlashcard3D">
                           <!-- MẶT TRƯỚC (Front: Từ vựng + Phiên âm + Phát âm) -->
                           <div class="flashcard-face flashcard-front">
@@ -1429,7 +1429,7 @@
                               <span class="flashcard-type-tag" id="flashcardTypeTag">TỪ VỰNG</span>
                               <div class="flashcard-face-top-right">
                                 <span class="flashcard-level-tag" id="flashcardLevelTag">🌱 Đang học</span>
-                                <button type="button" class="btn-card-bookmark" id="btnLangBookmarkCard" onclick="event.stopPropagation(); toggleBookmarkCurrentCard();" title="Bỏ từ này khỏi sổ từ nếu đã nhớ sâu">
+                                <button type="button" class="btn-card-bookmark" id="btnLangBookmarkCard" title="Bỏ từ này khỏi sổ từ nếu đã nhớ sâu">
                                   <i class="fa-solid fa-star"></i>
                                 </button>
                               </div>
@@ -1438,7 +1438,7 @@
                             <div class="flashcard-face-center">
                               <div class="flashcard-word-row">
                                 <span class="flashcard-word-text" id="flashcardWordText">--</span>
-                                <button type="button" class="btn-speak-vocab" id="btnFrontVocabSpeak" onclick="event.stopPropagation(); speakCurrentFlashcard();" title="Nghe phát âm chuẩn">
+                                <button type="button" class="btn-speak-vocab" id="btnFrontVocabSpeak" title="Nghe phát âm chuẩn">
                                   <i class="fa-solid fa-volume-high"></i>
                                 </button>
                               </div>
@@ -1471,7 +1471,7 @@
                               <div class="flashcard-example-box" id="flashcardExampleBox">
                                 <div class="flashcard-example-orig">
                                   <span id="flashcardExampleOrig">--</span>
-                                  <button type="button" class="btn-speak-vocab small" id="btnBackExampleSpeak" onclick="event.stopPropagation(); speakCurrentExample();" title="Nghe đọc câu ví dụ">
+                                  <button type="button" class="btn-speak-vocab small" id="btnBackExampleSpeak" title="Nghe đọc câu ví dụ">
                                     <i class="fa-solid fa-volume-high"></i>
                                   </button>
                                 </div>
@@ -1497,26 +1497,26 @@
 
                       <!-- Thanh điều khiển & Đánh giá trí nhớ -->
                       <div class="flashcard-controls-bar">
-                        <button type="button" class="btn-card-nav" id="btnLangPrevCard" onclick="prevFlashcard()" title="Xem từ trước (Phím mũi tên trái)">
+                        <button type="button" class="btn-card-nav" id="btnLangPrevCard" title="Xem từ trước (Phím mũi tên trái)">
                           <i class="fa-solid fa-chevron-left"></i>
                           <span>Trước</span>
                         </button>
 
                         <div class="flashcard-status-btns">
-                          <button type="button" class="btn-card-status practice" id="btnLangNeedPractice" onclick="markVocabLearned(false)" title="Chưa nhớ rõ - Cần ôn thêm">
+                          <button type="button" class="btn-card-status practice" id="btnLangNeedPractice" title="Chưa nhớ rõ - Cần ôn thêm">
                             <i class="fa-solid fa-rotate-left"></i>
                             <span>Chưa nhớ</span>
                           </button>
-                          <button type="button" class="btn-card-status mastered" id="btnLangMastered" onclick="markVocabLearned(true)" title="Đã thuộc từ này">
+                          <button type="button" class="btn-card-status mastered" id="btnLangMastered" title="Đã thuộc từ này">
                             <i class="fa-solid fa-check"></i>
                             <span>Đã thuộc</span>
                           </button>
-                          <button type="button" class="btn-card-nav icon-only" id="btnLangShuffleCard" onclick="shuffleFlashcards()" title="Trộn ngẫu nhiên thứ tự từ vựng">
+                          <button type="button" class="btn-card-nav icon-only" id="btnLangShuffleCard" title="Trộn ngẫu nhiên thứ tự từ vựng">
                             <i class="fa-solid fa-shuffle"></i>
                           </button>
                         </div>
 
-                        <button type="button" class="btn-card-nav" id="btnLangNextCard" onclick="nextFlashcard()" title="Xem từ tiếp theo (Phím mũi tên phải)">
+                        <button type="button" class="btn-card-nav" id="btnLangNextCard" title="Xem từ tiếp theo (Phím mũi tên phải)">
                           <span>Tiếp</span>
                           <i class="fa-solid fa-chevron-right"></i>
                         </button>
@@ -1525,8 +1525,134 @@
                   </div>
                 </div>
 
-                <!-- PANE 2: Quiz / Trắc nghiệm (Chờ bạn hướng dẫn thiết kế tiếp) -->
-                <div class="lang-view-pane" id="paneQuiz"></div>
+                <!-- PANE 2: KIỂM TRA PHẢN XẠ TỪ VỰNG 2 CHIỀU (TỰ GÕ - CHỐNG HỌC VẸT) -->
+                <div class="lang-view-pane" id="paneQuiz">
+                  <div class="quiz-studio-card">
+                    <!-- Thanh tiêu đề & chế độ kiểm tra -->
+                    <div class="quiz-top-bar">
+                      <div class="quiz-title-group">
+                        <div class="quiz-badge-icon">
+                          <i class="fa-solid fa-fire"></i>
+                        </div>
+                        <div class="quiz-title-text-wrap">
+                          <span class="quiz-main-title">Kiểm Tra Phản Xạ Từ Vựng</span>
+                          <span class="quiz-source-badge">
+                            <i class="fa-solid fa-book-bookmark"></i> Nguồn: Từ Vựng Của Tôi
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="quiz-top-controls">
+                        <!-- Chọn chế độ kiểm tra: 2 chiều hoặc từng chiều -->
+                        <div class="quiz-mode-selector-wrap" title="Chọn phương thức kiểm tra từ vựng">
+                          <button type="button" class="quiz-mode-pill active" id="btnQuizModeMixed" data-mode="mixed" onclick="setQuizDirectionMode('mixed', event)">
+                            <i class="fa-solid fa-shuffle"></i> <span>Trộn 2 chiều</span>
+                          </button>
+                          <button type="button" class="quiz-mode-pill" id="btnQuizModeEnVi" data-mode="en_vi" onclick="setQuizDirectionMode('en_vi', event)">
+                            <i class="fa-solid fa-arrow-right-long"></i> <span>Anh ➔ Việt</span>
+                          </button>
+                          <button type="button" class="quiz-mode-pill" id="btnQuizModeViEn" data-mode="vi_en" onclick="setQuizDirectionMode('vi_en', event)">
+                            <i class="fa-solid fa-arrow-left-long"></i> <span>Việt ➔ Anh</span>
+                          </button>
+                        </div>
+
+                        <!-- Thống kê Chuỗi & Điểm -->
+                        <div class="quiz-stats-group">
+                          <span class="quiz-stat-badge streak" title="Chuỗi trả lời đúng liên tiếp">
+                            <i class="fa-solid fa-fire"></i> <strong id="quizStreakText">0</strong>
+                          </span>
+                          <span class="quiz-stat-badge score" title="Tổng điểm phản xạ">
+                            <i class="fa-solid fa-trophy"></i> <strong id="quizScoreText">0</strong>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Khung thông báo khi Sổ từ rỗng (Empty State) -->
+                    <div class="quiz-empty-state" id="quizEmptyState" style="display: none;">
+                      <div class="quiz-empty-icon">
+                        <i class="fa-solid fa-fire-burner"></i>
+                      </div>
+                      <h3 class="quiz-empty-title">Chưa có từ vựng nào để kiểm tra!</h3>
+                      <p class="quiz-empty-desc">
+                        Chế độ Kiểm tra phản xạ lấy từ vựng trực tiếp từ <strong>Từ Vựng Của Tôi</strong> để thử thách độ ghi nhớ chính xác, chống học vẹt qua hình thức tự gõ văn bản 2 chiều.
+                      </p>
+                      <div class="quiz-empty-actions">
+                        <button type="button" class="btn-fc-action primary" onclick="addSampleVocabToNotebook(); initNewQuizRound();">
+                          <i class="fa-solid fa-wand-magic-sparkles"></i> Nạp từ mẫu vào sổ để kiểm tra ngay
+                        </button>
+                        <button type="button" class="btn-fc-action secondary" onclick="switchNavRailView('my-vocab')">
+                          <i class="fa-solid fa-book-bookmark"></i> Mở Từ Vựng Của Tôi để thêm từ
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Khung đấu trường kiểm tra phản xạ (Active Quiz Arena) -->
+                    <div class="quiz-active-content" id="quizActiveContent">
+                      <!-- Thẻ câu hỏi nổi bật (Prompt Box) -->
+                      <div class="quiz-card-prompt" id="quizPromptCard">
+                        <div class="quiz-prompt-header">
+                          <span class="quiz-type-direction" id="quizDirectionBadge">
+                            <i class="fa-solid fa-language"></i> <span id="quizDirectionText">Đang tải câu hỏi...</span>
+                          </span>
+                          <span class="quiz-counter-pill" id="quizCounterPill">Sổ từ cá nhân</span>
+                        </div>
+
+                        <!-- Từ / Nghĩa cần hỏi -->
+                        <div class="quiz-target-question-wrap">
+                          <div class="quiz-target-word" id="quizTargetWord">
+                            <!-- Nạp động: Từ vựng hoặc Nghĩa tiếng Việt -->
+                          </div>
+                          <div class="quiz-phonetic-hint" id="quizPhoneticHint"></div>
+                        </div>
+
+                        <!-- Gợi ý hướng dẫn hành động -->
+                        <div class="quiz-prompt-instruction" id="quizPromptInstruction">
+                          Gõ câu trả lời chính xác vào ô bên dưới rồi nhấn <strong>Enter</strong> hoặc bấm <strong>Kiểm Tra</strong>.
+                        </div>
+                      </div>
+
+                      <!-- Khu vực gõ câu trả lời (Typing Input Box) -->
+                      <div class="quiz-typing-zone" id="quizTypingZone">
+                        <div class="quiz-input-wrapper" id="quizInputWrapper">
+                          <i class="fa-solid fa-keyboard quiz-input-icon"></i>
+                          <input type="text" id="quizTypingInput" class="quiz-typing-input"
+                                 placeholder="Nhập câu trả lời của bạn..."
+                                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                 onkeydown="handleQuizInputKeydown(event)" />
+                          <button type="button" class="btn-quiz-submit" id="btnQuizSubmit" onclick="submitQuizTypedAnswer()">
+                            <span>Kiểm Tra</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                          </button>
+                        </div>
+                        <div class="quiz-action-bar-sub">
+                          <button type="button" class="btn-quiz-sub-action" id="btnQuizGiveUp" onclick="revealQuizAnswer()" title="Xem đáp án chuẩn nếu bạn chưa nhớ ra">
+                            <i class="fa-regular fa-lightbulb"></i> <span>Chưa nhớ - Xem đáp án</span>
+                          </button>
+                          <button type="button" class="btn-quiz-sub-action" id="btnQuizSkip" onclick="skipToNextQuizQuestion()" title="Bỏ qua đổi sang từ khác">
+                            <i class="fa-solid fa-forward-step"></i> <span>Đổi từ khác</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Khu vực phản hồi kết quả (Feedback Card - ẩn ban đầu, hiện sau khi nộp bài) -->
+                      <div class="quiz-feedback-card" id="quizFeedbackCard" style="display: none;">
+                        <div class="quiz-feedback-status" id="quizFeedbackStatus">
+                          <!-- Icon + Text đúng hoặc sai -->
+                        </div>
+                        <div class="quiz-feedback-body" id="quizFeedbackBody">
+                          <!-- Chi tiết đáp án, phát âm, ví dụ -->
+                        </div>
+                        <div class="quiz-feedback-actions">
+                          <button type="button" class="btn-quiz-continue" id="btnQuizContinue" onclick="continueToNextQuizRound()">
+                            <span>Tiếp tục (Nhấn Enter)</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
                 <!-- PANE 3: TỪ VỰNG CỦA TÔI (MY VOCABULARY) -->
                 <div class="lang-view-pane" id="paneMyVocab">
@@ -2975,10 +3101,10 @@
   <script src="js/timetable-timeline.js?v=3.66.0"></script>
   <script src="js/lucky-wheel.js?v=3.70.0"></script>
   <script src="js/toolbox.js?v=3.75.0"></script>
-  <script src="js/language-learning.js?v=3.94.0"></script>
+  <script src="js/language-learning.js?v=3.95.0"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
   <script src="js/copilot-image.js?v=3.60.1"></script>
-  <script src="js/copilot.js?v=3.94.0"></script>
+  <script src="js/copilot.js?v=3.95.0"></script>
   <script src="js/stars.js?v=3.55.0"></script>
   <script src="js/auth.js?v=3.77.0"></script>
   <script src="js/firebase-sync.js?v=3.55.0"></script>

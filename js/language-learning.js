@@ -179,13 +179,15 @@ let flashcardIndex = 0;
 let isFlashcardFlipped = false;
 let isPracticingNotebookOnly = false;
 
-// Trạng thái Mini Quiz
+// Trạng thái Mini Quiz Phản Xạ 2 Chiều
 let quizState = {
   score: 0,
   streak: 0,
   currentVocab: null,
-  options: [],
-  isAnswered: false
+  isAnswered: false,
+  directionMode: 'mixed', // 'mixed' | 'en_vi' | 'vi_en'
+  currentDirection: 'en_vi', // 'en_vi' (Anh ➔ Việt) hoặc 'vi_en' (Việt ➔ Anh)
+  lastVocabId: null
 };
 
 // ============================================================================
@@ -280,6 +282,25 @@ function playLangDing() {
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + 0.35);
+  } catch (e) {}
+}
+
+function playLangWrong() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = new AudioContext();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(260, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(160, ctx.currentTime + 0.22);
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.23);
   } catch (e) {}
 }
 
@@ -459,6 +480,7 @@ function shuffleFlashcards() {
 }
 window.shuffleFlashcards = shuffleFlashcards;
 
+let markVocabTimer = null;
 function markVocabLearned(isMastered) {
   const list = getFilteredVocabList();
   if (list.length === 0) return;
@@ -474,9 +496,14 @@ function markVocabLearned(isMastered) {
   saveMasteredVocabIds(masteredIds);
   renderFlashcardUI();
 
-  // Tự động chuyển từ tiếp theo sau 250ms
-  setTimeout(() => {
+  // Tự động chuyển từ tiếp theo sau 250ms (có debounce chống nhảy đúp/nhảy thừa từ)
+  if (markVocabTimer) {
+    clearTimeout(markVocabTimer);
+    markVocabTimer = null;
+  }
+  markVocabTimer = setTimeout(() => {
     nextFlashcard();
+    markVocabTimer = null;
   }, 250);
 }
 window.markVocabLearned = markVocabLearned;
@@ -511,96 +538,441 @@ function speakCurrentExample() {
 window.speakCurrentExample = speakCurrentExample;
 
 // ============================================================================
-// 6. CHẾ ĐỘ 2: MINI QUIZ TRẮC NGHIỆM PHẢN XẠ NHANH
+// 6. CHẾ ĐỘ 2: KIỂM TRA PHẢN XẠ TỪ VỰNG 2 CHIỀU (HARDCORE ACTIVE RECALL)
+// Lấy từ vựng trực tiếp từ "Từ Vựng Của Tôi" (getVocabNotebook)
 // ============================================================================
-function initNewQuizRound() {
-  const targetWordEl = document.getElementById('quizTargetWord');
-  const grid = document.getElementById('quizOptionsGrid');
-  if (!targetWordEl || !grid) return;
 
-  const langPack = NAJIMEZ_LANG_DATA[currentLangCode];
-  if (!langPack || !langPack.vocab || langPack.vocab.length < 2) return;
+function setQuizDirectionMode(mode, e) {
+  if (e) {
+    if (typeof e.stopPropagation === 'function') e.stopPropagation();
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+  }
+  quizState.directionMode = mode || 'mixed';
 
-  const vocabList = langPack.vocab;
-  quizState.isAnswered = false;
-
-  // Chọn ngẫu nhiên 1 từ làm câu hỏi
-  const target = vocabList[Math.floor(Math.random() * vocabList.length)];
-  quizState.currentVocab = target;
-
-  // Lấy các đáp án sai từ các từ còn lại
-  const wrongOptions = vocabList.filter(v => v.id !== target.id)
-    .sort(() => 0.5 - Math.random())
-    .slice(0, 3)
-    .map(v => v.meaning);
-
-  // Gộp đáp án đúng và xáo trộn
-  const allOptions = [target.meaning, ...wrongOptions].sort(() => 0.5 - Math.random());
-  quizState.options = allOptions;
-
-  // Render câu hỏi
-  document.getElementById('quizTargetWord').innerHTML = `
-    <span>${target.word}</span>
-    <button type="button" class="btn-speak-vocab" onclick="playVocabSpeech('${target.word.replace(/'/g, "\\'")}', '${currentLangCode}')" title="Nghe phát âm">
-      <i class="fa-solid fa-volume-high"></i>
-    </button>
-  `;
-  document.getElementById('quizPhoneticHint').textContent = target.phonetic || '';
-
-  // Render 4 đáp án
-  grid.innerHTML = '';
-  const letters = ['A', 'B', 'C', 'D'];
-
-  allOptions.forEach((optText, idx) => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'btn-quiz-option';
-    btn.innerHTML = `
-      <span class="quiz-opt-letter">${letters[idx]}</span>
-      <span class="quiz-opt-text">${optText}</span>
-    `;
-    btn.onclick = () => handleQuizAnswer(optText, btn);
-    grid.appendChild(btn);
+  // Cập nhật trạng thái nút chọn mode
+  document.querySelectorAll('.quiz-mode-pill').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === quizState.directionMode);
   });
 
-  // Cập nhật điểm & Streak
-  document.getElementById('quizScoreText').textContent = quizState.score;
-  document.getElementById('quizStreakText').textContent = quizState.streak;
+  initNewQuizRound();
+}
+window.setQuizDirectionMode = setQuizDirectionMode;
+
+function getQuizVocabPool() {
+  const notebook = getVocabNotebook();
+  if (!notebook || !Array.isArray(notebook) || notebook.length === 0) {
+    return [];
+  }
+
+  // Lọc theo ngôn ngữ đang chọn, nếu không có từ nào theo ngôn ngữ đó thì trả về toàn bộ sổ từ
+  const filtered = notebook.filter(item => !item.lang || item.lang === currentLangCode);
+  return filtered.length > 0 ? filtered : notebook;
 }
 
-function handleQuizAnswer(selectedText, clickedBtn) {
-  if (quizState.isAnswered) return;
-  quizState.isAnswered = true;
+function normalizeQuizString(str) {
+  if (!str) return '';
+  return str.toString()
+    .toLowerCase()
+    .trim()
+    .replace(/[.,?!:;'"()\/\\-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
-  const isCorrect = selectedText === quizState.currentVocab.meaning;
-  const allBtns = document.querySelectorAll('.btn-quiz-option');
+function removeVietnameseTones(str) {
+  if (!str) return '';
+  return str.toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd')
+    .replace(/Đ/g, 'D');
+}
 
-  allBtns.forEach(btn => {
-    btn.disabled = true;
-    const textSpan = btn.querySelector('.quiz-opt-text');
-    if (textSpan && textSpan.textContent === quizState.currentVocab.meaning) {
-      btn.classList.add('correct');
+function checkTypedAnswer(rawInput, vocab, direction) {
+  if (!rawInput || !vocab) return false;
+  const userInput = normalizeQuizString(rawInput);
+  if (!userInput) return false;
+
+  if (direction === 'vi_en') {
+    // Người dùng gõ từ tiếng Anh/ngoại ngữ
+    const targetWord = normalizeQuizString(vocab.word);
+    
+    // 1. Khớp chính xác
+    if (userInput === targetWord) return true;
+
+    // 2. Xử lý các từ ghép gạch chéo: e.g. "couch / sofa", "parking area / lot"
+    const slashParts = vocab.word.split(/[/,;]/).map(p => normalizeQuizString(p)).filter(Boolean);
+    if (slashParts.includes(userInput)) return true;
+
+    // 3. Xử lý tiền tố "to " hoặc "be " hoặc mạo từ "a / an / the"
+    const stripPrefixes = (w) => w.replace(/^(to\s+|be\s+|a\s+|an\s+|the\s+)/i, '').trim();
+    if (stripPrefixes(userInput) === stripPrefixes(targetWord)) return true;
+
+    for (const part of slashParts) {
+      if (stripPrefixes(userInput) === stripPrefixes(part)) return true;
     }
-  });
+
+    return false;
+  } else {
+    // direction === 'en_vi': Người dùng gõ nghĩa tiếng Việt
+    const targetMeaning = normalizeQuizString(vocab.meaning);
+    const targetMeaningNoTone = removeVietnameseTones(targetMeaning);
+    const userInputNoTone = removeVietnameseTones(userInput);
+
+    // 1. Khớp chính xác có dấu hoặc không dấu
+    if (userInput === targetMeaning || userInputNoTone === targetMeaningNoTone) return true;
+
+    // 2. Tách các cụm nghĩa
+    const meaningClauses = vocab.meaning.split(/[,;\/()]/)
+      .map(p => normalizeQuizString(p))
+      .filter(p => p.length >= 2);
+
+    for (const clause of meaningClauses) {
+      const clauseNoTone = removeVietnameseTones(clause);
+      if (userInput === clause || userInputNoTone === clauseNoTone) return true;
+      if (clause.includes(userInput) || userInput.includes(clause)) {
+        if (Math.min(clause.length, userInput.length) >= 3) return true;
+      }
+      if (clauseNoTone.includes(userInputNoTone) || userInputNoTone.includes(clauseNoTone)) {
+        if (Math.min(clauseNoTone.length, userInputNoTone.length) >= 3) return true;
+      }
+    }
+
+    // 3. Kiểm tra nếu input là một cụm từ con có ý nghĩa trong toàn bộ meaning
+    if (targetMeaning.includes(userInput) && userInput.length >= 3) return true;
+    if (targetMeaningNoTone.includes(userInputNoTone) && userInputNoTone.length >= 3) return true;
+
+    return false;
+  }
+}
+
+function escapeQuizHtml(str) {
+  if (!str) return '';
+  return str.toString()
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function initNewQuizRound() {
+  const emptyState = document.getElementById('quizEmptyState');
+  const activeContent = document.getElementById('quizActiveContent');
+  if (!emptyState || !activeContent) return;
+
+  const pool = getQuizVocabPool();
+
+  // 1. Trường hợp Sổ từ rỗng
+  if (pool.length === 0) {
+    emptyState.style.display = 'flex';
+    activeContent.style.display = 'none';
+    return;
+  }
+
+  // 2. Có từ vựng: Hiển thị sân đấu
+  emptyState.style.display = 'none';
+  activeContent.style.display = 'flex';
+
+  // Quyết định chiều kiểm tra
+  if (quizState.directionMode === 'mixed') {
+    quizState.currentDirection = Math.random() < 0.5 ? 'en_vi' : 'vi_en';
+  } else {
+    quizState.currentDirection = quizState.directionMode;
+  }
+
+  // Chọn từ ngẫu nhiên trong pool (tránh lặp lại từ vừa xong nếu pool > 1)
+  let candidatePool = pool;
+  if (pool.length > 1 && quizState.lastVocabId) {
+    candidatePool = pool.filter(v => v.id !== quizState.lastVocabId);
+    if (candidatePool.length === 0) candidatePool = pool;
+  }
+  const target = candidatePool[Math.floor(Math.random() * candidatePool.length)];
+  quizState.currentVocab = target;
+  quizState.lastVocabId = target.id;
+  quizState.isAnswered = false;
+
+  // Cập nhật huy hiệu Điểm & Chuỗi
+  const elStreak = document.getElementById('quizStreakText');
+  const elScore = document.getElementById('quizScoreText');
+  if (elStreak) elStreak.textContent = quizState.streak;
+  if (elScore) elScore.textContent = quizState.score;
+
+  // Khởi tạo vùng hiển thị câu hỏi
+  const dirBadgeText = document.getElementById('quizDirectionText');
+  const targetWordEl = document.getElementById('quizTargetWord');
+  const phoneticEl = document.getElementById('quizPhoneticHint');
+  const instructEl = document.getElementById('quizPromptInstruction');
+  const counterPill = document.getElementById('quizCounterPill');
+  const inputEl = document.getElementById('quizTypingInput');
+  const inputWrap = document.getElementById('quizInputWrapper');
+  const feedbackCard = document.getElementById('quizFeedbackCard');
+  const typingZone = document.getElementById('quizTypingZone');
+
+  if (counterPill) {
+    counterPill.textContent = `${pool.length} từ trong sổ`;
+  }
+
+  if (feedbackCard) feedbackCard.style.display = 'none';
+  if (typingZone) typingZone.style.display = 'flex';
+  if (inputWrap) {
+    inputWrap.classList.remove('correct', 'wrong');
+  }
+  if (inputEl) {
+    inputEl.value = '';
+    inputEl.disabled = false;
+  }
+
+  const langCode = target.lang || currentLangCode;
+  const langPack = NAJIMEZ_LANG_DATA[langCode];
+  const langName = langPack?.name || 'Ngoại ngữ';
+  const flag = langPack?.flag || '🌐';
+
+  if (quizState.currentDirection === 'en_vi') {
+    // Cách 1: Đưa từ ngoại ngữ, bắt ghi tiếng Việt
+    if (dirBadgeText) {
+      dirBadgeText.innerHTML = `${flag} ${langName.toUpperCase()} ➔ GHI NGHĨA TIẾNG VIỆT`;
+    }
+    if (targetWordEl) {
+      targetWordEl.innerHTML = `
+        <span>${escapeQuizHtml(target.word)}</span>
+        <button type="button" class="btn-speak-vocab" onclick="playVocabSpeech('${target.word.replace(/'/g, "\\'")}', '${langCode}')" title="Nghe phát âm chuẩn">
+          <i class="fa-solid fa-volume-high"></i>
+        </button>
+      `;
+    }
+    if (phoneticEl) {
+      phoneticEl.textContent = target.phonetic || '';
+      phoneticEl.style.display = target.phonetic ? 'block' : 'none';
+    }
+    if (instructEl) {
+      instructEl.innerHTML = `Lắng nghe và quan sát từ trên, hãy gõ <strong>nghĩa tiếng Việt</strong> vào ô bên dưới:`;
+    }
+    if (inputEl) {
+      inputEl.placeholder = `Nhập nghĩa tiếng Việt (ví dụ: lò sưởi, trần nhà...)...`;
+    }
+  } else {
+    // Cách 2: Đưa nghĩa tiếng Việt, bắt ghi từ ngoại ngữ
+    if (dirBadgeText) {
+      dirBadgeText.innerHTML = `🇻🇳 TIẾNG VIỆT ➔ GÕ TỪ ${langName.toUpperCase()} CHÍNH XÁC`;
+    }
+    if (targetWordEl) {
+      targetWordEl.innerHTML = `<span>${escapeQuizHtml(target.meaning)}</span>`;
+    }
+    if (phoneticEl) {
+      // Hiển thị gợi ý phiên âm hoặc câu ví dụ đã che từ
+      if (target.example) {
+        const maskedExample = target.example.replace(new RegExp(target.word, 'gi'), '_____');
+        phoneticEl.innerHTML = `<span style="font-style: italic; color: #94a3b8;">Gợi ý ngữ cảnh:</span> "${escapeQuizHtml(maskedExample)}"`;
+        phoneticEl.style.display = 'block';
+      } else if (target.phonetic) {
+        phoneticEl.textContent = `Phiên âm: ${target.phonetic}`;
+        phoneticEl.style.display = 'block';
+      } else {
+        phoneticEl.style.display = 'none';
+      }
+    }
+    if (instructEl) {
+      instructEl.innerHTML = `Đọc nghĩa tiếng Việt ở trên, hãy gõ chính xác <strong>từ vựng ${escapeQuizHtml(langName)}</strong> tương ứng:`;
+    }
+    if (inputEl) {
+      inputEl.placeholder = `Type the ${langName} word here...`;
+    }
+  }
+
+  // Tự động focus vào ô nhập
+  setTimeout(() => {
+    if (inputEl) inputEl.focus();
+  }, 100);
+}
+window.initNewQuizRound = initNewQuizRound;
+
+function handleQuizInputKeydown(event) {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    if (quizState.isAnswered) {
+      continueToNextQuizRound();
+    } else {
+      submitQuizTypedAnswer();
+    }
+  }
+}
+window.handleQuizInputKeydown = handleQuizInputKeydown;
+
+function submitQuizTypedAnswer() {
+  if (quizState.isAnswered || !quizState.currentVocab) return;
+
+  const inputEl = document.getElementById('quizTypingInput');
+  const inputWrap = document.getElementById('quizInputWrapper');
+  const feedbackCard = document.getElementById('quizFeedbackCard');
+  const feedbackStatus = document.getElementById('quizFeedbackStatus');
+  const feedbackBody = document.getElementById('quizFeedbackBody');
+  const btnContinue = document.getElementById('btnQuizContinue');
+
+  const rawInput = inputEl?.value?.trim() || '';
+  if (!rawInput) {
+    if (inputEl) {
+      inputEl.focus();
+      inputEl.placeholder = '⚠️ Vui lòng nhập câu trả lời trước khi kiểm tra!';
+      setTimeout(() => {
+        if (inputEl) {
+          inputEl.placeholder = quizState.currentDirection === 'en_vi' ? 'Nhập nghĩa tiếng Việt...' : 'Type the word here...';
+        }
+      }, 1500);
+    }
+    return;
+  }
+
+  quizState.isAnswered = true;
+  if (inputEl) inputEl.disabled = true;
+
+  const target = quizState.currentVocab;
+  const isCorrect = checkTypedAnswer(rawInput, target, quizState.currentDirection);
+  const langCode = target.lang || currentLangCode;
 
   if (isCorrect) {
-    clickedBtn.classList.add('correct');
     quizState.score += 10;
     quizState.streak += 1;
     playLangDing();
+
+    if (inputWrap) inputWrap.classList.add('correct');
+    if (feedbackCard) {
+      feedbackCard.className = 'quiz-feedback-card correct';
+      feedbackCard.style.display = 'flex';
+    }
+    if (feedbackStatus) {
+      feedbackStatus.className = 'quiz-feedback-status correct';
+      feedbackStatus.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>Chính xác tuyệt vời! (+10 điểm)</span>`;
+    }
   } else {
-    clickedBtn.classList.add('wrong');
     quizState.streak = 0;
+    playLangWrong();
+
+    if (inputWrap) inputWrap.classList.add('wrong');
+    if (feedbackCard) {
+      feedbackCard.className = 'quiz-feedback-card wrong';
+      feedbackCard.style.display = 'flex';
+    }
+    if (feedbackStatus) {
+      feedbackStatus.className = 'quiz-feedback-status wrong';
+      feedbackStatus.innerHTML = `<i class="fa-solid fa-circle-xmark"></i> <span>Chưa chính xác rồi! Hãy ghi nhớ nhé:</span>`;
+    }
   }
 
-  document.getElementById('quizScoreText').textContent = quizState.score;
-  document.getElementById('quizStreakText').textContent = quizState.streak;
+  // Cập nhật điểm & streak
+  const elStreak = document.getElementById('quizStreakText');
+  const elScore = document.getElementById('quizScoreText');
+  if (elStreak) elStreak.textContent = quizState.streak;
+  if (elScore) elScore.textContent = quizState.score;
 
-  // Tự động chuyển câu sau 1.3s
-  setTimeout(() => {
-    initNewQuizRound();
-  }, 1300);
+  // Render chi tiết feedback
+  if (feedbackBody) {
+    feedbackBody.innerHTML = `
+      <div class="quiz-feedback-row">
+        <span class="quiz-feedback-label">Bạn đã nhập:</span>
+        <span class="quiz-feedback-val ${isCorrect ? 'correct-highlight' : 'wrong-highlight'}">${escapeQuizHtml(rawInput)}</span>
+      </div>
+      <div class="quiz-feedback-row">
+        <span class="quiz-feedback-label">Từ vựng chuẩn:</span>
+        <span class="quiz-feedback-val correct-highlight">
+          <strong>${escapeQuizHtml(target.word)}</strong>
+          ${target.phonetic ? `<span style="font-family: monospace; font-size: 0.85rem; color: #38bdf8;">${escapeQuizHtml(target.phonetic)}</span>` : ''}
+          <button type="button" class="btn-speak-vocab" onclick="playVocabSpeech('${target.word.replace(/'/g, "\\'")}', '${langCode}')" title="Nghe phát âm chuẩn">
+            <i class="fa-solid fa-volume-high"></i>
+          </button>
+        </span>
+      </div>
+      <div class="quiz-feedback-row">
+        <span class="quiz-feedback-label">Ý nghĩa:</span>
+        <span class="quiz-feedback-val">${escapeQuizHtml(target.meaning)}</span>
+      </div>
+      ${target.example ? `
+        <div class="quiz-feedback-example">
+          <div><i class="fa-solid fa-quote-left" style="opacity: 0.5; margin-right: 4px;"></i>${escapeQuizHtml(target.example)}</div>
+          ${target.exampleTrans ? `<div class="example-trans">${escapeQuizHtml(target.exampleTrans)}</div>` : ''}
+        </div>
+      ` : ''}
+    `;
+  }
+
+  if (btnContinue) {
+    btnContinue.focus();
+  }
 }
+window.submitQuizTypedAnswer = submitQuizTypedAnswer;
+
+function revealQuizAnswer() {
+  if (quizState.isAnswered || !quizState.currentVocab) return;
+
+  quizState.isAnswered = true;
+  quizState.streak = 0;
+
+  const target = quizState.currentVocab;
+  const langCode = target.lang || currentLangCode;
+
+  const inputEl = document.getElementById('quizTypingInput');
+  const inputWrap = document.getElementById('quizInputWrapper');
+  const feedbackCard = document.getElementById('quizFeedbackCard');
+  const feedbackStatus = document.getElementById('quizFeedbackStatus');
+  const feedbackBody = document.getElementById('quizFeedbackBody');
+  const btnContinue = document.getElementById('btnQuizContinue');
+
+  if (inputEl) inputEl.disabled = true;
+  if (inputWrap) inputWrap.classList.add('wrong');
+
+  const elStreak = document.getElementById('quizStreakText');
+  if (elStreak) elStreak.textContent = quizState.streak;
+
+  if (feedbackCard) {
+    feedbackCard.className = 'quiz-feedback-card';
+    feedbackCard.style.display = 'flex';
+  }
+  if (feedbackStatus) {
+    feedbackStatus.className = 'quiz-feedback-status';
+    feedbackStatus.style.color = '#fbbf24';
+    feedbackStatus.innerHTML = `<i class="fa-solid fa-lightbulb"></i> <span>Đáp án tham khảo để bạn ghi nhớ:</span>`;
+  }
+
+  if (feedbackBody) {
+    feedbackBody.innerHTML = `
+      <div class="quiz-feedback-row">
+        <span class="quiz-feedback-label">Từ vựng:</span>
+        <span class="quiz-feedback-val correct-highlight">
+          <strong>${escapeQuizHtml(target.word)}</strong>
+          ${target.phonetic ? `<span style="font-family: monospace; font-size: 0.85rem; color: #38bdf8;">${escapeQuizHtml(target.phonetic)}</span>` : ''}
+          <button type="button" class="btn-speak-vocab" onclick="playVocabSpeech('${target.word.replace(/'/g, "\\'")}', '${langCode}')" title="Nghe phát âm chuẩn">
+            <i class="fa-solid fa-volume-high"></i>
+          </button>
+        </span>
+      </div>
+      <div class="quiz-feedback-row">
+        <span class="quiz-feedback-label">Nghĩa tiếng Việt:</span>
+        <span class="quiz-feedback-val">${escapeQuizHtml(target.meaning)}</span>
+      </div>
+      ${target.example ? `
+        <div class="quiz-feedback-example">
+          <div><i class="fa-solid fa-quote-left" style="opacity: 0.5; margin-right: 4px;"></i>${escapeQuizHtml(target.example)}</div>
+          ${target.exampleTrans ? `<div class="example-trans">${escapeQuizHtml(target.exampleTrans)}</div>` : ''}
+        </div>
+      ` : ''}
+    `;
+  }
+
+  if (btnContinue) {
+    btnContinue.focus();
+  }
+}
+window.revealQuizAnswer = revealQuizAnswer;
+
+function skipToNextQuizQuestion() {
+  initNewQuizRound();
+}
+window.skipToNextQuizQuestion = skipToNextQuizQuestion;
+
+function continueToNextQuizRound() {
+  initNewQuizRound();
+}
+window.continueToNextQuizRound = continueToNextQuizRound;
 
 // ============================================================================
 // 7. CHẾ ĐỘ 3: TRA TỪ & DỊCH THUẬT NHANH
@@ -1194,7 +1566,11 @@ function switchNavRailView(viewName, e) {
 }
 window.switchNavRailView = switchNavRailView;
 
+let isLanguageLearningInitialized = false;
+
 function initLanguageLearning() {
+  if (isLanguageLearningInitialized) return;
+  isLanguageLearningInitialized = true;
   // 1. Lắng nghe mở / đóng dropdown chọn ngôn ngữ
   const btnCurrLang = document.getElementById('btnCurrLangPicker');
   if (btnCurrLang) {
@@ -1380,11 +1756,12 @@ function initLanguageLearning() {
   renderNotebookUI();
   renderFlashcardUI();
 }
+window.initLanguageLearning = initLanguageLearning;
 
-// Tự động khởi chạy khi sẵn sàng
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initLanguageLearning);
-} else {
+// Tự động khởi chạy an toàn nếu chưa khởi tạo qua app.js
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
   initLanguageLearning();
+} else {
+  document.addEventListener('DOMContentLoaded', initLanguageLearning);
 }
 
