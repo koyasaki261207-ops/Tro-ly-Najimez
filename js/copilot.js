@@ -495,8 +495,12 @@ Khi người dùng yêu cầu hành động, hãy giải thích chu đáo và đ
    b) Tôi trả nợ cho người khác / Thanh toán nợ (ví dụ: "Tôi đã trả nợ cho Khang", "Tôi trả tiền cho An", "đã trả 30k cho Khang"):
       <!--NAJIMEZ_ACTION:{"type":"settle_debt","person":"Lê Thanh Khang","direction":"i_owe_them","amount":30000}-->
       (CỰC KỲ QUAN TRỌNG: KHI NGƯỜI DÙNG BẢO "TÔI ĐÃ TRẢ NỢ CHO...", BẮT BUỘC DÙNG THẺ settle_debt VỚI "direction":"i_owe_them" ĐỂ HỆ THỐNG GẠCH NỢ TRONG SỔ NỢ ĐỒNG THỜI GHI KHOẢN CHI TIÊU VÀO SỔ THU CHI!)
-3. TẠO MÃ VIETQR NHẬN TIỀN (ví dụ: "Tạo QR cho Tuấn trả nợ"):
-   <!--NAJIMEZ_ACTION:{"type":"open_qr","person":"Tuấn"}-->
+3. TẠO MÃ VIETQR NHẬN TIỀN / THANH TOÁN (ví dụ: "Tạo QR 49k", "Tạo QR cho Tuấn 50k", "tạo mã qr nhận 100k", "tạo cho tôi qr49k", "mở qr"):
+   a) Tạo mã QR theo số tiền bất kỳ (cho chính người dùng nhận tiền):
+      BẮT BUỘC TRUYỀN ĐÚNG "amount": <số tiền nguyên> (ví dụ: 49000, 50000, 100000):
+      <!--NAJIMEZ_ACTION:{"type":"open_qr","amount":49000,"note":"Nhận tiền"}-->
+   b) Tạo mã QR cho một người cụ thể trong sổ nợ hoặc người trả nợ:
+      <!--NAJIMEZ_ACTION:{"type":"open_qr","person":"Tuấn","amount":50000,"note":"Tuấn trả tiền"}-->
 4. XÓA GIAO DỊCH THU CHI (Sổ Thu Chi Cá Nhân):
    - Xóa một giao dịch: <!--NAJIMEZ_ACTION:{"type":"delete_transaction","note":"Ăn bún đậu"}-->
    - Xóa toàn bộ sổ thu chi: <!--NAJIMEZ_ACTION:{"type":"clear_all_transactions"}-->
@@ -1629,17 +1633,32 @@ function executeAction(action, data) {
     }
   }
 
-  // 6. Tạo mã VietQR cho một người (open_qr)
+  // 6. Tạo mã VietQR cho một người hoặc số tiền cụ thể (open_qr)
   if (action.type === 'open_qr') {
     const targetPerson = (action.person || '').trim();
-    const contactDebt = data.debts.find(d => matchPersonName(d.person, targetPerson) && d.direction === 'they_owe_me' && d.status !== 'paid') ||
-      data.debts.find(d => matchPersonName(d.person, targetPerson));
+    const contactDebt = targetPerson ? (
+      data.debts.find(d => matchPersonName(d.person, targetPerson) && d.direction === 'they_owe_me' && d.status !== 'paid') ||
+      data.debts.find(d => matchPersonName(d.person, targetPerson))
+    ) : null;
+
+    let finalAmount = 0;
+    if (action.amount !== undefined && action.amount !== null && action.amount !== '') {
+      finalAmount = typeof parseAmount === 'function' ? parseAmount(action.amount) : (Number(action.amount) || 0);
+    }
+    if ((!finalAmount || finalAmount <= 0) && contactDebt) {
+      finalAmount = Number(contactDebt.amount) || 0;
+    }
+    if (!finalAmount || finalAmount <= 0) {
+      finalAmount = 50000;
+    }
+
+    const qrNote = (action.note || (targetPerson ? `${targetPerson} tra no` : 'Thanh toan VietQR')).trim();
 
     const qrDebtObj = {
       person: targetPerson,
-      amount: contactDebt ? (Number(contactDebt.amount) || 50000) : 50000,
+      amount: finalAmount,
       direction: 'they_owe_me',
-      note: `${targetPerson} tra no`
+      note: qrNote
     };
 
     setTimeout(() => {
@@ -1649,6 +1668,7 @@ function executeAction(action, data) {
     const card = document.createElement('div');
     card.className = 'action-card debt-card';
     card.dataset.id = id;
+    const cardTitle = targetPerson ? `Mã VietQR - ${escapeHTML(targetPerson)}` : 'Mã VietQR Nhận Tiền';
     card.innerHTML = `
       <div class="action-card-left">
         <div class="action-card-icon" style="background: rgba(56, 189, 248, 0.16); color: #38bdf8;">
@@ -1656,10 +1676,10 @@ function executeAction(action, data) {
         </div>
         <div class="action-card-info">
           <div class="action-card-title">
-            <span>Mã VietQR - ${escapeHTML(targetPerson)}</span>
+            <span>${cardTitle}</span>
             <span class="card-category-badge" style="background: rgba(56, 189, 248, 0.2); color: #38bdf8;">Đã mở VietQR</span>
           </div>
-          <div class="action-card-sub">Số tiền: ${formatCurrency(qrDebtObj.amount)}</div>
+          <div class="action-card-sub">Số tiền: ${formatCurrency(qrDebtObj.amount)}${qrNote ? ` • ${escapeHTML(qrNote)}` : ''}</div>
         </div>
       </div>
       <div class="action-card-right">
@@ -2407,6 +2427,47 @@ function getNaturalAIResponse(userText) {
         text: `Đã thực hiện quyền quản trị: Tôi đã xóa toàn bộ dữ liệu nợ của **${person}** khỏi hệ thống.\n\n<!--NAJIMEZ_ACTION:{"type":"delete_debt","person":"${person}"}-->`
       };
     }
+  }
+
+  // Tạo mã VietQR nhận tiền / thanh toán
+  if (/(?:vietqr|(?:\b|^)qr(?:\b|\d)|mã\s+qr)/i.test(lower) && /(?:tạo|mở|lấy|hiển\s+thị|gửi|cho|quét|chuyển)/i.test(lower)) {
+    let amount = 0;
+    let person = '';
+    let note = 'Nhận tiền chuyển khoản';
+
+    // 1. Trích xuất số tiền nếu có (VD: 49k, 50.000, 100k,...)
+    const amtMatch = lower.match(/(\d+(?:[\.,]\d+)?\s*(?:k|nghìn|ngàn|triệu|tr|đ|vnd)?)/i);
+    if (amtMatch && amtMatch[1]) {
+      amount = parseAmount(amtMatch[1]);
+    }
+
+    // 2. Trích xuất tên người liên quan nếu có
+    const personMatch = lower.match(/(?:cho|của)\s+([a-zA-Zà-ỹÀ-Ỹ\s]+?)(?:\s+\d|\s+trả|\s+nợ|\s*$)/i);
+    if (personMatch && !/(?:tôi|mình|em|anh|chị)/i.test(personMatch[1].trim())) {
+      person = personMatch[1].trim();
+      note = `${person} trả tiền`;
+    }
+
+    // 3. Nếu có người mà chưa có số tiền, tra cứu trong Sổ Nợ
+    if (person && (!amount || amount <= 0)) {
+      const curData = getLedgerData();
+      const debts = curData.debts || [];
+      const contactDebt = debts.find(d => matchPersonName(d.person, person) && d.direction === 'they_owe_me' && d.status !== 'paid');
+      if (contactDebt) amount = Number(contactDebt.amount) || 0;
+    }
+
+    if (!amount || amount <= 0) amount = 50000;
+
+    const actionObj = {
+      type: 'open_qr',
+      amount: amount,
+      note: note
+    };
+    if (person) actionObj.person = person;
+
+    return {
+      text: `Dạ Najimez hiểu rồi! Mình đã tạo mã VietQR với số tiền **${formatCurrency(amount)}**${person ? ` cho **${person}**` : ''} cho bạn ngay đây ạ. Bạn có thể quét mã trực tiếp bên dưới nhé! ❤️\n\n<!--NAJIMEZ_ACTION:${JSON.stringify(actionObj)}-->`
+    };
   }
 
   // Chi tiêu

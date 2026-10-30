@@ -184,13 +184,24 @@ function openVietQrModal(debt) {
   const accountNo = bank.accountNo || '';
   const accountName = bank.accountName || '';
 
+  const numAmount = typeof parseAmount === 'function' ? parseAmount(debt.amount) : (Number(debt.amount) || 0);
+  debt.amount = numAmount > 0 ? numAmount : (Number(debt.amount) || 50000);
+
   const isTheyOwe = debt.direction === 'they_owe_me';
   if (titleEl) {
-    titleEl.textContent = isTheyOwe ? `Đòi tiền từ ${debt.person}` : `Thanh toán cho ${debt.person}`;
+    if (debt.person) {
+      titleEl.textContent = isTheyOwe ? `Đòi tiền từ ${debt.person}` : `Thanh toán cho ${debt.person}`;
+    } else {
+      titleEl.textContent = 'Mã nhận tiền VietQR';
+    }
   }
 
   if (infoEl) {
-    infoEl.innerHTML = `<strong>${escapeHTML(debt.person)}</strong>: ${formatCurrency(debt.amount)}<br/><small>${escapeHTML(debt.note || 'Thanh toan VietQR')}</small>`;
+    if (debt.person) {
+      infoEl.innerHTML = `<strong>${escapeHTML(debt.person)}</strong>: ${formatCurrency(debt.amount)}<br/><small>${escapeHTML(debt.note || 'Thanh toan VietQR')}</small>`;
+    } else {
+      infoEl.innerHTML = `<strong>Số tiền nhận</strong>: ${formatCurrency(debt.amount)}<br/><small>${escapeHTML(debt.note || 'Thanh toan VietQR')}</small>`;
+    }
   }
 
   if (!accountNo) {
@@ -211,7 +222,8 @@ function openVietQrModal(debt) {
   }
   if (imgEl) imgEl.style.display = 'none';
 
-  const desc = encodeURIComponent(`${debt.person} tra tien ${debt.note || ''}`.trim());
+  const transferDesc = debt.person ? `${debt.person} tra tien ${debt.note || ''}`.trim() : (debt.note || 'Thanh toan VietQR').trim();
+  const desc = encodeURIComponent(transferDesc);
   const qrUrl = `https://img.vietqr.io/image/${bankId}-${accountNo}-compact2.jpg?amount=${debt.amount}&addInfo=${desc}&accountName=${encodeURIComponent(accountName)}`;
 
   if (imgEl) {
