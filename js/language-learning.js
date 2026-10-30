@@ -872,18 +872,102 @@ function deleteFromNotebook(id) {
   renderFlashcardUI();
 }
 
+function splitCombinedVocabInNotebook() {
+  let notebook = getVocabNotebook();
+  if (!notebook || !Array.isArray(notebook) || notebook.length === 0) return 0;
+
+  const dictDetailMap = {
+    'couch': { word: 'Couch', phonetic: '/kaʊtʃ/', meaning: 'Ghế sofa dài', example: 'A comfortable couch is placed in the living room.' },
+    'sofa': { word: 'Sofa', phonetic: '/ˈsəʊ.fə/', meaning: 'Ghế sofa, ghế bành', example: 'She was sitting on the sofa reading a book.' },
+    'parking area': { word: 'Parking area', phonetic: '/ˈpɑː.kɪŋ ˈeə.ri.ə/', meaning: 'Khu vực đỗ xe', example: 'Vehicles are parked in the parking area.' },
+    'parking lot': { word: 'Parking lot', phonetic: '/ˈpɑː.kɪŋ lɒt/', meaning: 'Bãi đỗ xe', example: 'The parking lot is full today.' },
+    'lot': { word: 'Parking lot', phonetic: '/ˈpɑː.kɪŋ lɒt/', meaning: 'Bãi đỗ xe', example: 'The parking lot is full today.' },
+    'cap': { word: 'Cap', phonetic: '/kæp/', meaning: 'Mũ lưỡi trai, mũ mềm', example: 'He is wearing a black cap.' },
+    'hat': { word: 'Hat', phonetic: '/hæt/', meaning: 'Mũ, nón (vành rộng)', example: 'Put on your hat before going out in the sun.' },
+    'be laid out': { word: 'Be laid out', phonetic: '/biː leɪd aʊt/', meaning: 'Được bố trí, sắp đặt', example: 'The goods are neatly laid out on the table.' },
+    'arranged': { word: 'Be arranged', phonetic: '/biː əˈreɪndʒd/', meaning: 'Được sắp xếp gọn gàng', example: 'Chairs are arranged in a circle.' },
+    'be arranged': { word: 'Be arranged', phonetic: '/biː əˈreɪndʒd/', meaning: 'Được sắp xếp gọn gàng', example: 'Chairs are arranged in a circle.' },
+    'be repaired': { word: 'Be repaired', phonetic: '/biː rɪˈpeəd/', meaning: 'Được sửa chữa', example: 'The broken elevator is being repaired.' },
+    'fixed': { word: 'Be fixed', phonetic: '/biː fɪkst/', meaning: 'Được sửa chữa, khắc phục', example: 'The leaking pipe has been fixed.' },
+    'be fixed': { word: 'Be fixed', phonetic: '/biː fɪkst/', meaning: 'Được sửa chữa, khắc phục', example: 'The leaking pipe has been fixed.' },
+    'pile up': { word: 'Pile up', phonetic: '/paɪl ʌp/', meaning: 'Chồng chất, chất đống', example: 'Boxes are piled up in the corner.' },
+    'stack': { word: 'Stack', phonetic: '/stæk/', meaning: 'Xếp chồng lên nhau', example: 'Bowls are stacked neatly on the shelf.' }
+  };
+
+  let newNotebook = [];
+  let splitCount = 0;
+
+  notebook.forEach(item => {
+    const rawWord = (item.word || '').trim();
+    if ((rawWord.includes('/') || rawWord.includes('~')) && !rawWord.includes('//')) {
+      const parts = rawWord.split(/[\/~]/).map(s => s.trim()).filter(Boolean);
+      if (parts.length > 1) {
+        if (parts[0].toLowerCase() === 'hang' && parts[1].toLowerCase() === 'hung') {
+          newNotebook.push({
+            ...item,
+            word: 'Hang',
+            phonetic: '/hæŋ/',
+            meaning: item.meaning.includes('Quá khứ') ? item.meaning : (item.meaning + ' (Quá khứ: hung)')
+          });
+          splitCount++;
+          return;
+        }
+
+        parts.forEach((p, idx) => {
+          const lowerP = p.toLowerCase();
+          const detail = dictDetailMap[lowerP];
+          const newWord = detail ? detail.word : p;
+          const newPhonetic = detail ? detail.phonetic : (idx === 0 ? item.phonetic : '');
+          const newMeaning = detail ? detail.meaning : item.meaning;
+          const newExample = detail ? detail.example : item.example;
+
+          if (!newNotebook.some(n => n.word.toLowerCase() === newWord.toLowerCase() && n.lang === item.lang)) {
+            newNotebook.push({
+              id: item.id + '-split-' + idx,
+              lang: item.lang || 'en',
+              word: newWord,
+              phonetic: newPhonetic,
+              meaning: newMeaning,
+              example: newExample,
+              savedAt: item.savedAt || new Date().toISOString()
+            });
+          }
+        });
+        splitCount++;
+        return;
+      }
+    }
+
+    if (!newNotebook.some(n => n.word.toLowerCase() === rawWord.toLowerCase() && n.lang === item.lang)) {
+      newNotebook.push(item);
+    }
+  });
+
+  if (splitCount > 0) {
+    saveVocabNotebook(newNotebook);
+    renderNotebookUI();
+    renderFlashcardUI();
+  }
+  return splitCount;
+}
+window.splitCombinedVocabInNotebook = splitCombinedVocabInNotebook;
+
 function addUnit12RemainingVocab() {
-  const missingWords = [
-    { word: 'Parking area / lot', phonetic: '/ˈpɑː.kɪŋ ˈeə.ri.ə/', meaning: 'Khu vực đỗ xe', example: 'The parking lot is full today.' },
-    { word: 'Cap / hat', phonetic: '/kæp/', meaning: 'Mũ, nón', example: 'He is wearing a black cap.' },
+  const independentWords = [
+    { word: 'Parking area', phonetic: '/ˈpɑː.kɪŋ ˈeə.ri.ə/', meaning: 'Khu vực đỗ xe', example: 'Vehicles are parked in the parking area.' },
+    { word: 'Parking lot', phonetic: '/ˈpɑː.kɪŋ lɒt/', meaning: 'Bãi đỗ xe', example: 'The parking lot is full today.' },
+    { word: 'Cap', phonetic: '/kæp/', meaning: 'Mũ lưỡi trai, mũ mềm', example: 'He is wearing a black cap.' },
+    { word: 'Hat', phonetic: '/hæt/', meaning: 'Mũ, nón (vành rộng)', example: 'Put on your hat before going out in the sun.' },
     { word: 'Glass', phonetic: '/ɡlɑːs/', meaning: 'Kính, ly thủy tinh', example: 'The glass was placed on the table.' },
-    { word: 'Couch / sofa', phonetic: '/kaʊtʃ/', meaning: 'Ghế sofa dài', example: 'She sat down comfortably on the couch.' },
+    { word: 'Couch', phonetic: '/kaʊtʃ/', meaning: 'Ghế sofa dài', example: 'A comfortable couch is placed in the living room.' },
+    { word: 'Sofa', phonetic: '/ˈsəʊ.fə/', meaning: 'Ghế sofa, ghế bành', example: 'She was sitting comfortably on the sofa.' },
     { word: 'Vase', phonetic: '/vɑːz/', meaning: 'Bình hoa', example: 'A vase of fresh flowers is by the window.' },
     { word: 'Floor', phonetic: '/flɔːr/', meaning: 'Sàn nhà', example: 'The wooden floor looks spotless.' },
     { word: 'Be left', phonetic: '/biː left/', meaning: 'Bỏ lại, còn sót lại', example: 'Some keys were left on the counter.' },
     { word: 'Be spilled', phonetic: '/biː spɪld/', meaning: 'Bị đổ ra, tràn ra', example: 'Coffee was spilled on the rug.' },
     { word: 'Be repaired', phonetic: '/biː rɪˈpeəd/', meaning: 'Được sửa chữa', example: 'The broken elevator is being repaired.' },
-    { word: 'Hang / hung', phonetic: '/hæŋ/', meaning: 'Treo, móc lên', example: 'A painting is hanging on the wall.' },
+    { word: 'Be fixed', phonetic: '/biː fɪkst/', meaning: 'Được sửa chữa, khắc phục', example: 'The leaking pipe has been fixed.' },
+    { word: 'Hang', phonetic: '/hæŋ/', meaning: 'Treo, móc lên (Quá khứ: hung)', example: 'A painting is hanging on the wall.' },
     { word: 'Be packed', phonetic: '/biː pækt/', meaning: 'Được đóng gói', example: 'The parcels are packed carefully.' },
     { word: 'Be rolled up', phonetic: '/biː rəʊld ʌp/', meaning: 'Được cuộn tròn lại', example: 'The yoga mat is rolled up in the corner.' },
     { word: 'Be stacked', phonetic: '/biː stækt/', meaning: 'Được xếp chồng lên nhau', example: 'Chairs are stacked neatly against the wall.' },
@@ -894,7 +978,7 @@ function addUnit12RemainingVocab() {
 
   let notebook = getVocabNotebook();
   let count = 0;
-  missingWords.forEach((item, idx) => {
+  independentWords.forEach((item, idx) => {
     if (!notebook.some(n => n.word.toLowerCase() === item.word.toLowerCase() && n.lang === 'en')) {
       notebook.unshift({
         id: 'unit12-' + Date.now() + '-' + idx,
@@ -1286,6 +1370,9 @@ function initLanguageLearning() {
       flipFlashcard();
     }
   });
+
+  // Tự động phân tách các thẻ bị gộp dạng "A / B" thành từng từ riêng biệt để tránh học vẹt
+  splitCombinedVocabInNotebook();
 
   // Nạp giao diện ban đầu
   switchLanguage('en');

@@ -575,15 +575,19 @@ Khi người dùng yêu cầu hành động, hãy giải thích chu đáo và đ
        - QUY TẮC CỐT LÕI (TUYỆT ĐỐI KHÔNG BỎ SÓT TỪ):
          Khi người dùng gửi hình ảnh (chụp vở bài tập, sách giáo khoa, đề thi, flashcard...) hoặc văn bản chứa danh sách từ vựng và bảo bạn giải thích / lưu vào sổ:
          BẠN BẮT BUỘC PHẢI LƯU TẤT CẢ 100% CÁC TỪ TRONG DANH SÁCH/HÌNH ẢNH ĐÓ VÀO SỔ TỪ (TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ Ý CHỈ CHỌN VÀI TỪ TIÊU BIỂU, KHÔNG ĐƯỢC BỎ SÓT BẤT KỲ TỪ NÀO).
+       - NGUYÊN TẮC SƯ PHẠM ĐỘC LẬP TỪ VỰNG (TUYỆT ĐỐI KHÔNG GỘP TỪ ĐỒNG NGHĨA):
+         TUYỆT ĐỐI KHÔNG ĐƯỢC GỘP các từ đồng nghĩa hoặc tương đương thành một thẻ (ví dụ không được ghi: "Couch / sofa", "Cap / hat", "Parking area / lot", "Be laid out ~ arranged", "Pile up ~ stack").
+         Việc gộp chung sẽ khiến người học bị học vẹt, mất phản xạ ghi nhớ độc lập.
+         BẮT BUỘC PHẢI TÁCH RIÊNG TỪNG TỪ THÀNH CÁC THẺ RIÊNG BIỆT: "Couch" riêng, "Sofa" riêng, "Cap" riêng, "Hat" riêng, "Parking area" riêng, "Parking lot" riêng... Mỗi từ có phiên âm IPA chuẩn riêng, ý nghĩa riêng và câu ví dụ riêng.
        - KHI CÓ TỪ 2 TỪ TRỞ LÊN (LƯU HÀNG LOẠT):
          BẮT BUỘC DÙNG THẺ "add_vocab_batch" gom toàn bộ tất cả các từ trong 1 thẻ action duy nhất để tiết kiệm token và đảm bảo lưu đủ 100% không bị ngắt quãng:
-         <!--NAJIMEZ_ACTION:{"type":"add_vocab_batch","lang":"en","items":[{"word":"Parking area / lot","phonetic":"/ˈpɑː.kɪŋ ˈeə.ri.ə/","meaning":"Khu vực đỗ xe","example":"The parking lot is full."},{"word":"Cap / hat","phonetic":"/kæp/","meaning":"Mũ, nón","example":"He wore a black cap."}]}-->
+         <!--NAJIMEZ_ACTION:{"type":"add_vocab_batch","lang":"en","items":[{"word":"Couch","phonetic":"/kaʊtʃ/","meaning":"Ghế sofa dài","example":"A comfortable couch is in the living room."},{"word":"Sofa","phonetic":"/ˈsəʊ.fə/","meaning":"Ghế sofa, ghế bành","example":"She is sitting on the sofa."}]}-->
        - KHI CHỈ CÓ 1 TỪ ĐƠN LẺ:
-         <!--NAJIMEZ_ACTION:{"type":"add_vocab","lang":"en","word":"Serendipity","phonetic":"/ˌser.ənˈdɪp.ə.ti/","meaning":"Cơ duyên tình cờ, sự may mắn bất ngờ","example":"Finding this cafe was pure serendipity."}-->
+         <!--NAJIMEZ_ACTION:{"type":"add_vocab","lang":"en","word":"Couch","phonetic":"/kaʊtʃ/","meaning":"Ghế sofa dài","example":"A comfortable couch is in the living room."}-->
        - Trong đó: "lang" là mã ngôn ngữ: "en" (Anh), "ja" (Nhật), "ko" (Hàn), "zh" (Trung), "fr" (Pháp), "de" (Đức).
     b) XÓA TỪ VỰNG KHỎI SỔ TỪ:
        Khi người dùng yêu cầu "xóa từ ... khỏi sổ từ", "bỏ từ ... trong sổ từ đi":
-       <!--NAJIMEZ_ACTION:{"type":"delete_vocab","word":"Serendipity"}-->
+       <!--NAJIMEZ_ACTION:{"type":"delete_vocab","word":"Couch"}-->
 
 ============================================================
 QUY TẮC BẢO VỆ TÍNH TOÀN VẸN & ĐỐI CHIẾU XUNG ĐỘT LOGIC SỔ NỢ (CRITICAL LOGIC VALIDATION):
@@ -2306,6 +2310,37 @@ function executeAction(action, data) {
 
     if (rawItems.length === 0) return null;
 
+    // Chuẩn hóa và tự động bóc tách nếu từ bị gộp dạng "A / B" hoặc "A ~ B" để người học không bị học vẹt
+    const expandedItems = [];
+    rawItems.forEach(it => {
+      const rawWord = (it.word || '').trim();
+      if ((rawWord.includes('/') || rawWord.includes('~')) && !rawWord.includes('//')) {
+        const parts = rawWord.split(/[\/~]/).map(s => s.trim()).filter(Boolean);
+        if (parts.length > 1) {
+          if (parts[0].toLowerCase() === 'hang' && parts[1].toLowerCase() === 'hung') {
+            expandedItems.push({
+              ...it,
+              word: 'Hang',
+              phonetic: it.phonetic || '/hæŋ/',
+              meaning: it.meaning + ' (Quá khứ: hung)'
+            });
+            return;
+          }
+          parts.forEach(p => {
+            expandedItems.push({
+              ...it,
+              word: p,
+              phonetic: p.toLowerCase() === parts[0].toLowerCase() ? it.phonetic : '',
+              meaning: it.meaning,
+              example: it.example
+            });
+          });
+          return;
+        }
+      }
+      expandedItems.push(it);
+    });
+
     let notebook = [];
     if (typeof window.getVocabNotebook === 'function') {
       notebook = window.getVocabNotebook();
@@ -2322,7 +2357,7 @@ function executeAction(action, data) {
     const processedWords = [];
     const addedIds = [];
 
-    rawItems.forEach((it, idx) => {
+    expandedItems.forEach((it, idx) => {
       const w = (it.word || '').trim();
       if (!w) return;
       const m = (it.meaning || '').trim();
