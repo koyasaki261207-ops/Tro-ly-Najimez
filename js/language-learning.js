@@ -646,6 +646,14 @@ function checkTypedAnswer(rawInput, vocab, direction) {
   }
 }
 
+function speakCurrentQuizWord() {
+  if (quizState.currentVocab) {
+    const item = quizState.currentVocab;
+    playVocabSpeech(item.word, item.lang || currentLangCode);
+  }
+}
+window.speakCurrentQuizWord = speakCurrentQuizWord;
+
 function escapeQuizHtml(str) {
   if (!str) return '';
   return str.toString()
@@ -736,7 +744,7 @@ function initNewQuizRound() {
     if (targetWordEl) {
       targetWordEl.innerHTML = `
         <span>${escapeQuizHtml(target.word)}</span>
-        <button type="button" class="btn-speak-vocab" onclick="playVocabSpeech('${target.word.replace(/'/g, "\\'")}', '${langCode}')" title="Nghe phát âm chuẩn">
+        <button type="button" class="btn-speak-vocab" onclick="speakCurrentQuizWord()" title="Nghe phát âm chuẩn">
           <i class="fa-solid fa-volume-high"></i>
         </button>
       `;
@@ -877,7 +885,7 @@ function submitQuizTypedAnswer() {
         <span class="quiz-feedback-val correct-highlight">
           <strong>${escapeQuizHtml(target.word)}</strong>
           ${target.phonetic ? `<span style="font-family: monospace; font-size: 0.85rem; color: #38bdf8;">${escapeQuizHtml(target.phonetic)}</span>` : ''}
-          <button type="button" class="btn-speak-vocab" onclick="playVocabSpeech('${target.word.replace(/'/g, "\\'")}', '${langCode}')" title="Nghe phát âm chuẩn">
+          <button type="button" class="btn-speak-vocab" onclick="speakCurrentQuizWord()" title="Nghe phát âm chuẩn">
             <i class="fa-solid fa-volume-high"></i>
           </button>
         </span>
@@ -940,7 +948,7 @@ function revealQuizAnswer() {
         <span class="quiz-feedback-val correct-highlight">
           <strong>${escapeQuizHtml(target.word)}</strong>
           ${target.phonetic ? `<span style="font-family: monospace; font-size: 0.85rem; color: #38bdf8;">${escapeQuizHtml(target.phonetic)}</span>` : ''}
-          <button type="button" class="btn-speak-vocab" onclick="playVocabSpeech('${target.word.replace(/'/g, "\\'")}', '${langCode}')" title="Nghe phát âm chuẩn">
+          <button type="button" class="btn-speak-vocab" onclick="speakCurrentQuizWord()" title="Nghe phát âm chuẩn">
             <i class="fa-solid fa-volume-high"></i>
           </button>
         </span>

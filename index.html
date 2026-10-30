@@ -26,7 +26,7 @@
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
   <link rel="stylesheet" href="style.css?v=3.92.1">
-  <link rel="stylesheet" href="css/language-learning.css?v=3.95.0">
+  <link rel="stylesheet" href="css/language-learning.css?v=3.95.1">
   <link rel="stylesheet" href="css/timetable-matcher.css?v=3.78.0">
   <link rel="stylesheet" href="css/responsive.css?v=3.81.0">
 
@@ -1356,13 +1356,13 @@
               <!-- Khung bo tròn nhỏ gọn chứa 3 nút icon dọc theo rìa trái phía dưới Avatar Najimez -->
               <aside class="lang-sidebar-nav-card" id="langSidebarNavCard">
                 <div class="lang-nav-vertical-group">
-                  <button type="button" class="lang-nav-vbtn active" data-view="flashcard" id="btnLangNav1" title="Thẻ Flashcard 3D (Học từ Sổ Từ)" aria-label="Thẻ Flashcard 3D">
+                  <button type="button" class="lang-nav-vbtn active" data-view="flashcard" id="btnLangNav1" onclick="switchNavRailView('flashcard', event)" title="Thẻ Flashcard 3D (Học từ Sổ Từ)" aria-label="Thẻ Flashcard 3D">
                     <i class="fa-solid fa-clone"></i>
                   </button>
-                  <button type="button" class="lang-nav-vbtn" data-view="quiz" id="btnLangNav2" title="Trắc Nghiệm Phản Xạ" aria-label="Trắc Nghiệm Phản Xạ">
+                  <button type="button" class="lang-nav-vbtn" data-view="quiz" id="btnLangNav2" onclick="switchNavRailView('quiz', event)" title="Kiểm Tra Phản Xạ (Tự Gõ 2 Chiều)" aria-label="Kiểm Tra Phản Xạ">
                     <i class="fa-solid fa-fire"></i>
                   </button>
-                  <button type="button" class="lang-nav-vbtn" data-view="my-vocab" id="btnLangNav3" title="Từ Vựng Của Tôi" aria-label="Từ Vựng Của Tôi">
+                  <button type="button" class="lang-nav-vbtn" data-view="my-vocab" id="btnLangNav3" onclick="switchNavRailView('my-vocab', event)" title="Từ Vựng Của Tôi" aria-label="Từ Vựng Của Tôi">
                     <i class="fa-solid fa-book-bookmark"></i>
                   </button>
                 </div>
@@ -3101,7 +3101,7 @@
   <script src="js/timetable-timeline.js?v=3.66.0"></script>
   <script src="js/lucky-wheel.js?v=3.70.0"></script>
   <script src="js/toolbox.js?v=3.75.0"></script>
-  <script src="js/language-learning.js?v=3.95.0"></script>
+  <script src="js/language-learning.js?v=3.95.1"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
   <script src="js/copilot-image.js?v=3.60.1"></script>
   <script src="js/copilot.js?v=3.95.0"></script>
