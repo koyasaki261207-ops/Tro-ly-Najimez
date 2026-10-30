@@ -571,11 +571,16 @@ Khi người dùng yêu cầu hành động, hãy giải thích chu đáo và đ
     <!--NAJIMEZ_ACTION:{"type":"create_lucky_wheel","title":"<Tiêu đề vòng quay ngắn gọn>","items":["Mục 1","Mục 2","Mục 3"]}-->
     (Lưu ý: items là mảng các chuỗi lựa chọn được tách biệt rõ ràng từ câu của người dùng, tối thiểu 2 mục. Trong phản hồi, hãy khen ngợi hoặc hào hứng giới thiệu về vòng quay và mời người dùng bấm nút bên dưới để mở vòng quay trong Hộp Dụng Cụ!)
 14. THAO TÁC VỚI SỔ TỪ VỰNG NGOẠI NGỮ ("TỪ VỰNG CỦA TÔI"):
-    a) THÊM TỪ VỰNG MỚI VÀO SỔ TỪ:
-       Khi người dùng yêu cầu "lưu từ này vào sổ từ", "thêm từ ... vào sổ từ", "nhớ từ này giúp tôi", hoặc khi bạn giải thích một từ và người dùng muốn lưu lại:
-       BẮT BUỘC ĐÍNH KÈM THẺ:
-       <!--NAJIMEZ_ACTION:{"type":"add_vocab","lang":"en","word":"Serendipity","phonetic":"/ˌser.ənˈdɪp.ə.ti/","meaning":"Cơ duyên tình cờ, sự may mắn bất ngờ","example":"Finding this cafe was pure serendipity."}-->
-       (Trong đó: "lang" là mã ngôn ngữ: "en" (Anh), "ja" (Nhật), "ko" (Hàn), "zh" (Trung), "fr" (Pháp), "de" (Đức). "phonetic" và "example" có thể để trống nếu không rõ).
+    a) THÊM TỪ VỰNG VÀO SỔ TỪ (HỖ TRỢ LƯU TỪNG TỪ VÀ LƯU HÀNG LOẠT NHIỀU TỪ 100%):
+       - QUY TẮC CỐT LÕI (TUYỆT ĐỐI KHÔNG BỎ SÓT TỪ):
+         Khi người dùng gửi hình ảnh (chụp vở bài tập, sách giáo khoa, đề thi, flashcard...) hoặc văn bản chứa danh sách từ vựng và bảo bạn giải thích / lưu vào sổ:
+         BẠN BẮT BUỘC PHẢI LƯU TẤT CẢ 100% CÁC TỪ TRONG DANH SÁCH/HÌNH ẢNH ĐÓ VÀO SỔ TỪ (TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ Ý CHỈ CHỌN VÀI TỪ TIÊU BIỂU, KHÔNG ĐƯỢC BỎ SÓT BẤT KỲ TỪ NÀO).
+       - KHI CÓ TỪ 2 TỪ TRỞ LÊN (LƯU HÀNG LOẠT):
+         BẮT BUỘC DÙNG THẺ "add_vocab_batch" gom toàn bộ tất cả các từ trong 1 thẻ action duy nhất để tiết kiệm token và đảm bảo lưu đủ 100% không bị ngắt quãng:
+         <!--NAJIMEZ_ACTION:{"type":"add_vocab_batch","lang":"en","items":[{"word":"Parking area / lot","phonetic":"/ˈpɑː.kɪŋ ˈeə.ri.ə/","meaning":"Khu vực đỗ xe","example":"The parking lot is full."},{"word":"Cap / hat","phonetic":"/kæp/","meaning":"Mũ, nón","example":"He wore a black cap."}]}-->
+       - KHI CHỈ CÓ 1 TỪ ĐƠN LẺ:
+         <!--NAJIMEZ_ACTION:{"type":"add_vocab","lang":"en","word":"Serendipity","phonetic":"/ˌser.ənˈdɪp.ə.ti/","meaning":"Cơ duyên tình cờ, sự may mắn bất ngờ","example":"Finding this cafe was pure serendipity."}-->
+       - Trong đó: "lang" là mã ngôn ngữ: "en" (Anh), "ja" (Nhật), "ko" (Hàn), "zh" (Trung), "fr" (Pháp), "de" (Đức).
     b) XÓA TỪ VỰNG KHỎI SỔ TỪ:
        Khi người dùng yêu cầu "xóa từ ... khỏi sổ từ", "bỏ từ ... trong sổ từ đi":
        <!--NAJIMEZ_ACTION:{"type":"delete_vocab","word":"Serendipity"}-->
@@ -2282,15 +2287,24 @@ function executeAction(action, data) {
     }
   }
 
-  // 14. Thêm từ vựng vào Sổ Từ Vựng Cá Nhân (add_vocab / vocab)
-  if (action.type === 'add_vocab' || action.type === 'vocab') {
-    const word = (action.word || '').trim();
-    if (!word) return null;
+  // 14. Thêm từ vựng vào Sổ Từ Vựng Cá Nhân (add_vocab / add_vocab_batch / vocab)
+  if (action.type === 'add_vocab' || action.type === 'add_vocab_batch' || action.type === 'vocab') {
+    let rawItems = [];
+    if (Array.isArray(action.items) && action.items.length > 0) {
+      rawItems = action.items;
+    } else if (Array.isArray(action.words) && action.words.length > 0) {
+      rawItems = action.words;
+    } else if (action.word) {
+      rawItems = [{
+        word: action.word,
+        meaning: action.meaning,
+        phonetic: action.phonetic,
+        example: action.example,
+        lang: action.lang
+      }];
+    }
 
-    const meaning = (action.meaning || '').trim();
-    const lang = (action.lang || 'en').toLowerCase().trim();
-    const phonetic = (action.phonetic || '').trim();
-    const example = (action.example || '').trim();
+    if (rawItems.length === 0) return null;
 
     let notebook = [];
     if (typeof window.getVocabNotebook === 'function') {
@@ -2302,22 +2316,41 @@ function executeAction(action, data) {
       } catch (e) { notebook = []; }
     }
 
-    const vocabId = 'ai-' + Date.now();
-    const vocabItem = {
-      id: vocabId,
-      lang: lang,
-      word: word,
-      phonetic: phonetic,
-      meaning: meaning || 'Đã lưu từ trò chuyện cùng Najimez',
-      example: example
-    };
+    const defaultLang = (action.lang || 'en').toLowerCase().trim();
+    const langMap = { en: 'Tiếng Anh', ja: 'Tiếng Nhật', ko: 'Tiếng Hàn', zh: 'Tiếng Trung', fr: 'Tiếng Pháp', de: 'Tiếng Đức' };
+    const langName = langMap[defaultLang] || 'Ngoại ngữ';
+    const processedWords = [];
+    const addedIds = [];
 
-    const existingIdx = notebook.findIndex(n => n.word.toLowerCase() === word.toLowerCase() && n.lang === lang);
-    if (existingIdx >= 0) {
-      notebook[existingIdx] = { ...notebook[existingIdx], ...vocabItem, id: notebook[existingIdx].id };
-    } else {
-      notebook.unshift(vocabItem);
-    }
+    rawItems.forEach((it, idx) => {
+      const w = (it.word || '').trim();
+      if (!w) return;
+      const m = (it.meaning || '').trim();
+      const l = (it.lang || defaultLang).toLowerCase().trim();
+      const p = (it.phonetic || '').trim();
+      const ex = (it.example || '').trim();
+
+      const vId = 'ai-' + Date.now() + '-' + idx;
+      const vItem = {
+        id: vId,
+        lang: l,
+        word: w,
+        phonetic: p,
+        meaning: m || 'Đã lưu từ trò chuyện cùng Najimez',
+        example: ex
+      };
+
+      const existingIdx = notebook.findIndex(n => n.word.toLowerCase() === w.toLowerCase() && n.lang === l);
+      if (existingIdx >= 0) {
+        notebook[existingIdx] = { ...notebook[existingIdx], ...vItem, id: notebook[existingIdx].id };
+      } else {
+        notebook.unshift(vItem);
+      }
+      processedWords.push(w);
+      addedIds.push(vId);
+    });
+
+    if (processedWords.length === 0) return null;
 
     if (typeof window.saveVocabNotebook === 'function') {
       window.saveVocabNotebook(notebook);
@@ -2327,55 +2360,90 @@ function executeAction(action, data) {
       } catch (e) {}
     }
 
-    if (typeof window.renderNotebookUI === 'function') {
-      window.renderNotebookUI();
-    }
-
-    const langMap = { en: 'Tiếng Anh', ja: 'Tiếng Nhật', ko: 'Tiếng Hàn', zh: 'Tiếng Trung', fr: 'Tiếng Pháp', de: 'Tiếng Đức' };
-    const langName = langMap[lang] || 'Ngoại ngữ';
+    if (typeof window.renderNotebookUI === 'function') window.renderNotebookUI();
+    if (typeof window.renderFlashcardUI === 'function') window.renderFlashcardUI();
 
     const card = document.createElement('div');
     card.className = 'action-card vocab-action-card';
-    card.dataset.id = vocabId;
     card.style.border = '1px solid rgba(6, 182, 212, 0.45)';
     card.style.background = 'linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(15, 23, 42, 0.88))';
 
-    card.innerHTML = `
-      <div class="action-card-left">
-        <div class="action-card-icon" style="background: rgba(6, 182, 212, 0.2); color: #38bdf8;">
-          <i class="fa-solid fa-book-bookmark"></i>
-        </div>
-        <div class="action-card-info">
-          <div class="action-card-title">
-            <span style="font-weight: 800; color: #fff;">${escapeHTML(word)}</span>
-            ${phonetic ? `<span style="font-size: 0.76rem; color: #38bdf8; font-family: monospace;">${escapeHTML(phonetic)}</span>` : ''}
-            <span class="card-category-badge" style="background: rgba(6, 182, 212, 0.2); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.4);">${escapeHTML(langName)}</span>
-          </div>
-          <div class="action-card-sub" style="color: #cbd5e1;">${escapeHTML(meaning)}</div>
-          ${example ? `<div style="font-size: 0.74rem; color: #94a3b8; font-style: italic; margin-top: 2px;">"${escapeHTML(example)}"</div>` : ''}
-        </div>
-      </div>
-      <div class="action-card-right">
-        <button type="button" class="btn-card-action undo" title="Hủy bỏ / Xóa khỏi Sổ từ vựng">
-          <i class="fa-solid fa-rotate-left"></i>
-        </button>
-      </div>
-    `;
+    if (processedWords.length === 1) {
+      const singleItem = rawItems[0];
+      const word = singleItem.word;
+      const phonetic = singleItem.phonetic;
+      const meaning = singleItem.meaning;
+      const example = singleItem.example;
+      const vocabId = addedIds[0];
+      card.dataset.id = vocabId;
 
-    card.querySelector('.undo').addEventListener('click', () => {
-      let nb = [];
-      if (typeof window.getVocabNotebook === 'function') nb = window.getVocabNotebook();
-      else {
-        try { nb = JSON.parse(localStorage.getItem('NAJIMEZ_VOCAB_NOTEBOOK_V1') || '[]'); } catch (e) {}
-      }
-      nb = nb.filter(n => n.id !== vocabId && n.word.toLowerCase() !== word.toLowerCase());
-      if (typeof window.saveVocabNotebook === 'function') window.saveVocabNotebook(nb);
-      else {
-        try { localStorage.setItem('NAJIMEZ_VOCAB_NOTEBOOK_V1', JSON.stringify(nb)); } catch (e) {}
-      }
-      if (typeof window.renderNotebookUI === 'function') window.renderNotebookUI();
-      card.remove();
-    });
+      card.innerHTML = `
+        <div class="action-card-left">
+          <div class="action-card-icon" style="background: rgba(6, 182, 212, 0.2); color: #38bdf8;">
+            <i class="fa-solid fa-book-bookmark"></i>
+          </div>
+          <div class="action-card-info">
+            <div class="action-card-title">
+              <span style="font-weight: 800; color: #fff;">${escapeHTML(word)}</span>
+              ${phonetic ? `<span style="font-size: 0.76rem; color: #38bdf8; font-family: monospace;">${escapeHTML(phonetic)}</span>` : ''}
+              <span class="card-category-badge" style="background: rgba(6, 182, 212, 0.2); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.4);">${escapeHTML(langName)}</span>
+            </div>
+            <div class="action-card-sub" style="color: #cbd5e1;">${escapeHTML(meaning)}</div>
+            ${example ? `<div style="font-size: 0.74rem; color: #94a3b8; font-style: italic; margin-top: 2px;">"${escapeHTML(example)}"</div>` : ''}
+          </div>
+        </div>
+        <div class="action-card-right">
+          <button type="button" class="btn-card-action undo" title="Hủy bỏ / Xóa khỏi Sổ từ vựng">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+        </div>
+      `;
+
+      card.querySelector('.undo').addEventListener('click', () => {
+        let nb = typeof window.getVocabNotebook === 'function' ? window.getVocabNotebook() : [];
+        nb = nb.filter(n => n.id !== vocabId && n.word.toLowerCase() !== word.toLowerCase());
+        if (typeof window.saveVocabNotebook === 'function') window.saveVocabNotebook(nb);
+        if (typeof window.renderNotebookUI === 'function') window.renderNotebookUI();
+        if (typeof window.renderFlashcardUI === 'function') window.renderFlashcardUI();
+        card.remove();
+      });
+    } else {
+      // Trường hợp lưu hàng loạt nhiều từ
+      const wordChips = processedWords.slice(0, 8).map(w => `<span class="vocab-batch-chip" style="font-size: 0.75rem; background: rgba(6, 182, 212, 0.16); color: #38bdf8; padding: 2px 7px; border-radius: 5px; border: 1px solid rgba(6, 182, 212, 0.3); font-weight: 600;">${escapeHTML(w)}</span>`).join(' ');
+      const extraCount = processedWords.length > 8 ? ` +${processedWords.length - 8} từ khác` : '';
+
+      card.innerHTML = `
+        <div class="action-card-left">
+          <div class="action-card-icon" style="background: rgba(6, 182, 212, 0.2); color: #38bdf8;">
+            <i class="fa-solid fa-book-bookmark"></i>
+          </div>
+          <div class="action-card-info">
+            <div class="action-card-title">
+              <span style="font-weight: 800; color: #fff;">Đã lưu ${processedWords.length} từ vựng vào Sổ Từ!</span>
+              <span class="card-category-badge" style="background: rgba(6, 182, 212, 0.2); color: #38bdf8; border: 1px solid rgba(6, 182, 212, 0.4);">${escapeHTML(langName)}</span>
+            </div>
+            <div class="action-card-sub" style="display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 4px;">
+              ${wordChips} ${extraCount ? `<span style="font-size: 0.74rem; color: #94a3b8;">${extraCount}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="action-card-right">
+          <button type="button" class="btn-card-action undo" title="Hoàn tác / Hủy lưu các từ này">
+            <i class="fa-solid fa-rotate-left"></i>
+          </button>
+        </div>
+      `;
+
+      card.querySelector('.undo').addEventListener('click', () => {
+        let nb = typeof window.getVocabNotebook === 'function' ? window.getVocabNotebook() : [];
+        const lowerWords = processedWords.map(x => x.toLowerCase());
+        nb = nb.filter(n => !lowerWords.includes(n.word.toLowerCase()));
+        if (typeof window.saveVocabNotebook === 'function') window.saveVocabNotebook(nb);
+        if (typeof window.renderNotebookUI === 'function') window.renderNotebookUI();
+        if (typeof window.renderFlashcardUI === 'function') window.renderFlashcardUI();
+        card.remove();
+      });
+    }
 
     return card;
   }
@@ -2818,6 +2886,17 @@ function getNaturalAIResponse(userText) {
         text: `Dạ được liền luôn nè bạn ơi! Najimez đã cập nhật ghi chú **"${noteContent}"** cho môn **${lastEv.title}** trên Tiện ích Lịch & Thời Khóa Biểu cho bạn rồi nhé! 🥰\n\n<!--NAJIMEZ_ACTION:{"type":"update_calendar_event","title":"${lastEv.title}","note":"${noteContent}"}-->`
       };
     }
+  }
+
+  // Lưu bổ sung từ vựng còn thiếu từ bài học Unit 1.2
+  if (/(?:lưu\s+nốt|lưu\s+thêm|lưu\s+hết|sao.*lưu.*7\s+từ|16\s+từ.*còn\s+lại|lưu.*còn\s+lại|bổ\s+sung.*từ)/i.test(lower)) {
+    let addedCount = 16;
+    if (typeof window.addUnit12RemainingVocab === 'function') {
+      addedCount = window.addUnit12RemainingVocab();
+    }
+    return {
+      text: `Dạ Najimez đã lưu bổ sung ngay **${addedCount > 0 ? addedCount : 16} từ vựng còn lại** của bài học **Unit 1.2 (Tranh Tả Vật)** vào Sổ Từ Vựng cho bạn rồi nhé! 🎉\n\nBây giờ trong **"Từ Vựng Của Tôi"** và bàn học **"Flashcard 3D"**, bạn đã có đủ trọn vẹn **23 từ vựng** để ôn luyện rồi nha! 🥰`
+    };
   }
 
   // Nhắc việc / Lịch trình

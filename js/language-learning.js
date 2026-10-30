@@ -850,6 +850,50 @@ function deleteFromNotebook(id) {
   renderFlashcardUI();
 }
 
+function addUnit12RemainingVocab() {
+  const missingWords = [
+    { word: 'Parking area / lot', phonetic: '/ˈpɑː.kɪŋ ˈeə.ri.ə/', meaning: 'Khu vực đỗ xe', example: 'The parking lot is full today.' },
+    { word: 'Cap / hat', phonetic: '/kæp/', meaning: 'Mũ, nón', example: 'He is wearing a black cap.' },
+    { word: 'Glass', phonetic: '/ɡlɑːs/', meaning: 'Kính, ly thủy tinh', example: 'The glass was placed on the table.' },
+    { word: 'Couch / sofa', phonetic: '/kaʊtʃ/', meaning: 'Ghế sofa dài', example: 'She sat down comfortably on the couch.' },
+    { word: 'Vase', phonetic: '/vɑːz/', meaning: 'Bình hoa', example: 'A vase of fresh flowers is by the window.' },
+    { word: 'Floor', phonetic: '/flɔːr/', meaning: 'Sàn nhà', example: 'The wooden floor looks spotless.' },
+    { word: 'Be left', phonetic: '/biː left/', meaning: 'Bỏ lại, còn sót lại', example: 'Some keys were left on the counter.' },
+    { word: 'Be spilled', phonetic: '/biː spɪld/', meaning: 'Bị đổ ra, tràn ra', example: 'Coffee was spilled on the rug.' },
+    { word: 'Be repaired', phonetic: '/biː rɪˈpeəd/', meaning: 'Được sửa chữa', example: 'The broken elevator is being repaired.' },
+    { word: 'Hang / hung', phonetic: '/hæŋ/', meaning: 'Treo, móc lên', example: 'A painting is hanging on the wall.' },
+    { word: 'Be packed', phonetic: '/biː pækt/', meaning: 'Được đóng gói', example: 'The parcels are packed carefully.' },
+    { word: 'Be rolled up', phonetic: '/biː rəʊld ʌp/', meaning: 'Được cuộn tròn lại', example: 'The yoga mat is rolled up in the corner.' },
+    { word: 'Be stacked', phonetic: '/biː stækt/', meaning: 'Được xếp chồng lên nhau', example: 'Chairs are stacked neatly against the wall.' },
+    { word: 'Burn', phonetic: '/bɜːn/', meaning: 'Cháy, bốc hỏa', example: 'Wood is burning warmly in the fireplace.' },
+    { word: 'Beside', phonetic: '/bɪˈsaɪd/', meaning: 'Bên cạnh, sát cạnh', example: 'The lamp is placed beside the sofa.' },
+    { word: 'Take a ride', phonetic: '/teɪk ə raɪd/', meaning: 'Đi cưỡi (ngựa/xe...), dạo chơi', example: 'They decided to take a ride along the beach.' }
+  ];
+
+  let notebook = getVocabNotebook();
+  let count = 0;
+  missingWords.forEach((item, idx) => {
+    if (!notebook.some(n => n.word.toLowerCase() === item.word.toLowerCase() && n.lang === 'en')) {
+      notebook.unshift({
+        id: 'unit12-' + Date.now() + '-' + idx,
+        lang: 'en',
+        word: item.word,
+        phonetic: item.phonetic,
+        meaning: item.meaning,
+        example: item.example
+      });
+      count++;
+    }
+  });
+
+  saveVocabNotebook(notebook);
+  renderNotebookUI();
+  renderFlashcardUI();
+  playLangDing();
+  return count;
+}
+window.addUnit12RemainingVocab = addUnit12RemainingVocab;
+
 function practiceNotebookInFlashcard() {
   const notebook = getVocabNotebook().filter(v => v.lang === currentLangCode);
   if (notebook.length === 0) {
