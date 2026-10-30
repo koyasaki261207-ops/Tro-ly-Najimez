@@ -647,17 +647,27 @@ function performDictLookup() {
   if (btnSave) {
     btnSave.onclick = () => {
       let notebook = getVocabNotebook();
-      notebook.unshift({
-        id: 'dict-' + Date.now(),
-        lang: currentLangCode,
-        word: match.word,
-        phonetic: match.phonetic || '',
-        pos: match.pos || '',
-        meaning: match.meaning,
-        example: match.example || '',
-        exampleTrans: match.exampleTrans || '',
-        savedAt: new Date().toISOString()
-      });
+      const existingIdx = notebook.findIndex(n => n.word.toLowerCase() === match.word.toLowerCase() && n.lang === currentLangCode);
+      if (existingIdx >= 0) {
+        notebook[existingIdx] = {
+          ...notebook[existingIdx],
+          phonetic: match.phonetic || notebook[existingIdx].phonetic,
+          meaning: match.meaning,
+          example: match.example || notebook[existingIdx].example
+        };
+      } else {
+        notebook.unshift({
+          id: 'dict-' + Date.now(),
+          lang: currentLangCode,
+          word: match.word,
+          phonetic: match.phonetic || '',
+          pos: match.pos || '',
+          meaning: match.meaning,
+          example: match.example || '',
+          exampleTrans: match.exampleTrans || '',
+          savedAt: new Date().toISOString()
+        });
+      }
       saveVocabNotebook(notebook);
       playLangDing();
       renderNotebookUI();
@@ -819,14 +829,26 @@ function saveNewCustomVocab() {
   const example = exampleInput?.value?.trim() || '';
 
   let notebook = getVocabNotebook();
-  notebook.unshift({
-    id: 'user-' + Date.now(),
-    lang: currentLangCode,
-    word: word,
-    phonetic: phonetic,
-    meaning: meaning,
-    example: example
-  });
+  const existingIdx = notebook.findIndex(n => n.word.toLowerCase() === word.toLowerCase() && n.lang === currentLangCode);
+  if (existingIdx >= 0) {
+    // Đã có trong sổ: Cập nhật lại thông tin mới nhất, không tạo bản ghi trùng lặp
+    notebook[existingIdx] = {
+      ...notebook[existingIdx],
+      phonetic: phonetic || notebook[existingIdx].phonetic,
+      meaning: meaning,
+      example: example || notebook[existingIdx].example
+    };
+  } else {
+    // Chưa có: Thêm từ mới vào đầu sổ từ
+    notebook.unshift({
+      id: 'user-' + Date.now(),
+      lang: currentLangCode,
+      word: word,
+      phonetic: phonetic,
+      meaning: meaning,
+      example: example
+    });
+  }
 
   saveVocabNotebook(notebook);
   renderNotebookUI();
