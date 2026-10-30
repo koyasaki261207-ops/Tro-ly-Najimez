@@ -2365,19 +2365,28 @@ function executeAction(action, data) {
       const p = (it.phonetic || '').trim();
       const ex = (it.example || '').trim();
 
-      const vId = 'ai-' + Date.now() + '-' + idx;
+      const vId = (typeof window.generateUniqueVocabId === 'function')
+        ? window.generateUniqueVocabId(w, l, idx)
+        : ('ai-' + Date.now() + '-' + idx + '-' + Math.random().toString(36).substring(2, 7));
+
       const vItem = {
         id: vId,
         lang: l,
         word: w,
         phonetic: p,
         meaning: m || 'Đã lưu từ trò chuyện cùng Najimez',
-        example: ex
+        example: ex,
+        isMastered: false
       };
 
       const existingIdx = notebook.findIndex(n => n.word.toLowerCase() === w.toLowerCase() && n.lang === l);
       if (existingIdx >= 0) {
-        notebook[existingIdx] = { ...notebook[existingIdx], ...vItem, id: notebook[existingIdx].id };
+        notebook[existingIdx] = {
+          ...notebook[existingIdx],
+          ...vItem,
+          id: notebook[existingIdx].id || vId,
+          isMastered: (typeof notebook[existingIdx].isMastered === 'boolean') ? notebook[existingIdx].isMastered : false
+        };
       } else {
         notebook.unshift(vItem);
       }

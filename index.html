@@ -1544,6 +1544,16 @@
                       </div>
 
                       <div class="quiz-top-controls">
+                        <!-- Lọc phạm vi từ vựng tương tự Flashcard -->
+                        <div class="quiz-scope-box">
+                          <label for="quizScopeSelect" class="quiz-scope-label">Phạm vi:</label>
+                          <select id="quizScopeSelect" class="quiz-topic-select" onchange="changeQuizScope(this.value)">
+                            <option value="all">Tất cả</option>
+                            <option value="unlearned">Chưa thuộc</option>
+                            <option value="mastered">Đã thuộc</option>
+                          </select>
+                        </div>
+
                         <!-- Chọn chế độ kiểm tra: 2 chiều hoặc từng chiều -->
                         <div class="quiz-mode-selector-wrap" title="Chọn phương thức kiểm tra từ vựng">
                           <button type="button" class="quiz-mode-pill active" id="btnQuizModeMixed" data-mode="mixed" onclick="setQuizDirectionMode('mixed', event)">
@@ -1596,7 +1606,10 @@
                           <span class="quiz-type-direction" id="quizDirectionBadge">
                             <i class="fa-solid fa-language"></i> <span id="quizDirectionText">Đang tải câu hỏi...</span>
                           </span>
-                          <span class="quiz-counter-pill" id="quizCounterPill">Sổ từ cá nhân</span>
+                          <div class="quiz-header-right-meta">
+                            <span class="quiz-level-tag" id="quizLevelTag">🌱 Đang học</span>
+                            <span class="quiz-counter-pill" id="quizCounterPill">Sổ từ cá nhân</span>
+                          </div>
                         </div>
 
                         <!-- Từ / Nghĩa cần hỏi -->
@@ -1645,6 +1658,9 @@
                           <!-- Chi tiết đáp án, phát âm, ví dụ -->
                         </div>
                         <div class="quiz-feedback-actions">
+                          <button type="button" class="btn-quiz-toggle-mastered" id="btnQuizToggleMastered" onclick="toggleQuizCurrentWordMastered()" title="Đánh dấu đã thuộc hoặc chưa nhớ từ này">
+                            <i class="fa-solid fa-star"></i> <span id="quizToggleMasteredText">Đánh dấu Đã thuộc</span>
+                          </button>
                           <button type="button" class="btn-quiz-continue" id="btnQuizContinue" onclick="continueToNextQuizRound()">
                             <span>Tiếp tục (Nhấn Enter)</span>
                             <i class="fa-solid fa-arrow-right"></i>
@@ -3102,10 +3118,10 @@
   <script src="js/timetable-timeline.js?v=3.66.0"></script>
   <script src="js/lucky-wheel.js?v=3.70.0"></script>
   <script src="js/toolbox.js?v=3.75.0"></script>
-  <script src="js/language-learning.js?v=3.95.3"></script>
+  <script src="js/language-learning.js?v=3.95.4"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
   <script src="js/copilot-image.js?v=3.60.1"></script>
-  <script src="js/copilot.js?v=3.95.0"></script>
+  <script src="js/copilot.js?v=3.95.4"></script>
   <script src="js/stars.js?v=3.55.0"></script>
   <script src="js/auth.js?v=3.77.0"></script>
   <script src="js/firebase-sync.js?v=3.55.0"></script>

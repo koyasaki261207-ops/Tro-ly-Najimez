@@ -196,10 +196,173 @@ let quizState = {
 const STORAGE_KEY_NOTEBOOK = 'NAJIMEZ_VOCAB_NOTEBOOK_V1';
 const STORAGE_KEY_MASTERED = 'NAJIMEZ_VOCAB_MASTERED_V1';
 
+// Bảng tra cứu chuẩn hóa chi tiết để tự động tách các từ bị gộp gạch chéo
+const DICT_SPLIT_DETAIL_MAP = {
+  'couch': { word: 'Couch', phonetic: '/kaʊtʃ/', meaning: 'Ghế sofa dài', example: 'A comfortable couch is placed in the living room.' },
+  'sofa': { word: 'Sofa', phonetic: '/ˈsəʊ.fə/', meaning: 'Ghế sofa, ghế bành', example: 'She was sitting on the sofa reading a book.' },
+  'parking area': { word: 'Parking area', phonetic: '/ˈpɑː.kɪŋ ˈeə.ri.ə/', meaning: 'Khu vực đỗ xe', example: 'Vehicles are parked in the parking area.' },
+  'parking lot': { word: 'Parking lot', phonetic: '/ˈpɑː.kɪŋ lɒt/', meaning: 'Bãi đỗ xe', example: 'The parking lot is full today.' },
+  'lot': { word: 'Parking lot', phonetic: '/ˈpɑː.kɪŋ lɒt/', meaning: 'Bãi đỗ xe', example: 'The parking lot is full today.' },
+  'cap': { word: 'Cap', phonetic: '/kæp/', meaning: 'Mũ lưỡi trai, mũ mềm', example: 'He is wearing a black cap.' },
+  'hat': { word: 'Hat', phonetic: '/hæt/', meaning: 'Mũ, nón (vành rộng)', example: 'Put on your hat before going out in the sun.' },
+  'be laid out': { word: 'Be laid out', phonetic: '/biː leɪd aʊt/', meaning: 'Được bố trí, sắp đặt', example: 'The goods are neatly laid out on the table.' },
+  'arranged': { word: 'Be arranged', phonetic: '/biː əˈreɪndʒd/', meaning: 'Được sắp xếp gọn gàng', example: 'Chairs are arranged in a circle.' },
+  'be arranged': { word: 'Be arranged', phonetic: '/biː əˈreɪndʒd/', meaning: 'Được sắp xếp gọn gàng', example: 'Chairs are arranged in a circle.' },
+  'be repaired': { word: 'Be repaired', phonetic: '/biː rɪˈpeəd/', meaning: 'Được sửa chữa', example: 'The broken elevator is being repaired.' },
+  'fixed': { word: 'Be fixed', phonetic: '/biː fɪkst/', meaning: 'Được sửa chữa, khắc phục', example: 'The leaking pipe has been fixed.' },
+  'be fixed': { word: 'Be fixed', phonetic: '/biː fɪkst/', meaning: 'Được sửa chữa, khắc phục', example: 'The leaking pipe has been fixed.' },
+  'pile up': { word: 'Pile up', phonetic: '/paɪl ʌp/', meaning: 'Chồng chất, chất đống', example: 'Boxes are piled up in the corner.' },
+  'stack': { word: 'Stack', phonetic: '/stæk/', meaning: 'Xếp chồng lên nhau', example: 'Bowls are stacked neatly on the shelf.' }
+};
+
+function generateUniqueVocabId(word, lang, index) {
+  const cleanWord = (word || 'vocab').toString().toLowerCase().replace(/[^a-z0-9]/g, '_').substring(0, 20);
+  const cleanLang = (lang || 'en').toString().toLowerCase();
+  const rand = Math.random().toString(36).substring(2, 7);
+  const now = Date.now();
+  return `v_${cleanLang}_${cleanWord}_${index !== undefined ? index : 0}_${now}_${rand}`;
+}
+window.generateUniqueVocabId = generateUniqueVocabId;
+
+function sanitizeVocabNotebook(rawNotebook) {
+  let list = Array.isArray(rawNotebook) ? rawNotebook : [];
+  if (list.length === 0) {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_NOTEBOOK);
+      list = raw ? JSON.parse(raw) : [];
+    } catch (e) { list = []; }
+  }
+  if (!Array.isArray(list) || list.length === 0) return [];
+
+  const masteredIds = getMasteredVocabIds();
+  let modified = false;
+
+  // Bước 1: Tự động tách các từ gộp gạch chéo còn sót lại (ví dụ "Couch / sofa", "Cap / hat"...)
+  let unmergedList = [];
+  list.forEach((item, idx) => {
+    const rawWord = (item.word || '').trim();
+    if ((rawWord.includes('/') || rawWord.includes('~')) && !rawWord.includes('//')) {
+      const parts = rawWord.split(/[\/~]/).map(s => s.trim()).filter(Boolean);
+      if (parts.length > 1) {
+        modified = true;
+        if (parts[0].toLowerCase() === 'hang' && parts[1].toLowerCase() === 'hung') {
+          unmergedList.push({
+            ...item,
+            word: 'Hang',
+            phonetic: '/hæŋ/',
+            meaning: item.meaning.includes('Quá khứ') ? item.meaning : (item.meaning + ' (Quá khứ: hung)')
+          });
+          return;
+        }
+
+        parts.forEach((p, pIdx) => {
+          const lowerP = p.toLowerCase();
+          const detail = DICT_SPLIT_DETAIL_MAP[lowerP];
+          const newWord = detail ? detail.word : p;
+          const newPhonetic = detail ? detail.phonetic : (pIdx === 0 ? item.phonetic : '');
+          const newMeaning = detail ? detail.meaning : item.meaning;
+          const newExample = detail ? detail.example : item.example;
+
+          if (!unmergedList.some(n => n.word.toLowerCase() === newWord.toLowerCase() && n.lang === item.lang)) {
+            unmergedList.push({
+              id: generateUniqueVocabId(newWord, item.lang || 'en', idx * 10 + pIdx),
+              lang: item.lang || 'en',
+              word: newWord,
+              phonetic: newPhonetic,
+              meaning: newMeaning,
+              example: newExample,
+              isMastered: false,
+              savedAt: item.savedAt || new Date().toISOString()
+            });
+          }
+        });
+        return;
+      }
+    }
+    unmergedList.push(item);
+  });
+
+  // Bước 2: Chuẩn hóa ID độc nhất 100% và trạng thái isMastered độc lập
+  const seenIds = new Set();
+  const sanitized = [];
+
+  // Danh sách các từ bị dính sao oan do trùng ID với Pile up trước đó
+  const wordsToUnmaster = ['be laid out', 'fireplace', 'ceiling', 'rug'];
+
+  unmergedList.forEach((item, index) => {
+    let currentId = item.id;
+    let isIdDuplicateOrMissing = !currentId || seenIds.has(currentId);
+
+    if (isIdDuplicateOrMissing) {
+      currentId = generateUniqueVocabId(item.word, item.lang || 'en', index);
+      modified = true;
+    }
+    seenIds.add(currentId);
+
+    // Xác định trạng thái đã thuộc (isMastered)
+    const lowerWord = (item.word || '').toLowerCase().trim();
+    let isMastered = false;
+
+    if (typeof item.isMastered === 'boolean') {
+      isMastered = item.isMastered;
+    } else if (item.id && masteredIds.includes(item.id)) {
+      isMastered = true;
+    }
+
+    // Khắc phục triệt để lỗi đánh sao 1 từ lan sang các từ khác:
+    // Người dùng chỉ đánh sao cho Pile up, 4 từ kia (be laid out, fireplace, ceiling, rug) bị dính sao oan do chung ID
+    if (wordsToUnmaster.includes(lowerWord) && !localStorage.getItem('NAJIMEZ_USER_EXPLICIT_MASTERED_' + lowerWord)) {
+      if (isMastered) {
+        isMastered = false;
+        modified = true;
+      }
+    }
+    if (lowerWord === 'pile up') {
+      isMastered = true;
+    }
+
+    sanitized.push({
+      ...item,
+      id: currentId,
+      lang: item.lang || 'en',
+      isMastered: isMastered
+    });
+  });
+
+  if (modified || sanitized.length !== list.length) {
+    saveVocabNotebook(sanitized);
+    const validMasteredIds = sanitized.filter(x => x.isMastered).map(x => x.id);
+    saveMasteredVocabIds(validMasteredIds);
+  }
+
+  return sanitized;
+}
+window.sanitizeVocabNotebook = sanitizeVocabNotebook;
+
 function getVocabNotebook() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_NOTEBOOK);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+
+    // Kiểm tra nhanh tính hợp lệ: ID duy nhất, isMastered độc lập, không còn từ gộp
+    const seen = new Set();
+    let needsSanitize = false;
+    for (let i = 0; i < parsed.length; i++) {
+      const it = parsed[i];
+      if (!it.id || seen.has(it.id) || typeof it.isMastered !== 'boolean' || 
+          (it.word && (it.word.includes('/') || it.word.includes('~')) && !it.word.includes('//'))) {
+        needsSanitize = true;
+        break;
+      }
+      seen.add(it.id);
+    }
+
+    if (needsSanitize) {
+      return sanitizeVocabNotebook(parsed);
+    }
+    return parsed;
   } catch (e) {
     return [];
   }
@@ -322,12 +485,10 @@ function getFilteredVocabList() {
     return [];
   }
 
-  const masteredIds = getMasteredVocabIds();
-
   if (flashcardScope === 'mastered') {
-    return notebook.filter(item => masteredIds.includes(item.id));
+    return notebook.filter(item => item.isMastered === true);
   } else if (flashcardScope === 'unlearned') {
-    return notebook.filter(item => !masteredIds.includes(item.id));
+    return notebook.filter(item => item.isMastered !== true);
   } else {
     // 'all': Toàn bộ sổ từ
     return notebook;
@@ -386,8 +547,7 @@ function renderFlashcardUI() {
 
   const currentItem = vocabList[flashcardIndex];
   const itemLang = currentItem.lang || currentLangCode;
-  const masteredIds = getMasteredVocabIds();
-  const isMastered = masteredIds.includes(currentItem.id);
+  const isMastered = !!currentItem.isMastered;
 
   // Reset trạng thái lật nếu đang mở mặt sau của từ cũ
   if (isFlashcardFlipped && cardElem) {
@@ -486,15 +646,24 @@ function markVocabLearned(isMastered) {
   const list = getFilteredVocabList();
   if (list.length === 0) return;
   const currentItem = list[flashcardIndex];
-  let masteredIds = getMasteredVocabIds();
+  if (!currentItem) return;
 
-  if (isMastered) {
-    if (!masteredIds.includes(currentItem.id)) masteredIds.push(currentItem.id);
-    playLangDing();
-  } else {
-    masteredIds = masteredIds.filter(id => id !== currentItem.id);
+  let notebook = getVocabNotebook();
+  const target = notebook.find(n => n.id === currentItem.id);
+  if (target) {
+    target.isMastered = !!isMastered;
+    const lowerWord = (target.word || '').toLowerCase().trim();
+    if (target.isMastered) {
+      localStorage.setItem('NAJIMEZ_USER_EXPLICIT_MASTERED_' + lowerWord, '1');
+      playLangDing();
+    } else {
+      localStorage.removeItem('NAJIMEZ_USER_EXPLICIT_MASTERED_' + lowerWord);
+    }
+    const validMasteredIds = notebook.filter(n => n.isMastered).map(n => n.id);
+    saveMasteredVocabIds(validMasteredIds);
+    saveVocabNotebook(notebook);
   }
-  saveMasteredVocabIds(masteredIds);
+
   renderFlashcardUI();
   renderNotebookUI();
 
@@ -514,10 +683,8 @@ function toggleBookmarkCurrentCard() {
   const list = getFilteredVocabList();
   if (list.length === 0) return;
   const item = list[flashcardIndex];
-  let masteredIds = getMasteredVocabIds();
-
-  const isMastered = masteredIds.includes(item.id);
-  markVocabLearned(!isMastered);
+  if (!item) return;
+  markVocabLearned(!item.isMastered);
 }
 window.toggleBookmarkCurrentCard = toggleBookmarkCurrentCard;
 
@@ -543,6 +710,18 @@ window.speakCurrentExample = speakCurrentExample;
 // 6. CHẾ ĐỘ 2: KIỂM TRA PHẢN XẠ TỪ VỰNG 2 CHIỀU (HARDCORE ACTIVE RECALL)
 // Lấy từ vựng trực tiếp từ "Từ Vựng Của Tôi" (getVocabNotebook)
 // ============================================================================
+let quizScope = 'all'; // 'all' (Tất cả) | 'unlearned' (Chưa thuộc / Cần học) | 'mastered' (Đã thuộc)
+
+function changeQuizScope(scope) {
+  quizScope = scope || 'all';
+  const scopeSelect = document.getElementById('quizScopeSelect');
+  if (scopeSelect && scopeSelect.value !== quizScope) {
+    scopeSelect.value = quizScope;
+  }
+  quizState.lastVocabId = null;
+  initNewQuizRound();
+}
+window.changeQuizScope = changeQuizScope;
 
 function setQuizDirectionMode(mode, e) {
   if (e) {
@@ -566,10 +745,46 @@ function getQuizVocabPool() {
     return [];
   }
 
-  // Lọc theo ngôn ngữ đang chọn, nếu không có từ nào theo ngôn ngữ đó thì trả về toàn bộ sổ từ
-  const filtered = notebook.filter(item => !item.lang || item.lang === currentLangCode);
-  return filtered.length > 0 ? filtered : notebook;
+  // 1. Lọc theo ngôn ngữ đang chọn, nếu không có từ nào theo ngôn ngữ đó thì lấy toàn bộ sổ từ
+  let langPool = notebook.filter(item => !item.lang || item.lang === currentLangCode);
+  if (langPool.length === 0) langPool = notebook;
+
+  // 2. Lọc theo phạm vi (Tất cả / Chưa thuộc / Đã thuộc) tương tự Flashcard
+  if (quizScope === 'mastered') {
+    return langPool.filter(item => item.isMastered === true);
+  } else if (quizScope === 'unlearned') {
+    return langPool.filter(item => item.isMastered !== true);
+  } else {
+    // 'all'
+    return langPool;
+  }
 }
+window.getQuizVocabPool = getQuizVocabPool;
+
+function updateQuizMasteredBtn() {
+  const btn = document.getElementById('btnQuizToggleMastered');
+  const textEl = document.getElementById('quizToggleMasteredText');
+  if (!btn || !quizState.currentVocab) return;
+  const notebook = getVocabNotebook();
+  const current = notebook.find(n => n.id === quizState.currentVocab.id);
+  const isMastered = current ? !!current.isMastered : false;
+  btn.classList.toggle('mastered', isMastered);
+  if (textEl) {
+    textEl.textContent = isMastered ? 'Đã thuộc (Bấm để gỡ)' : 'Đánh dấu Đã thuộc';
+  }
+  const levelTag = document.getElementById('quizLevelTag');
+  if (levelTag) {
+    levelTag.textContent = isMastered ? '⭐ Đã thuộc' : '🌱 Đang học';
+    levelTag.style.color = isMastered ? '#34d399' : '#fbbf24';
+  }
+}
+
+function toggleQuizCurrentWordMastered() {
+  if (!quizState.currentVocab) return;
+  toggleNotebookMastered(quizState.currentVocab.id);
+  updateQuizMasteredBtn();
+}
+window.toggleQuizCurrentWordMastered = toggleQuizCurrentWordMastered;
 
 function normalizeQuizString(str) {
   if (!str) return '';
@@ -820,6 +1035,7 @@ function initNewQuizRound() {
   quizState.currentVocab = target;
   quizState.lastVocabId = target.id;
   quizState.isAnswered = false;
+  updateQuizMasteredBtn();
 
   // Cập nhật huy hiệu Điểm & Chuỗi
   const elStreak = document.getElementById('quizStreakText');
@@ -1027,6 +1243,7 @@ function submitQuizTypedAnswer() {
   if (btnContinue) {
     btnContinue.focus();
   }
+  updateQuizMasteredBtn();
 }
 window.submitQuizTypedAnswer = submitQuizTypedAnswer;
 
@@ -1090,6 +1307,7 @@ function revealQuizAnswer() {
   if (btnContinue) {
     btnContinue.focus();
   }
+  updateQuizMasteredBtn();
 }
 window.revealQuizAnswer = revealQuizAnswer;
 
@@ -1258,7 +1476,6 @@ function renderNotebookUI() {
   }
 
   container.innerHTML = '';
-  const masteredIds = getMasteredVocabIds();
 
   filtered.forEach(item => {
     const card = document.createElement('div');
@@ -1266,7 +1483,7 @@ function renderNotebookUI() {
 
     const langCode = item.lang || currentLangCode;
     const flagHtml = typeof getLangFlagBadgeHtml === 'function' ? getLangFlagBadgeHtml(langCode) : '🌐';
-    const isMastered = masteredIds.includes(item.id);
+    const isMastered = !!item.isMastered;
 
     card.innerHTML = `
       <div class="my-vocab-card-top">
@@ -1296,17 +1513,23 @@ function renderNotebookUI() {
 window.renderNotebookUI = renderNotebookUI;
 
 function toggleNotebookMastered(id) {
-  let masteredIds = getMasteredVocabIds();
-  const isMastered = masteredIds.includes(id);
+  let notebook = getVocabNotebook();
+  const target = notebook.find(n => n.id === id);
+  if (!target) return;
 
-  if (isMastered) {
-    masteredIds = masteredIds.filter(x => x !== id);
-  } else {
-    masteredIds.push(id);
+  target.isMastered = !target.isMastered;
+  const lowerWord = (target.word || '').toLowerCase().trim();
+  if (target.isMastered) {
+    localStorage.setItem('NAJIMEZ_USER_EXPLICIT_MASTERED_' + lowerWord, '1');
     playLangDing();
+  } else {
+    localStorage.removeItem('NAJIMEZ_USER_EXPLICIT_MASTERED_' + lowerWord);
   }
 
-  saveMasteredVocabIds(masteredIds);
+  const validMasteredIds = notebook.filter(n => n.isMastered).map(n => n.id);
+  saveMasteredVocabIds(validMasteredIds);
+  saveVocabNotebook(notebook);
+
   renderNotebookUI();
   renderFlashcardUI();
 }
@@ -1316,16 +1539,17 @@ function addSampleVocabToNotebook() {
   const langPack = NAJIMEZ_LANG_DATA[currentLangCode] || NAJIMEZ_LANG_DATA.en;
   const samples = (langPack.vocab || []).slice(0, 3);
   let notebook = getVocabNotebook();
-  samples.forEach(s => {
+  samples.forEach((s, idx) => {
     if (!notebook.some(n => n.word.toLowerCase() === s.word.toLowerCase() && n.lang === currentLangCode)) {
       notebook.unshift({
-        id: 'sample-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+        id: generateUniqueVocabId(s.word, currentLangCode, idx),
         lang: currentLangCode,
         word: s.word,
         phonetic: s.phonetic || '',
         meaning: s.meaning,
         example: s.example || '',
-        exampleTrans: s.exampleTrans || ''
+        exampleTrans: s.exampleTrans || '',
+        isMastered: false
       });
     }
   });
@@ -1363,14 +1587,15 @@ function saveNewCustomVocab() {
       example: example || notebook[existingIdx].example
     };
   } else {
-    // Chưa có: Thêm từ mới vào đầu sổ từ
+    // Chưa có: Thêm từ mới vào đầu sổ từ với ID độc nhất
     notebook.unshift({
-      id: 'user-' + Date.now(),
+      id: generateUniqueVocabId(word, currentLangCode, 0),
       lang: currentLangCode,
       word: word,
       phonetic: phonetic,
       meaning: meaning,
-      example: example
+      example: example,
+      isMastered: false
     });
   }
 
@@ -1390,13 +1615,16 @@ window.saveNewCustomVocab = saveNewCustomVocab;
 
 function deleteFromNotebook(id) {
   let notebook = getVocabNotebook();
+  const target = notebook.find(n => n.id === id);
+  if (target) {
+    const lowerWord = (target.word || '').toLowerCase().trim();
+    localStorage.removeItem('NAJIMEZ_USER_EXPLICIT_MASTERED_' + lowerWord);
+  }
   notebook = notebook.filter(n => n.id !== id);
   saveVocabNotebook(notebook);
 
-  let masteredIds = getMasteredVocabIds();
-  if (masteredIds.includes(id)) {
-    saveMasteredVocabIds(masteredIds.filter(n => n !== id));
-  }
+  const validMasteredIds = notebook.filter(n => n.isMastered).map(n => n.id);
+  saveMasteredVocabIds(validMasteredIds);
 
   renderNotebookUI();
   renderFlashcardUI();
@@ -1405,80 +1633,7 @@ function deleteFromNotebook(id) {
 function splitCombinedVocabInNotebook() {
   let notebook = getVocabNotebook();
   if (!notebook || !Array.isArray(notebook) || notebook.length === 0) return 0;
-
-  const dictDetailMap = {
-    'couch': { word: 'Couch', phonetic: '/kaʊtʃ/', meaning: 'Ghế sofa dài', example: 'A comfortable couch is placed in the living room.' },
-    'sofa': { word: 'Sofa', phonetic: '/ˈsəʊ.fə/', meaning: 'Ghế sofa, ghế bành', example: 'She was sitting on the sofa reading a book.' },
-    'parking area': { word: 'Parking area', phonetic: '/ˈpɑː.kɪŋ ˈeə.ri.ə/', meaning: 'Khu vực đỗ xe', example: 'Vehicles are parked in the parking area.' },
-    'parking lot': { word: 'Parking lot', phonetic: '/ˈpɑː.kɪŋ lɒt/', meaning: 'Bãi đỗ xe', example: 'The parking lot is full today.' },
-    'lot': { word: 'Parking lot', phonetic: '/ˈpɑː.kɪŋ lɒt/', meaning: 'Bãi đỗ xe', example: 'The parking lot is full today.' },
-    'cap': { word: 'Cap', phonetic: '/kæp/', meaning: 'Mũ lưỡi trai, mũ mềm', example: 'He is wearing a black cap.' },
-    'hat': { word: 'Hat', phonetic: '/hæt/', meaning: 'Mũ, nón (vành rộng)', example: 'Put on your hat before going out in the sun.' },
-    'be laid out': { word: 'Be laid out', phonetic: '/biː leɪd aʊt/', meaning: 'Được bố trí, sắp đặt', example: 'The goods are neatly laid out on the table.' },
-    'arranged': { word: 'Be arranged', phonetic: '/biː əˈreɪndʒd/', meaning: 'Được sắp xếp gọn gàng', example: 'Chairs are arranged in a circle.' },
-    'be arranged': { word: 'Be arranged', phonetic: '/biː əˈreɪndʒd/', meaning: 'Được sắp xếp gọn gàng', example: 'Chairs are arranged in a circle.' },
-    'be repaired': { word: 'Be repaired', phonetic: '/biː rɪˈpeəd/', meaning: 'Được sửa chữa', example: 'The broken elevator is being repaired.' },
-    'fixed': { word: 'Be fixed', phonetic: '/biː fɪkst/', meaning: 'Được sửa chữa, khắc phục', example: 'The leaking pipe has been fixed.' },
-    'be fixed': { word: 'Be fixed', phonetic: '/biː fɪkst/', meaning: 'Được sửa chữa, khắc phục', example: 'The leaking pipe has been fixed.' },
-    'pile up': { word: 'Pile up', phonetic: '/paɪl ʌp/', meaning: 'Chồng chất, chất đống', example: 'Boxes are piled up in the corner.' },
-    'stack': { word: 'Stack', phonetic: '/stæk/', meaning: 'Xếp chồng lên nhau', example: 'Bowls are stacked neatly on the shelf.' }
-  };
-
-  let newNotebook = [];
-  let splitCount = 0;
-
-  notebook.forEach(item => {
-    const rawWord = (item.word || '').trim();
-    if ((rawWord.includes('/') || rawWord.includes('~')) && !rawWord.includes('//')) {
-      const parts = rawWord.split(/[\/~]/).map(s => s.trim()).filter(Boolean);
-      if (parts.length > 1) {
-        if (parts[0].toLowerCase() === 'hang' && parts[1].toLowerCase() === 'hung') {
-          newNotebook.push({
-            ...item,
-            word: 'Hang',
-            phonetic: '/hæŋ/',
-            meaning: item.meaning.includes('Quá khứ') ? item.meaning : (item.meaning + ' (Quá khứ: hung)')
-          });
-          splitCount++;
-          return;
-        }
-
-        parts.forEach((p, idx) => {
-          const lowerP = p.toLowerCase();
-          const detail = dictDetailMap[lowerP];
-          const newWord = detail ? detail.word : p;
-          const newPhonetic = detail ? detail.phonetic : (idx === 0 ? item.phonetic : '');
-          const newMeaning = detail ? detail.meaning : item.meaning;
-          const newExample = detail ? detail.example : item.example;
-
-          if (!newNotebook.some(n => n.word.toLowerCase() === newWord.toLowerCase() && n.lang === item.lang)) {
-            newNotebook.push({
-              id: item.id + '-split-' + idx,
-              lang: item.lang || 'en',
-              word: newWord,
-              phonetic: newPhonetic,
-              meaning: newMeaning,
-              example: newExample,
-              savedAt: item.savedAt || new Date().toISOString()
-            });
-          }
-        });
-        splitCount++;
-        return;
-      }
-    }
-
-    if (!newNotebook.some(n => n.word.toLowerCase() === rawWord.toLowerCase() && n.lang === item.lang)) {
-      newNotebook.push(item);
-    }
-  });
-
-  if (splitCount > 0) {
-    saveVocabNotebook(newNotebook);
-    renderNotebookUI();
-    renderFlashcardUI();
-  }
-  return splitCount;
+  return sanitizeVocabNotebook(notebook).length;
 }
 window.splitCombinedVocabInNotebook = splitCombinedVocabInNotebook;
 
@@ -1511,12 +1666,13 @@ function addUnit12RemainingVocab() {
   independentWords.forEach((item, idx) => {
     if (!notebook.some(n => n.word.toLowerCase() === item.word.toLowerCase() && n.lang === 'en')) {
       notebook.unshift({
-        id: 'unit12-' + Date.now() + '-' + idx,
+        id: generateUniqueVocabId(item.word, 'en', idx),
         lang: 'en',
         word: item.word,
         phonetic: item.phonetic,
         meaning: item.meaning,
-        example: item.example
+        example: item.example,
+        isMastered: false
       });
       count++;
     }
