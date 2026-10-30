@@ -307,10 +307,10 @@ function playLangWrong() {
 // ============================================================================
 // 5. CHẾ ĐỘ 1: FLASHCARD 3D THÔNG MINH (LẤY TỪ SỔ TỪ VỰNG CỦA TÔI)
 // ============================================================================
-let flashcardScope = 'current'; // 'current' (ngôn ngữ đang chọn) | 'all' (toàn bộ sổ từ)
+let flashcardScope = 'all'; // 'all' (Tất cả) | 'unlearned' (Chưa thuộc) | 'mastered' (Đã thuộc)
 
 function changeFlashcardScope(scope) {
-  flashcardScope = scope || 'current';
+  flashcardScope = scope || 'all';
   flashcardIndex = 0;
   renderFlashcardUI();
 }
@@ -322,17 +322,16 @@ function getFilteredVocabList() {
     return [];
   }
 
-  if (flashcardScope === 'all') {
+  const masteredIds = getMasteredVocabIds();
+
+  if (flashcardScope === 'mastered') {
+    return notebook.filter(item => masteredIds.includes(item.id));
+  } else if (flashcardScope === 'unlearned') {
+    return notebook.filter(item => !masteredIds.includes(item.id));
+  } else {
+    // 'all': Toàn bộ sổ từ
     return notebook;
   }
-
-  // Mặc định: Lọc theo ngôn ngữ đang chọn (hoặc từ chưa gán lang)
-  const filtered = notebook.filter(item => {
-    if (!item.lang) return true;
-    return item.lang === currentLangCode;
-  });
-
-  return filtered;
 }
 window.getFilteredVocabList = getFilteredVocabList;
 
@@ -354,18 +353,20 @@ function renderFlashcardUI() {
   const notebook = getVocabNotebook();
   const vocabList = getFilteredVocabList();
 
-  // 1. Trường hợp không có từ vựng nào để hỏi
+  // 1. Trường hợp không có từ vựng nào để hỏi theo phạm vi đã chọn
   if (vocabList.length === 0) {
     if (activeContent) activeContent.style.display = 'none';
     if (emptyBox) {
       emptyBox.style.display = 'flex';
-      const currLangName = NAJIMEZ_LANG_DATA[currentLangCode]?.name || 'Ngoại ngữ';
       const emptyTitle = emptyBox.querySelector('.fc-empty-title');
       const emptyDesc = emptyBox.querySelector('.fc-empty-desc');
 
-      if (notebook.length > 0 && flashcardScope === 'current') {
-        if (emptyTitle) emptyTitle.textContent = `Chưa có từ vựng ${currLangName} trong Sổ từ!`;
-        if (emptyDesc) emptyDesc.innerHTML = `Sổ từ hiện có <strong>${notebook.length} từ</strong> thuộc ngôn ngữ khác. Bạn có thể chọn phạm vi <em>"Toàn bộ sổ từ"</em> ở góc phải hoặc bấm nút bên dưới để nạp từ mẫu ${currLangName} nhé.`;
+      if (flashcardScope === 'mastered') {
+        if (emptyTitle) emptyTitle.textContent = 'Chưa có từ vựng nào Đã thuộc (được đánh sao)!';
+        if (emptyDesc) emptyDesc.innerHTML = 'Bạn chưa đánh dấu sao cho từ vựng nào. Hãy chọn phạm vi <em>"Tất cả"</em> hoặc <em>"Chưa thuộc"</em> để học từ vựng và đánh dấu Đã thuộc nhé.';
+      } else if (flashcardScope === 'unlearned') {
+        if (emptyTitle) emptyTitle.textContent = '🎉 Xuất sắc! Bạn đã thuộc hết từ vựng!';
+        if (emptyDesc) emptyDesc.innerHTML = 'Toàn bộ từ trong Sổ từ vựng đều đã được đánh dấu Đã thuộc. Hãy chuyển sang phạm vi <em>"Đã thuộc"</em> để ôn lại hoặc thêm từ vựng mới vào sổ nhé.';
       } else {
         if (emptyTitle) emptyTitle.textContent = 'Chưa có từ vựng nào trong Sổ từ!';
         if (emptyDesc) emptyDesc.innerHTML = 'Tính năng Flashcard lấy câu hỏi trực tiếp từ <strong>Từ Vựng Của Tôi</strong> để giúp bạn ôn luyện đúng trọng tâm. Hãy nạp từ mẫu hoặc tự thêm từ mới nhé!';
@@ -495,6 +496,7 @@ function markVocabLearned(isMastered) {
   }
   saveMasteredVocabIds(masteredIds);
   renderFlashcardUI();
+  renderNotebookUI();
 
   // Tự động chuyển từ tiếp theo sau 250ms (có debounce chống nhảy đúp/nhảy thừa từ)
   if (markVocabTimer) {
@@ -1256,21 +1258,27 @@ function renderNotebookUI() {
   }
 
   container.innerHTML = '';
+  const masteredIds = getMasteredVocabIds();
+
   filtered.forEach(item => {
     const card = document.createElement('div');
     card.className = 'my-vocab-item-card';
 
     const langCode = item.lang || currentLangCode;
     const flagHtml = typeof getLangFlagBadgeHtml === 'function' ? getLangFlagBadgeHtml(langCode) : '🌐';
+    const isMastered = masteredIds.includes(item.id);
 
     card.innerHTML = `
       <div class="my-vocab-card-top">
         <div class="my-vocab-word-group">
           ${flagHtml}
-          <span class="my-vocab-word">${item.word}</span>
-          ${item.phonetic ? `<span class="my-vocab-ipa">${item.phonetic}</span>` : ''}
+          <span class="my-vocab-word">${escapeQuizHtml(item.word)}</span>
+          ${item.phonetic ? `<span class="my-vocab-ipa">${escapeQuizHtml(item.phonetic)}</span>` : ''}
         </div>
         <div class="my-vocab-card-actions">
+          <button type="button" class="btn-nb-icon star-vocab ${isMastered ? 'active' : ''}" onclick="toggleNotebookMastered('${item.id}')" title="${isMastered ? 'Đã thuộc (Bấm để chuyển sang chưa thuộc)' : 'Chưa thuộc (Bấm để đánh dấu đã thuộc)'}">
+            <i class="${isMastered ? 'fa-solid fa-star' : 'fa-regular fa-star'}"></i>
+          </button>
           <button type="button" class="btn-nb-icon" onclick="playVocabSpeech('${item.word.replace(/'/g, "\\'")}', '${langCode}')" title="Nghe phát âm">
             <i class="fa-solid fa-volume-high"></i>
           </button>
@@ -1279,13 +1287,30 @@ function renderNotebookUI() {
           </button>
         </div>
       </div>
-      <div class="my-vocab-meaning">${item.meaning}</div>
-      ${item.example ? `<div class="my-vocab-example">${item.example}</div>` : ''}
+      <div class="my-vocab-meaning">${escapeQuizHtml(item.meaning)}</div>
+      ${item.example ? `<div class="my-vocab-example">${escapeQuizHtml(item.example)}</div>` : ''}
     `;
     container.appendChild(card);
   });
 }
 window.renderNotebookUI = renderNotebookUI;
+
+function toggleNotebookMastered(id) {
+  let masteredIds = getMasteredVocabIds();
+  const isMastered = masteredIds.includes(id);
+
+  if (isMastered) {
+    masteredIds = masteredIds.filter(x => x !== id);
+  } else {
+    masteredIds.push(id);
+    playLangDing();
+  }
+
+  saveMasteredVocabIds(masteredIds);
+  renderNotebookUI();
+  renderFlashcardUI();
+}
+window.toggleNotebookMastered = toggleNotebookMastered;
 
 function addSampleVocabToNotebook() {
   const langPack = NAJIMEZ_LANG_DATA[currentLangCode] || NAJIMEZ_LANG_DATA.en;
@@ -1367,6 +1392,12 @@ function deleteFromNotebook(id) {
   let notebook = getVocabNotebook();
   notebook = notebook.filter(n => n.id !== id);
   saveVocabNotebook(notebook);
+
+  let masteredIds = getMasteredVocabIds();
+  if (masteredIds.includes(id)) {
+    saveMasteredVocabIds(masteredIds.filter(n => n !== id));
+  }
+
   renderNotebookUI();
   renderFlashcardUI();
 }

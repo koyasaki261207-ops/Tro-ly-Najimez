@@ -2344,6 +2344,29 @@
   color: #fb7185;
 }
 
+.btn-nb-icon.star-vocab {
+  color: #64748b;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-nb-icon.star-vocab:hover {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
+  border-color: rgba(251, 191, 36, 0.35);
+  transform: scale(1.12);
+}
+
+.btn-nb-icon.star-vocab.active {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.2);
+  border-color: rgba(251, 191, 36, 0.5);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.35);
+}
+
+.btn-nb-icon.star-vocab.active i {
+  filter: drop-shadow(0 0 3px rgba(251, 191, 36, 0.6));
+}
+
 .notebook-empty-state {
   display: flex;
   flex-direction: column;
