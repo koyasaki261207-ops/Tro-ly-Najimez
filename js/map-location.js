@@ -52,6 +52,7 @@ let currentRouteGlowLayer = null;
 let currentRouteLineLayer = null;
 let routeStartMarker = null;
 let userGpsAccuracyCircle = null;
+let droppedPinMarker = null;
 
 // Quản lý các ghim địa điểm tìm kiếm xung quanh (Nearby Places)
 let nearbyPlaceMarkers = [];
@@ -220,38 +221,78 @@ function initMainLeafletMap() {
   const cfg = MAP_LAYERS[currentLayerKey] || MAP_LAYERS['google-street'];
   currentMainTileLayer = L.tileLayer(cfg.url, cfg.options).addTo(mainLeafletMap);
 
-  // Custom Neon Home Pin
-  const homeDivIcon = L.divIcon({
-    className: 'custom-neon-pin-wrapper',
-    html: '<div class="neon-home-marker" title="Kéo thả ghim để chọn vị trí"><i class="fa-solid fa-house-chimney"></i></div>',
-    iconSize: [44, 44],
-    iconAnchor: [22, 22]
+  // Chấm xanh Google Maps hiển thị vị trí của tôi (Chuẩn Google Maps, KHÔNG kéo thả)
+  const myLocationDivIcon = L.divIcon({
+    className: 'custom-gmap-dot-wrapper',
+    html: `
+      <div class="gmap-my-location-marker" title="Vị trí của bạn">
+        <div class="gmap-blue-dot-halo"></div>
+        <div class="gmap-blue-dot-core"></div>
+      </div>
+    `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 18]
   });
 
   mainHomeMarker = L.marker(initialCenter, {
-    icon: homeDivIcon,
-    draggable: true
+    icon: myLocationDivIcon,
+    draggable: false // Cố định, không cầm nắm kéo rê
   }).addTo(mainLeafletMap);
 
   currentPickedLat = initialCenter[0];
   currentPickedLng = initialCenter[1];
 
-  mainHomeMarker.on('dragend', (e) => {
-    const latlng = e.target.getLatLng();
-    setMainMapPickedLocation(latlng.lat, latlng.lng, null, false, true);
-  });
-
   mainLeafletMap.on('click', (e) => {
-    setMainMapPickedLocation(e.latlng.lat, e.latlng.lng, null, false, true);
+    handleMapClickToPickLocation(e.latlng.lat, e.latlng.lng);
   });
 
   if (homeData && homeData.address) {
-    setMainMapPickedLocation(homeData.lat, homeData.lng, homeData.address, false, false);
+    currentPickedAddress = homeData.address;
   }
 
   // Nạp và cắm ghim toàn bộ các địa điểm đã lưu lên bản đồ
   loadSavedPlaces();
   renderAllSavedPlaceMarkers();
+}
+
+/**
+ * Xử lý khi click chuột trên bản đồ để chọn một địa điểm bất kỳ
+ */
+function handleMapClickToPickLocation(lat, lng) {
+  currentPickedLat = lat;
+  currentPickedLng = lng;
+
+  const droppedPinIcon = L.divIcon({
+    className: 'custom-dropped-pin-wrapper',
+    html: '<div class="gmap-dropped-pin" title="Điểm đã chọn"><i class="fa-solid fa-location-dot"></i></div>',
+    iconSize: [32, 38],
+    iconAnchor: [16, 36],
+    popupAnchor: [0, -36]
+  });
+
+  if (!droppedPinMarker) {
+    droppedPinMarker = L.marker([lat, lng], { icon: droppedPinIcon }).addTo(mainLeafletMap);
+  } else {
+    droppedPinMarker.setLatLng([lat, lng]);
+    if (!mainLeafletMap.hasLayer(droppedPinMarker)) {
+      droppedPinMarker.addTo(mainLeafletMap);
+    }
+  }
+
+  reverseGeocodeLocation(lat, lng, (resolved) => {
+    currentPickedAddress = resolved;
+    if (droppedPinMarker) {
+      droppedPinMarker.bindPopup(`
+        <div class="dropped-pin-popup">
+          <div class="dropped-pin-title"><i class="fa-solid fa-location-dot" style="color:#ef4444;"></i> Điểm Đã Chọn</div>
+          <div class="dropped-pin-addr">${escapeHtml(resolved)}</div>
+          <button type="button" class="btn-save-dropped-pin" onclick="window.openAddSavedPlaceModal()">
+            <i class="fa-solid fa-plus"></i> Lưu Địa Điểm Này
+          </button>
+        </div>
+      `).openPopup();
+    }
+  });
 }
 
 /**
@@ -278,13 +319,18 @@ function initInlineMiniMap() {
   L.tileLayer(MAP_LAYERS['google-street'].url, MAP_LAYERS['google-street'].options).addTo(inlineMiniMap);
 
   const miniDivIcon = L.divIcon({
-    className: 'custom-neon-pin-wrapper',
-    html: '<div class="neon-home-marker" style="width:34px;height:34px;font-size:15px;"><i class="fa-solid fa-house-chimney"></i></div>',
-    iconSize: [34, 34],
-    iconAnchor: [17, 17]
+    className: 'custom-gmap-dot-wrapper',
+    html: `
+      <div class="gmap-my-location-marker" style="width:26px;height:26px;" title="Vị trí của bạn">
+        <div class="gmap-blue-dot-halo" style="width:24px;height:24px;"></div>
+        <div class="gmap-blue-dot-core" style="width:11px;height:11px;border-width:2px;"></div>
+      </div>
+    `,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13]
   });
 
-  inlineHomeMarker = L.marker(initialCenter, { icon: miniDivIcon }).addTo(inlineMiniMap);
+  inlineHomeMarker = L.marker(initialCenter, { icon: miniDivIcon, draggable: false }).addTo(inlineMiniMap);
 
   inlineMiniMap.on('click', () => {
     switchTabToMap();
@@ -383,12 +429,12 @@ function searchMainMapAddress(query) {
   }
 
   if (pLat !== null && pLng !== null && pLat >= -90 && pLat <= 90 && pLng >= -180 && pLng <= 180) {
-    setMainMapPickedLocation(pLat, pLng, null, true, true);
+    handleMapClickToPickLocation(pLat, pLng);
     if (mainLeafletMap) mainLeafletMap.setView([pLat, pLng], 18);
     const resultsDropdown = document.getElementById('mainMapSearchResults');
     if (resultsDropdown) resultsDropdown.style.display = 'none';
     if (typeof showToast === 'function') {
-      showToast(`Đã bay tới tọa độ: ${pLat.toFixed(6)}, ${pLng.toFixed(6)}!`, 'success');
+      showToast(`Đã chọn tọa độ: ${pLat.toFixed(6)}, ${pLng.toFixed(6)}!`, 'success');
     }
     return;
   }
@@ -456,8 +502,11 @@ function renderSearchResultsList(items) {
     itemEl.className = 'search-result-item';
     itemEl.innerHTML = `<i class="fa-solid fa-location-dot" style="color:#38bdf8; margin-right:6px;"></i> ${item.displayName}`;
     itemEl.addEventListener('click', () => {
-      setMainMapPickedLocation(item.lat, item.lng, item.displayName, true, false);
+      handleMapClickToPickLocation(item.lat, item.lng);
+      if (mainLeafletMap) mainLeafletMap.setView([item.lat, item.lng], 17);
       resultsDropdown.style.display = 'none';
+      const searchInput = document.getElementById('mainMapSearchInput');
+      if (searchInput) searchInput.value = item.displayName;
     });
     resultsDropdown.appendChild(itemEl);
   });
@@ -502,11 +551,7 @@ function locateViaGPSOnMainMap() {
     stopWatching();
     if (!hasReceivedAnyPosition) {
       if (typeof showToast === 'function') {
-        showToast('Không bắt được tín hiệu định vị. Hãy thử dán tọa độ hoặc kéo ghim nhé!', 'warning');
-      }
-    } else if (bestAccuracy > 200) {
-      if (typeof showToast === 'function') {
-        showToast(`📍 Đã định vị khu vực của bạn (sai số ~${Math.round(bestAccuracy)}m). Bạn có thể kéo ghim 🏠 vào đúng nóc nhà nhé!`, 'info');
+        showToast('Không bắt được tín hiệu định vị. Hãy thử dán tọa độ hoặc nhấp chọn vị trí nhé!', 'warning');
       }
     }
   }, 10000);
@@ -521,28 +566,34 @@ function locateViaGPSOnMainMap() {
       // Cập nhật nếu bắt được tọa độ có độ chính xác cao hơn
       if (acc < bestAccuracy || bestAccuracy === Infinity) {
         bestAccuracy = acc;
-        setMainMapPickedLocation(lat, lng, null, true, true);
+        currentPickedLat = lat;
+        currentPickedLng = lng;
 
-        // Vòng tròn sai số định vị
+        // Cập nhật vị trí Chấm Xanh Google Maps của người dùng
+        if (mainHomeMarker) {
+          mainHomeMarker.setLatLng([lat, lng]);
+        }
         if (mainLeafletMap) {
+          mainLeafletMap.setView([lat, lng], 17);
+          if (droppedPinMarker) {
+            mainLeafletMap.removeLayer(droppedPinMarker);
+            droppedPinMarker = null;
+          }
           if (userGpsAccuracyCircle) {
             mainLeafletMap.removeLayer(userGpsAccuracyCircle);
+            userGpsAccuracyCircle = null;
           }
-          userGpsAccuracyCircle = L.circle([lat, lng], {
-            radius: Math.max(acc, 25),
-            color: '#38bdf8',
-            fillColor: '#38bdf8',
-            fillOpacity: 0.12,
-            weight: 1.5,
-            dashArray: '4, 6'
-          }).addTo(mainLeafletMap);
         }
+
+        reverseGeocodeLocation(lat, lng, (addr) => {
+          currentPickedAddress = addr;
+        });
 
         // Nếu đã đạt độ chính xác dưới 60m (chuẩn sóng Wi-Fi triangulation)
         if (acc <= 60) {
           stopWatching();
           if (typeof showToast === 'function') {
-            showToast(`Đã bắt vị trí chính xác cao (sai số chỉ ~${Math.round(acc)}m)!`, 'success');
+            showToast('Đã định vị chính xác vị trí của bạn!', 'success');
           }
           return;
         }
