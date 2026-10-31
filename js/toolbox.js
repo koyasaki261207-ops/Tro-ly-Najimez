@@ -214,7 +214,13 @@ function initCoinFlipper() {
   }
   if (btnReset) {
     btnReset.addEventListener('click', () => {
+      if (coinIsFlipping) return;
       coinStats = { heads: 0, tails: 0 };
+      coinCurrentRot = 0;
+      if (coin) {
+        coin.style.setProperty('--coin-target-rot', '0deg');
+        coin.style.transform = 'rotateY(0deg)';
+      }
       updateCoinStatsUI();
       const banner = document.getElementById('coinResultBanner');
       if (banner) banner.innerHTML = 'Nhấn hoặc chạm đồng xu để lật!';
@@ -235,19 +241,22 @@ function flipCoin() {
 
   playCoinSound();
 
-  // Xác định kết quả ngẫu nhiên: 0 = Ngửa (Heads), 1 = Sấp (Tails)
+  // Xác định kết quả ngẫu nhiên: true = Ngửa (Heads - 0deg), false = Sấp (Tails - 180deg)
   const isHeads = Math.random() < 0.5;
+  const targetFaceAngle = isHeads ? 0 : 180;
 
-  // Tính số vòng quay ngẫu nhiên: tối thiểu 5 vòng (1800deg)
+  // Tính góc mặt hiện tại [0, 360)
+  const currentFace = ((coinCurrentRot % 360) + 360) % 360;
+  // Góc bù cần quay thêm để khớp chính xác targetFaceAngle theo chiều thuận
+  const angleDiff = (targetFaceAngle - currentFace + 360) % 360;
+  // Số vòng quay tối thiểu 5 vòng (1800deg) đến 7 vòng (2520deg)
   const extraSpins = (5 + Math.floor(Math.random() * 3)) * 360;
-  coinCurrentRot += extraSpins + (isHeads ? 0 : 180);
+
+  coinCurrentRot += extraSpins + angleDiff;
 
   if (coin) {
     coin.style.setProperty('--coin-target-rot', `${coinCurrentRot}deg`);
-    coin.classList.remove('flipping');
-    // Force reflow
-    void coin.offsetWidth;
-    coin.classList.add('flipping');
+    coin.style.transform = `rotateY(${coinCurrentRot}deg)`;
   }
 
   setTimeout(() => {
