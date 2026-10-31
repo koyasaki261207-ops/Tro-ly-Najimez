@@ -490,7 +490,8 @@ function renderSearchResultsList(items) {
 }
 
 /**
- * Định vị GPS qua trình duyệt trên Main Map
+ * Định vị GPS qua trình duyệt trên Main Map với cơ chế Progressive High-Accuracy
+ * Lắng nghe dò sóng Wi-Fi/GPS thời gian thực, ép xóa cache (maximumAge: 0) để bắt vị trí chuẩn nhất
  */
 function locateViaGPSOnMainMap() {
   if (!navigator.geolocation) {
@@ -501,48 +502,88 @@ function locateViaGPSOnMainMap() {
   const overlay = document.getElementById('mainMapLoadingOverlay');
   const overlayText = document.getElementById('mainMapLoadingText');
   if (overlay) {
-    if (overlayText) overlayText.textContent = 'Đang bắt tín hiệu GPS...';
+    if (overlayText) overlayText.textContent = 'Đang dò sóng Wi-Fi & định vị độ chính xác cao...';
     overlay.style.display = 'flex';
   }
 
-  navigator.geolocation.getCurrentPosition(
+  let bestAccuracy = Infinity;
+  let watchId = null;
+  let timerId = null;
+  let hasReceivedAnyPosition = false;
+
+  const stopWatching = () => {
+    if (watchId !== null) {
+      navigator.geolocation.clearWatch(watchId);
+      watchId = null;
+    }
+    if (timerId !== null) {
+      clearTimeout(timerId);
+      timerId = null;
+    }
+    if (overlay) overlay.style.display = 'none';
+  };
+
+  // Giới hạn thời gian lắng nghe tối đa 10 giây
+  timerId = setTimeout(() => {
+    stopWatching();
+    if (!hasReceivedAnyPosition) {
+      if (typeof showToast === 'function') {
+        showToast('Không bắt được tín hiệu định vị. Hãy thử dán tọa độ hoặc kéo ghim nhé!', 'warning');
+      }
+    } else if (bestAccuracy > 200) {
+      if (typeof showToast === 'function') {
+        showToast(`📍 Đã định vị khu vực của bạn (sai số ~${Math.round(bestAccuracy)}m). Bạn có thể kéo ghim 🏠 vào đúng nóc nhà nhé!`, 'info');
+      }
+    }
+  }, 10000);
+
+  watchId = navigator.geolocation.watchPosition(
     (pos) => {
-      if (overlay) overlay.style.display = 'none';
+      hasReceivedAnyPosition = true;
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
       const acc = pos.coords.accuracy || 0;
 
-      setMainMapPickedLocation(lat, lng, null, true, true);
+      // Cập nhật nếu bắt được tọa độ có độ chính xác cao hơn
+      if (acc < bestAccuracy || bestAccuracy === Infinity) {
+        bestAccuracy = acc;
+        setMainMapPickedLocation(lat, lng, null, true, true);
 
-      // Vòng tròn sai số định vị
-      if (mainLeafletMap) {
-        if (userGpsAccuracyCircle) {
-          mainLeafletMap.removeLayer(userGpsAccuracyCircle);
+        // Vòng tròn sai số định vị
+        if (mainLeafletMap) {
+          if (userGpsAccuracyCircle) {
+            mainLeafletMap.removeLayer(userGpsAccuracyCircle);
+          }
+          userGpsAccuracyCircle = L.circle([lat, lng], {
+            radius: Math.max(acc, 25),
+            color: '#38bdf8',
+            fillColor: '#38bdf8',
+            fillOpacity: 0.12,
+            weight: 1.5,
+            dashArray: '4, 6'
+          }).addTo(mainLeafletMap);
         }
-        userGpsAccuracyCircle = L.circle([lat, lng], {
-          radius: Math.max(acc, 50),
-          color: '#38bdf8',
-          fillColor: '#38bdf8',
-          fillOpacity: 0.1,
-          weight: 1.5,
-          dashArray: '4, 6'
-        }).addTo(mainLeafletMap);
-      }
 
-      if (typeof showToast === 'function') {
-        if (acc > 300) {
-          showToast(`📍 Đã đưa bản đồ về khu vực của bạn (sai số Wi-Fi/IP ~${(acc / 1000).toFixed(1)}km). Máy tính không có chip GPS, bạn hãy kéo ghim 🏠 vào đúng nóc nhà nhé!`, 'info');
-        } else {
-          showToast('Đã bắt vị trí GPS thành công! Bạn có thể kéo ghim 🏠 để căn chuẩn từng mét.', 'success');
+        // Nếu đã đạt độ chính xác dưới 60m (chuẩn sóng Wi-Fi triangulation)
+        if (acc <= 60) {
+          stopWatching();
+          if (typeof showToast === 'function') {
+            showToast(`Đã bắt vị trí chính xác cao (sai số chỉ ~${Math.round(acc)}m)!`, 'success');
+          }
+          return;
         }
       }
     },
     (err) => {
-      if (overlay) overlay.style.display = 'none';
+      stopWatching();
       console.warn('[MapLocation] Lỗi GPS:', err.message);
       alert('Không thể lấy vị trí GPS. Hãy kiểm tra quyền truy cập vị trí của trình duyệt!');
     },
-    { enableHighAccuracy: true, timeout: 10000 }
+    {
+      enableHighAccuracy: true,
+      timeout: 9000,
+      maximumAge: 0 // Không dùng cache cũ, ép dò sóng Wi-Fi mới
+    }
   );
 }
 
@@ -925,7 +966,7 @@ function navigateToHome() {
         const fallbackStartLng = currentPickedLng || DEFAULT_MAP_CENTER[1];
         calculateAndDrawRoute(fallbackStartLat, fallbackStartLng, homeData.lat, homeData.lng, 'Tuyến Đường Về Nhà');
       },
-      { timeout: 7000 }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
   } else {
     const fallbackStartLat = currentPickedLat || DEFAULT_MAP_CENTER[0];
