@@ -27,7 +27,7 @@
 
   <link rel="stylesheet" href="style.css?v=3.92.1">
   <link rel="stylesheet" href="css/language-learning.css?v=3.95.7">
-  <link rel="stylesheet" href="css/language-tutor.css?v=3.95.7">
+  <link rel="stylesheet" href="css/language-tutor.css?v=3.95.8">
   <link rel="stylesheet" href="css/timetable-matcher.css?v=3.78.0">
   <link rel="stylesheet" href="css/responsive.css?v=3.81.0">
 
@@ -1662,57 +1662,59 @@
                         </div>
                       </div>
 
-                      <!-- CỘT PHẢI (Khoảng 35% – 40%): KHUNG TRÒ CHUYỆN CỦA BOT TRỢ LÝ NAJIME -->
-                      <aside class="najime-tutor-panel" id="najimeTutorPanel">
-                        <!-- Header: Tên Najime, avatar, badge Online, các nút thao tác -->
-                        <div class="najime-tutor-header">
-                          <div class="tutor-header-profile">
-                            <div class="tutor-avatar-ring">
-                              <img src="assets/najimez.jpg" alt="Najime Tutor" class="tutor-avatar-img" />
-                              <span class="tutor-status-dot" title="Najime đang online sẵn sàng hỗ trợ"></span>
-                            </div>
-                            <div class="tutor-header-meta">
-                              <div class="tutor-name-line">
-                                <span class="tutor-name-text">Najime</span>
-                                <span class="tutor-badge-online">Online</span>
+                      <!-- Nút tab mở lại trợ lý khi bị thu gọn -->
+                      <button type="button" class="btn-tutor-expand-tab" id="btnTutorExpandTab" onclick="toggleNajimeTutorCollapse()" title="Mở lại Trợ lý Najime">
+                        <img src="assets/najimez.jpg" alt="Najime" class="tutor-tab-avatar" />
+                        <span>Trợ lý Najime</span>
+                        <i class="fa-solid fa-chevron-left"></i>
+                      </button>
+
+                      <!-- CỘT PHẢI (Khoảng 35% – 40%): KHUNG TRÒ CHUYỆN CỦA BOT TRỢ LÝ NAJIME (Cố định chiều cao bằng cột trái) -->
+                      <div class="quiz-tutor-col-wrapper" id="quizTutorColWrapper">
+                        <aside class="najime-tutor-panel" id="najimeTutorPanel">
+                          <!-- Header: Tên Najime, avatar, badge Online, các nút thao tác -->
+                          <div class="najime-tutor-header">
+                            <div class="tutor-header-profile">
+                              <div class="tutor-avatar-ring">
+                                <img src="assets/najimez.jpg" alt="Najime Tutor" class="tutor-avatar-img" />
+                                <span class="tutor-status-dot" title="Najime đang online sẵn sàng hỗ trợ"></span>
                               </div>
-                              <span class="tutor-desc-text">Trợ lý Gia Sư Từ Vựng AI</span>
+                              <div class="tutor-header-meta">
+                                <div class="tutor-name-line">
+                                  <span class="tutor-name-text">Najime</span>
+                                  <span class="tutor-badge-online">Online</span>
+                                </div>
+                                <span class="tutor-desc-text">Trợ lý Gia Sư Từ Vựng AI</span>
+                              </div>
+                            </div>
+                            <div class="tutor-header-tools">
+                              <button type="button" class="btn-tutor-tool" id="btnResetTutorChat" onclick="resetNajimeTutorChat()" title="Làm mới cuộc trò chuyện">
+                                <i class="fa-solid fa-rotate-right"></i>
+                              </button>
+                              <button type="button" class="btn-tutor-tool" id="btnToggleTutorCollapse" onclick="toggleNajimeTutorCollapse()" title="Thu gọn / Mở rộng trợ lý">
+                                <i class="fa-solid fa-chevron-right" id="tutorCollapseIcon"></i>
+                              </button>
                             </div>
                           </div>
-                          <div class="tutor-header-tools">
-                            <button type="button" class="btn-tutor-tool" id="btnResetTutorChat" onclick="resetNajimeTutorChat()" title="Làm mới cuộc trò chuyện">
-                              <i class="fa-solid fa-rotate-right"></i>
-                            </button>
-                            <button type="button" class="btn-tutor-tool" id="btnToggleTutorCollapse" onclick="toggleNajimeTutorCollapse()" title="Thu gọn / Mở rộng trợ lý">
-                              <i class="fa-solid fa-chevron-right" id="tutorCollapseIcon"></i>
-                            </button>
+
+                          <!-- Body: Vùng tin nhắn dạng cuộn (Scrollable Body) -->
+                          <div class="najime-tutor-body chat-messages-container" id="najimeTutorBody">
+                            <!-- Nạp động qua js/language-tutor.js -->
                           </div>
-                        </div>
 
-                        <!-- Nút tab mở lại trợ lý khi bị thu gọn -->
-                        <button type="button" class="btn-tutor-expand-tab" id="btnTutorExpandTab" onclick="toggleNajimeTutorCollapse()" title="Mở lại Trợ lý Najime">
-                          <img src="assets/najimez.jpg" alt="Najime" class="tutor-tab-avatar" />
-                          <span>Trợ lý Najime</span>
-                          <i class="fa-solid fa-chevron-left"></i>
-                        </button>
-
-                        <!-- Body: Vùng tin nhắn dạng cuộn (Scrollable) -->
-                        <div class="najime-tutor-body" id="najimeTutorBody">
-                          <!-- Nạp động qua js/language-tutor.js -->
-                        </div>
-
-                        <!-- Footer: Ô input nhắn tin trực tiếp với Najime -->
-                        <div class="najime-tutor-footer">
-                          <form class="tutor-input-form" id="tutorInputForm" onsubmit="handleTutorDirectSubmit(event)">
-                            <input type="text" id="tutorDirectInput" class="tutor-direct-input"
-                                   placeholder="Hỏi Najime về từ vựng, ví dụ, ngữ pháp..."
-                                   autocomplete="off" spellcheck="false" />
-                            <button type="submit" class="btn-tutor-send" id="btnTutorSend" title="Gửi tin nhắn">
-                              <i class="fa-solid fa-paper-plane"></i>
-                            </button>
-                          </form>
-                        </div>
-                      </aside>
+                          <!-- Footer: Ô input nhắn tin trực tiếp với Najime -->
+                          <div class="najime-tutor-footer">
+                            <form class="tutor-input-form" id="tutorInputForm" onsubmit="handleTutorDirectSubmit(event)">
+                              <input type="text" id="tutorDirectInput" class="tutor-direct-input"
+                                     placeholder="Hỏi Najime về từ vựng, ví dụ, ngữ pháp..."
+                                     autocomplete="off" spellcheck="false" />
+                              <button type="submit" class="btn-tutor-send" id="btnTutorSend" title="Gửi tin nhắn">
+                                <i class="fa-solid fa-paper-plane"></i>
+                              </button>
+                            </form>
+                          </div>
+                        </aside>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -3165,7 +3167,7 @@
   <script src="js/lucky-wheel.js?v=3.70.0"></script>
   <script src="js/toolbox.js?v=3.75.0"></script>
   <script src="js/language-learning.js?v=3.95.7"></script>
-  <script src="js/language-tutor.js?v=3.95.7"></script>
+  <script src="js/language-tutor.js?v=3.95.8"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
   <script src="js/copilot-image.js?v=3.60.1"></script>
   <script src="js/copilot.js?v=3.95.4"></script>

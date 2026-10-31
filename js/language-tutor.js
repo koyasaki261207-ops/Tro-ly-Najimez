@@ -527,3 +527,4 @@ function escapeTutorHtml(str) {
 document.addEventListener('DOMContentLoaded', () => {
   initNajimeTutor();
 });
+
