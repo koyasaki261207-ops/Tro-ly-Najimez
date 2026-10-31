@@ -129,6 +129,13 @@
     * **Sổ tay bài tập Hyper (Hyper Notebook):** Tự động lưu trữ bài giải vào `LocalStorage`, hỗ trợ tìm kiếm, lọc theo môn học và mở lại bất cứ lúc nào.
     * **Tiện ích đi kèm:** Sao chép bài giải Markdown/LaTeX, đọc bài giảng bằng giọng nói Najimez (TTS), và xuất file Markdown ôn tập.
   * [`css/hyper-najimez.css`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/css/hyper-najimez.css): Định kiểu Cyber Luxury Overclock Glassmorphism cho Phân Hệ Hyper Najimez: HUD Header phát sáng gradient với avatar có vòng xoay năng lượng, bố cục 2 cột (Input Studio & Solution Arena), hộp tư duy sâu với viền xanh cyber và khối công thức KaTeX căn giữa sắc nét.
+  * [`js/map-location.js`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/js/map-location.js): Quản Lý Trung Tâm Bản Đồ & Vị Trí Nhà Riêng Najimez (Hoạt động 100% Khép Kín Trực Tiếp Trên Najimez - Không mở tab ngoài hay redirect Google Maps):
+    * **Lớp Bản Đồ Google Maps Sắc Nét:** Sử dụng Google Maps Tiles server (`lyrs=m&hl=vi`) chính thức, sắc nét, đầy đủ tên đường tiếng Việt và không có watermark API key của bên thứ ba. Hỗ trợ 3 chế độ xem: Đường phố Google, Vệ tinh chi tiết, Ban đêm Cyber.
+    * **Đánh dấu Nhà Riêng (Home Pinpoint):** Ghim neon phát sáng, cho phép click hoặc kéo thả trực tiếp trên bản đồ, hỗ trợ tìm kiếm địa chỉ tiếng Việt hoặc dán trực tiếp tọa độ (ví dụ: `10.794935, 107.010803`) hoặc lấy GPS thiết bị. Tự động lưu vào `LocalStorage`.
+    * **Chỉ Đường Trực Tiếp Trên Najimez (In-App Driving Routing):** Tích hợp OSRM routing engine tính toán lộ trình lái xe/xe máy, vẽ tuyến đường polyline neon phát sáng 2 lớp (`#0284c7` và `#38bdf8`), tự động căn khung vừa vặn cả điểm xuất phát và đích đến (`fitBounds`).
+    * **Bảng Chỉ Dẫn Từng Ngã Rẽ (Turn-by-turn Navigation):** Hiển thị tổng khoảng cách (km) và thời gian dự kiến (phút), cùng danh sách từng bước rẽ chi tiết với icon trực quan (rẽ trái, rẽ phải, đi thẳng, vào bùng binh,...) được dịch chuẩn tiếng Việt.
+    * **Tìm Địa Điểm Quanh Nhà Trực Tiếp (Nearby Places):** Tìm kiếm tức thì theo 6 danh mục (☕ Quán Cà Phê, ⛽ Cây Xăng, 💊 Tiệm Thuốc, 🛒 Siêu Thị, 🏥 Bệnh Viện, 🍜 Quán Ăn) bằng Photon API, cắm ghim neon theo từng nhóm màu, tính khoảng cách đường chim bay và có nút 1-chạm "Chỉ đường tới đây ngay".
+  * [`css/map-location.css`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/css/map-location.css): Định kiểu Cyber Glassmorphism cho Trung Tâm Bản Đồ & Điều Hướng: Khung bản đồ bo góc viền cyan, ghim nhà và ghim vị trí neon phát sáng, bảng chỉ đường `map-route-info-card` với thanh thống kê khoảng cách/thời gian, danh sách bước rẽ cuộn mượt mà, và popup card thông tin địa điểm tìm kiếm sắc nét.
 
 ---
 

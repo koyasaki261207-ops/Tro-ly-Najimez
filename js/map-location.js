@@ -1,6 +1,7 @@
 /**
  * js/map-location.js - Quản lý Trung Tâm Bản Đồ & Vị Trí Nhà Riêng Najimez
- * Sử dụng Google Maps Tile Layer, Leaflet.js và BigDataCloud / Nominatim Geocoding
+ * Sử dụng Google Maps Tiles, OSRM In-App Routing, Photon Nearby Places & Leaflet.js
+ * Hoạt động 100% TRỰC TIẾP TRÊN NAJIMEZ - Không chuyển trang hay redirect
  * Chuẩn Code Modularization cho Dự Án Trợ Lý Ảo Najimez
  */
 
@@ -8,7 +9,7 @@ const HOME_LOC_STORAGE_KEY = 'najimez_home_location';
 const DEFAULT_MAP_CENTER = [10.762622, 106.660172]; // TP. Hồ Chí Minh
 const DEFAULT_MAP_ZOOM = 15;
 
-// Cấu hình các lớp bản đồ trực tuyến (Google Maps chính thức qua Tile Server)
+// Cấu hình các lớp bản đồ (Google Maps chính thức qua Tile Server)
 const MAP_LAYERS = {
   'google-street': {
     name: 'Đường phố Google',
@@ -45,6 +46,15 @@ let currentMainTileLayer = null;
 
 let inlineMiniMap = null;
 let inlineHomeMarker = null;
+
+// Quản lý tuyến đường chỉ đường trực tiếp (In-App Routing)
+let currentRouteGlowLayer = null;
+let currentRouteLineLayer = null;
+let routeStartMarker = null;
+let userGpsAccuracyCircle = null;
+
+// Quản lý các ghim địa điểm tìm kiếm xung quanh (Nearby Places)
+let nearbyPlaceMarkers = [];
 
 let currentPickedLat = null;
 let currentPickedLng = null;
@@ -126,7 +136,6 @@ function updateHomeLocationUI() {
     if (btnDirections) btnDirections.disabled = false;
     if (btnClear) btnClear.style.display = 'inline-flex';
 
-    // Cập nhật inline mini map
     if (inlineHomeMarker) {
       inlineHomeMarker.setLatLng([homeData.lat, homeData.lng]);
       if (inlineMiniMap) inlineMiniMap.setView([homeData.lat, homeData.lng], 15);
@@ -208,25 +217,6 @@ function switchMainMapLayer(layerKey) {
 }
 
 /**
- * Mở Google Maps chỉ đường về nhà
- */
-function navigateToHome() {
-  const homeData = getSavedHomeLocation();
-  if (!homeData || !homeData.lat || !homeData.lng) {
-    if (typeof showToast === 'function') {
-      showToast('Vui lòng đánh dấu vị trí nhà trước khi mở chỉ đường!', 'warning');
-    } else {
-      alert('Vui lòng đánh dấu vị trí nhà trước khi mở chỉ đường!');
-    }
-    switchTabToMap();
-    return;
-  }
-
-  const url = `https://www.google.com/maps/dir/?api=1&destination=${homeData.lat},${homeData.lng}`;
-  window.open(url, '_blank', 'noopener,noreferrer');
-}
-
-/**
  * Chuyển sang Tab Trung Tâm Bản Đồ
  */
 function switchTabToMap() {
@@ -257,11 +247,10 @@ function initMainLeafletMap() {
     zoomControl: true
   });
 
-  // Nạp lớp Google Maps tiếng Việt mặc định
   const cfg = MAP_LAYERS[currentLayerKey] || MAP_LAYERS['google-street'];
   currentMainTileLayer = L.tileLayer(cfg.url, cfg.options).addTo(mainLeafletMap);
 
-  // Custom Neon Pin
+  // Custom Neon Home Pin
   const homeDivIcon = L.divIcon({
     className: 'custom-neon-pin-wrapper',
     html: '<div class="neon-home-marker" title="Kéo thả ghim để chọn vị trí"><i class="fa-solid fa-house-chimney"></i></div>',
@@ -277,13 +266,11 @@ function initMainLeafletMap() {
   currentPickedLat = initialCenter[0];
   currentPickedLng = initialCenter[1];
 
-  // Sự kiện kéo thả ghim
   mainHomeMarker.on('dragend', (e) => {
     const latlng = e.target.getLatLng();
     setMainMapPickedLocation(latlng.lat, latlng.lng, null, false, true);
   });
 
-  // Sự kiện click trực tiếp lên bản đồ
   mainLeafletMap.on('click', (e) => {
     setMainMapPickedLocation(e.latlng.lat, e.latlng.lng, null, false, true);
   });
@@ -314,7 +301,6 @@ function initInlineMiniMap() {
     attributionControl: false
   });
 
-  // Nạp Google Maps cho mini map
   L.tileLayer(MAP_LAYERS['google-street'].url, MAP_LAYERS['google-street'].options).addTo(inlineMiniMap);
 
   const miniDivIcon = L.divIcon({
@@ -326,7 +312,6 @@ function initInlineMiniMap() {
 
   inlineHomeMarker = L.marker(initialCenter, { icon: miniDivIcon }).addTo(inlineMiniMap);
 
-  // Click vào mini map sẽ chuyển sang Trung Tâm Bản Đồ đầy đủ
   inlineMiniMap.on('click', () => {
     switchTabToMap();
   });
@@ -363,10 +348,9 @@ function setMainMapPickedLocation(lat, lng, addressText = null, shouldPan = true
 }
 
 /**
- * Tra cứu địa chỉ tiếng Việt từ tọa độ GPS (BigDataCloud + OpenStreetMap Nominatim dự phòng)
+ * Tra cứu địa chỉ tiếng Việt từ tọa độ GPS (BigDataCloud + OpenStreetMap Nominatim)
  */
 function reverseGeocodeLocation(lat, lng, callback) {
-  // 1. Thử BigDataCloud API (siêu nhanh, tên địa danh Việt Nam rất chuẩn xác, không bị chặn)
   const bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=vi`;
 
   fetch(bdcUrl)
@@ -380,7 +364,6 @@ function reverseGeocodeLocation(lat, lng, callback) {
       throw new Error('No locality parts');
     })
     .catch(() => {
-      // 2. Dự phòng OpenStreetMap Nominatim
       const osmUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
       fetch(osmUrl, { headers: { 'Accept-Language': 'vi,en' } })
         .then(res => res.json())
@@ -393,8 +376,6 @@ function reverseGeocodeLocation(lat, lng, callback) {
         });
     });
 }
-
-let userGpsAccuracyCircle = null;
 
 /**
  * Tìm kiếm địa chỉ qua tọa độ trực tiếp, Photon API hoặc Nominatim
@@ -426,7 +407,7 @@ function searchMainMapAddress(query) {
     resultsDropdown.style.display = 'block';
   }
 
-  // 2. Thử Photon Geocoding API (nhanh, hỗ trợ gõ không dấu, sửa lỗi chính tả)
+  // 2. Thử Photon Geocoding API (hỗ trợ tiếng Việt không dấu, tìm nhanh)
   const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(cleanQ)}&limit=6`;
   fetch(photonUrl)
     .then(res => res.json())
@@ -448,14 +429,14 @@ function searchMainMapAddress(query) {
       throw new Error('No photon results');
     })
     .catch(() => {
-      // 3. Dự phòng OpenStreetMap Nominatim
+      // 3. Dự phòng Nominatim
       const osmUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanQ)}&countrycodes=vn&limit=5&addressdetails=1`;
       fetch(osmUrl, { headers: { 'Accept-Language': 'vi,en' } })
         .then(res => res.json())
         .then(list => {
           if (!list || list.length === 0) {
             if (resultsDropdown) {
-              resultsDropdown.innerHTML = '<div class="search-result-item" style="color:#f87171;">Không tìm thấy địa điểm. Thử gõ tên đường, quận, thành phố hoặc dán tọa độ.</div>';
+              resultsDropdown.innerHTML = '<div class="search-result-item" style="color:#f87171;">Không tìm thấy địa điểm. Thử gõ tên đường, quận hoặc dán tọa độ.</div>';
             }
             return;
           }
@@ -491,7 +472,7 @@ function renderSearchResultsList(items) {
 }
 
 /**
- * Định vị GPS qua trình duyệt trên Main Map (có thông báo sai số Wi-Fi/IP)
+ * Định vị GPS qua trình duyệt trên Main Map
  */
 function locateViaGPSOnMainMap() {
   if (!navigator.geolocation) {
@@ -515,7 +496,7 @@ function locateViaGPSOnMainMap() {
 
       setMainMapPickedLocation(lat, lng, null, true, true);
 
-      // Vẽ vòng tròn thể hiện bán kính sai số định vị
+      // Vòng tròn sai số định vị
       if (mainLeafletMap) {
         if (userGpsAccuracyCircle) {
           mainLeafletMap.removeLayer(userGpsAccuracyCircle);
@@ -548,6 +529,369 @@ function locateViaGPSOnMainMap() {
 }
 
 /**
+ * ============================================================================
+ * CHỈ ĐƯỜNG TRỰC TIẾP TRÊN NAJIMEZ (IN-APP NAVIGATION - OSRM ROUTING)
+ * ============================================================================
+ */
+function calculateAndDrawRoute(startLat, startLng, endLat, endLng, routeTitle = 'Tuyến Đường Về Nhà') {
+  if (!mainLeafletMap) initMainLeafletMap();
+  switchTabToMap();
+
+  const overlay = document.getElementById('mainMapLoadingOverlay');
+  const overlayText = document.getElementById('mainMapLoadingText');
+  if (overlay) {
+    if (overlayText) overlayText.textContent = 'Đang vẽ tuyến đường trực tiếp...';
+    overlay.style.display = 'flex';
+  }
+
+  // Gọi OSRM public API (Chỉ đường lái xe/xe máy)
+  const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${startLng},${startLat};${endLng},${endLat}?overview=full&geometries=geojson&steps=true`;
+
+  fetch(osrmUrl)
+    .then(res => res.json())
+    .then(data => {
+      if (overlay) overlay.style.display = 'none';
+      const routes = data && data.routes;
+      if (!routes || routes.length === 0) {
+        alert('Không tìm thấy tuyến đường bộ phù hợp giữa hai vị trí!');
+        return;
+      }
+
+      const route = routes[0];
+      const distKm = (route.distance / 1000).toFixed(1);
+      const durMins = Math.max(1, Math.round(route.duration / 60));
+      // Tọa độ geojson [lng, lat] chuyển sang Leaflet [lat, lng]
+      const latlngs = (route.geometry.coordinates || []).map(coord => [coord[1], coord[0]]);
+
+      clearCurrentRoute();
+
+      // 1. Vẽ đường viền neon phát sáng (Outer glow)
+      currentRouteGlowLayer = L.polyline(latlngs, {
+        color: '#0284c7',
+        weight: 9,
+        opacity: 0.45,
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(mainLeafletMap);
+
+      // 2. Vẽ đường trung tâm (Inner neon line)
+      currentRouteLineLayer = L.polyline(latlngs, {
+        color: '#38bdf8',
+        weight: 5,
+        opacity: 0.95,
+        lineCap: 'round',
+        lineJoin: 'round'
+      }).addTo(mainLeafletMap);
+
+      // 3. Ghim điểm xuất phát
+      const startPinIcon = L.divIcon({
+        className: 'custom-start-pin-wrapper',
+        html: '<div style="width:30px;height:30px;border-radius:50%;background:#10b981;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;box-shadow:0 0 12px rgba(16,185,129,0.8);"><i class="fa-solid fa-location-arrow"></i></div>',
+        iconSize: [30, 30],
+        iconAnchor: [15, 15]
+      });
+      routeStartMarker = L.marker([startLat, startLng], { icon: startPinIcon }).addTo(mainLeafletMap);
+      routeStartMarker.bindPopup('<strong>📍 Điểm xuất phát của bạn</strong>').openPopup();
+
+      // Fit map bao quát toàn bộ lộ trình
+      mainLeafletMap.fitBounds(currentRouteLineLayer.getBounds(), { padding: [50, 50] });
+
+      // 4. Hiển thị bảng Turn-by-Turn Navigation
+      displayRouteInfoCard(routeTitle, distKm, durMins, route.legs && route.legs[0] && route.legs[0].steps);
+
+      if (typeof showToast === 'function') {
+        showToast(`Đã tìm thấy lộ trình: ${distKm} km (~${durMins} phút)!`, 'success');
+      }
+    })
+    .catch(err => {
+      if (overlay) overlay.style.display = 'none';
+      console.warn('[MapLocation] Lỗi OSRM Route:', err);
+      alert('Không thể vẽ lộ trình tự động. Đang chuyển sang dự phòng Google Maps.');
+      window.open(`https://www.google.com/maps/dir/?api=1&origin=${startLat},${startLng}&destination=${endLat},${endLng}`, '_blank');
+    });
+}
+
+/**
+ * Xóa tuyến đường đang vẽ trên bản đồ
+ */
+function clearCurrentRoute() {
+  if (currentRouteGlowLayer && mainLeafletMap) {
+    mainLeafletMap.removeLayer(currentRouteGlowLayer);
+    currentRouteGlowLayer = null;
+  }
+  if (currentRouteLineLayer && mainLeafletMap) {
+    mainLeafletMap.removeLayer(currentRouteLineLayer);
+    currentRouteLineLayer = null;
+  }
+  if (routeStartMarker && mainLeafletMap) {
+    mainLeafletMap.removeLayer(routeStartMarker);
+    routeStartMarker = null;
+  }
+  const card = document.getElementById('mapRouteInfoCard');
+  if (card) card.style.display = 'none';
+}
+
+/**
+ * Hiển thị thẻ chỉ đường chi tiết từng ngã rẽ
+ */
+function displayRouteInfoCard(title, distKm, durMins, steps = []) {
+  const card = document.getElementById('mapRouteInfoCard');
+  const titleEl = document.getElementById('routeCardTitle');
+  const distEl = document.getElementById('routeDistanceText');
+  const durEl = document.getElementById('routeDurationText');
+  const stepsList = document.getElementById('mapRouteStepsList');
+
+  if (!card) return;
+  if (titleEl) titleEl.textContent = title;
+  if (distEl) distEl.textContent = `${distKm} km`;
+  if (durEl) durEl.textContent = `~${durMins} phút`;
+
+  if (stepsList) {
+    stepsList.innerHTML = '';
+    if (steps && steps.length > 0) {
+      steps.forEach((step, idx) => {
+        const m = step.maneuver || {};
+        const stepDist = step.distance < 1000 ? `${Math.round(step.distance)} m` : `${(step.distance / 1000).toFixed(1)} km`;
+        const stepDesc = translateManeuverText(m.type, m.modifier, step.name);
+        const iconClass = getManeuverIcon(m.type, m.modifier);
+
+        const stepEl = document.createElement('div');
+        stepEl.className = 'route-step-item';
+        stepEl.innerHTML = `
+          <div class="route-step-icon"><i class="${iconClass}"></i></div>
+          <div class="route-step-content">
+            <div class="route-step-desc">${idx + 1}. ${stepDesc}</div>
+            <div class="route-step-dist">${stepDist}</div>
+          </div>
+        `;
+        stepsList.appendChild(stepEl);
+      });
+    }
+  }
+
+  card.style.display = 'flex';
+}
+
+/**
+ * Dịch chỉ dẫn ngã rẽ từ OSRM sang tiếng Việt tự nhiên
+ */
+function translateManeuverText(type, modifier, streetName) {
+  const street = streetName && streetName.trim() ? streetName : 'đoạn đường tiếp theo';
+  if (type === 'depart') return `Bắt đầu xuất phát trên ${street}`;
+  if (type === 'arrive') return `Đã đến đích đến: ${street}!`;
+
+  const modMap = {
+    'right': 'Rẽ phải vào',
+    'left': 'Rẽ trái vào',
+    'slight right': 'Chếch sang phải vào',
+    'slight left': 'Chếch sang trái vào',
+    'sharp right': 'Rẽ ngoặt sang phải vào',
+    'sharp left': 'Rẽ ngoặt sang trái vào',
+    'straight': 'Tiếp tục đi thẳng trên',
+    'uturn': 'Quay đầu xe trên'
+  };
+  const action = modMap[modifier] || 'Đi vào';
+  if (type === 'roundabout') return `Vào bùng binh/vòng xuyến, rẽ ra đường ${street}`;
+  if (type === 'fork') return `Đi theo nhánh rẽ vào ${street}`;
+  return `${action} ${street}`;
+}
+
+function getManeuverIcon(type, modifier) {
+  if (type === 'depart') return 'fa-solid fa-play';
+  if (type === 'arrive') return 'fa-solid fa-flag-checkered';
+  if (modifier === 'right' || modifier === 'slight right' || modifier === 'sharp right') return 'fa-solid fa-arrow-turn-up fa-rotate-90';
+  if (modifier === 'left' || modifier === 'slight left' || modifier === 'sharp left') return 'fa-solid fa-arrow-turn-up fa-rotate-270';
+  if (modifier === 'uturn') return 'fa-solid fa-arrows-spin';
+  return 'fa-solid fa-arrow-up';
+}
+
+/**
+ * ============================================================================
+ * TÌM ĐỊA ĐIỂM XUNG QUANH TRỰC TIẾP TRÊN NAJIMEZ (IN-APP NEARBY PLACES)
+ * ============================================================================
+ */
+function searchAndDisplayNearbyPlaces(keyword, placeType) {
+  if (!mainLeafletMap) initMainLeafletMap();
+  switchTabToMap();
+
+  const homeData = getSavedHomeLocation();
+  const centerLat = (homeData && homeData.lat) || currentPickedLat || DEFAULT_MAP_CENTER[0];
+  const centerLng = (homeData && homeData.lng) || currentPickedLng || DEFAULT_MAP_CENTER[1];
+
+  const overlay = document.getElementById('mainMapLoadingOverlay');
+  const overlayText = document.getElementById('mainMapLoadingText');
+  if (overlay) {
+    if (overlayText) overlayText.textContent = `Đang tìm "${keyword}" xung quanh...`;
+    overlay.style.display = 'flex';
+  }
+
+  // Tra cứu qua Photon API xung quanh tọa độ
+  const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(keyword)}&lat=${centerLat}&lon=${centerLng}&limit=12`;
+
+  fetch(photonUrl)
+    .then(res => res.json())
+    .then(data => {
+      if (overlay) overlay.style.display = 'none';
+      const features = (data && data.features) || [];
+      if (features.length === 0) {
+        if (typeof showToast === 'function') {
+          showToast(`Không tìm thấy "${keyword}" nào ở khu vực gần đây.`, 'info');
+        } else {
+          alert(`Không tìm thấy "${keyword}" nào ở khu vực gần đây.`);
+        }
+        return;
+      }
+
+      clearNearbyPlacesMarkers();
+
+      const typeConfig = getPlaceTypeVisual(placeType || keyword);
+      const bounds = L.latLngBounds([[centerLat, centerLng]]);
+
+      features.forEach(f => {
+        const c = f.geometry && f.geometry.coordinates;
+        if (!c || c.length < 2) return;
+        const pLat = c[1];
+        const pLng = c[0];
+        const p = f.properties || {};
+        const pName = p.name || keyword;
+        const distMeters = calculateHaversineDistance(centerLat, centerLng, pLat, pLng);
+        const distStr = distMeters < 1000 ? `${Math.round(distMeters)} m` : `${(distMeters / 1000).toFixed(1)} km`;
+
+        bounds.extend([pLat, pLng]);
+
+        const placeIcon = L.divIcon({
+          className: 'custom-place-pin-wrapper',
+          html: `<div class="neon-place-marker ${typeConfig.cssClass}" title="${pName}"><i class="${typeConfig.icon}"></i></div>`,
+          iconSize: [36, 36],
+          iconAnchor: [18, 18]
+        });
+
+        const marker = L.marker([pLat, pLng], { icon: placeIcon }).addTo(mainLeafletMap);
+
+        // Nội dung Popup tương tác
+        const popupContent = `
+          <div class="place-popup-card">
+            <div class="place-popup-title">${pName}</div>
+            <div class="place-popup-dist"><i class="fa-solid fa-compass"></i> Cách nhà bạn khoảng <strong>${distStr}</strong></div>
+            <button type="button" class="btn-route-to-place" onclick="calculateAndDrawRoute(${centerLat}, ${centerLng}, ${pLat}, ${pLng}, 'Tới: ${pName.replace(/'/g, "\\'")}')">
+              <i class="fa-solid fa-route"></i> Chỉ đường tới đây ngay
+            </button>
+          </div>
+        `;
+        marker.bindPopup(popupContent);
+        nearbyPlaceMarkers.push(marker);
+      });
+
+      mainLeafletMap.fitBounds(bounds, { padding: [40, 40] });
+
+      if (typeof showToast === 'function') {
+        showToast(`Đã tìm thấy ${features.length} địa điểm "${keyword}" trên bản đồ!`, 'success');
+      }
+    })
+    .catch(err => {
+      if (overlay) overlay.style.display = 'none';
+      console.warn('[MapLocation] Lỗi tìm địa điểm:', err);
+      alert('Không thể tra cứu địa điểm lúc này. Vui lòng thử lại sau.');
+    });
+}
+
+function clearNearbyPlacesMarkers() {
+  if (nearbyPlaceMarkers.length > 0 && mainLeafletMap) {
+    nearbyPlaceMarkers.forEach(m => mainLeafletMap.removeLayer(m));
+    nearbyPlaceMarkers = [];
+  }
+}
+
+function getPlaceTypeVisual(keyword) {
+  const k = (keyword || '').toLowerCase();
+  if (k.includes('cà phê') || k.includes('cafe') || k.includes('coffee')) {
+    return { icon: 'fa-solid fa-mug-hot', cssClass: 'cafe' };
+  }
+  if (k.includes('xăng') || k.includes('gas') || k.includes('fuel')) {
+    return { icon: 'fa-solid fa-gas-pump', cssClass: 'fuel' };
+  }
+  if (k.includes('thuốc') || k.includes('dược') || k.includes('pharmacy')) {
+    return { icon: 'fa-solid fa-pills', cssClass: 'pharmacy' };
+  }
+  if (k.includes('siêu thị') || k.includes('mart') || k.includes('chợ')) {
+    return { icon: 'fa-solid fa-cart-shopping', cssClass: 'shop' };
+  }
+  if (k.includes('bệnh viện') || k.includes('phòng khám') || k.includes('hospital')) {
+    return { icon: 'fa-solid fa-hospital', cssClass: 'hospital' };
+  }
+  if (k.includes('quán ăn') || k.includes('nhà hàng') || k.includes('food')) {
+    return { icon: 'fa-solid fa-utensils', cssClass: 'food' };
+  }
+  return { icon: 'fa-solid fa-location-dot', cssClass: 'cafe' };
+}
+
+/**
+ * Tính khoảng cách đường chim bay theo công thức Haversine (mét)
+ */
+function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // bán kính trái đất mét
+  const phi1 = lat1 * Math.PI / 180;
+  const phi2 = lat2 * Math.PI / 180;
+  const deltaPhi = (lat2 - lat1) * Math.PI / 180;
+  const deltaLambda = (lon2 - lon1) * Math.PI / 180;
+
+  const a = Math.sin(deltaPhi / 2) * Math.sin(deltaPhi / 2) +
+            Math.cos(phi1) * Math.cos(phi2) *
+            Math.sin(deltaLambda / 2) * Math.sin(deltaLambda / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+/**
+ * Chỉ đường về nhà - Hoạt động TRỰC TIẾP TRÊN NAJIMEZ
+ */
+function navigateToHome() {
+  const homeData = getSavedHomeLocation();
+  if (!homeData || !homeData.lat || !homeData.lng) {
+    if (typeof showToast === 'function') {
+      showToast('Vui lòng ghim vị trí nhà trước khi xem chỉ đường!', 'warning');
+    } else {
+      alert('Vui lòng ghim vị trí nhà trước khi xem chỉ đường!');
+    }
+    switchTabToMap();
+    return;
+  }
+
+  switchTabToMap();
+
+  // Bắt vị trí người dùng đang đứng để vẽ đường về nhà
+  if (navigator.geolocation) {
+    const overlay = document.getElementById('mainMapLoadingOverlay');
+    const overlayText = document.getElementById('mainMapLoadingText');
+    if (overlay) {
+      if (overlayText) overlayText.textContent = 'Đang xác định vị trí của bạn để vẽ đường về nhà...';
+      overlay.style.display = 'flex';
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (overlay) overlay.style.display = 'none';
+        const startLat = pos.coords.latitude;
+        const startLng = pos.coords.longitude;
+        calculateAndDrawRoute(startLat, startLng, homeData.lat, homeData.lng, 'Tuyến Đường Về Nhà');
+      },
+      () => {
+        if (overlay) overlay.style.display = 'none';
+        // Nếu không cho GPS, vẽ từ tâm bản đồ hoặc điểm trung tâm mặc định
+        const fallbackStartLat = currentPickedLat || DEFAULT_MAP_CENTER[0];
+        const fallbackStartLng = currentPickedLng || DEFAULT_MAP_CENTER[1];
+        calculateAndDrawRoute(fallbackStartLat, fallbackStartLng, homeData.lat, homeData.lng, 'Tuyến Đường Về Nhà');
+      },
+      { timeout: 7000 }
+    );
+  } else {
+    const fallbackStartLat = currentPickedLat || DEFAULT_MAP_CENTER[0];
+    const fallbackStartLng = currentPickedLng || DEFAULT_MAP_CENTER[1];
+    calculateAndDrawRoute(fallbackStartLat, fallbackStartLng, homeData.lat, homeData.lng, 'Tuyến Đường Về Nhà');
+  }
+}
+
+/**
  * Lưu vị trí từ Main Map làm nhà riêng
  */
 function handleSaveFromMainMap() {
@@ -565,7 +909,7 @@ function handleSaveFromMainMap() {
   });
 
   if (ok && typeof showToast === 'function') {
-    showToast('Đã lưu vị trí Nhà Riêng thành công!', 'success');
+    showToast('Đã lưu vị trí Nhà Riêng thành công trên Najimez!', 'success');
   }
 }
 
@@ -577,23 +921,13 @@ function handleClearHomeLocation() {
   if (!confirmDel) return;
 
   localStorage.removeItem(HOME_LOC_STORAGE_KEY);
+  clearCurrentRoute();
+  clearNearbyPlacesMarkers();
   updateHomeLocationUI();
   updateMainMapWorkspaceUI();
   if (typeof showToast === 'function') {
     showToast('Đã xóa vị trí Nhà Riêng.', 'info');
   }
-}
-
-/**
- * Mở tìm kiếm địa điểm xung quanh qua Google Maps
- */
-function handleSearchNearbyPlace(query) {
-  const homeData = getSavedHomeLocation();
-  const lat = (homeData && homeData.lat) || currentPickedLat || DEFAULT_MAP_CENTER[0];
-  const lng = (homeData && homeData.lng) || currentPickedLng || DEFAULT_MAP_CENTER[1];
-
-  const url = `https://www.google.com/maps/search/${encodeURIComponent(query)}/@${lat},${lng},15z`;
-  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 /**
@@ -645,6 +979,7 @@ function initHomeLocationModule() {
   const btnClearMain = document.getElementById('btnClearFromMainMap');
   const btnHudGps = document.getElementById('btnMainMapGps');
   const btnHudDir = document.getElementById('btnMainMapDirections');
+  const btnCloseRoute = document.getElementById('btnCloseRoute');
 
   if (btnSaveMain) btnSaveMain.addEventListener('click', handleSaveFromMainMap);
   if (btnNavMain) btnNavMain.addEventListener('click', navigateToHome);
@@ -652,6 +987,7 @@ function initHomeLocationModule() {
   if (btnClearMain) btnClearMain.addEventListener('click', handleClearHomeLocation);
   if (btnHudGps) btnHudGps.addEventListener('click', locateViaGPSOnMainMap);
   if (btnHudDir) btnHudDir.addEventListener('click', navigateToHome);
+  if (btnCloseRoute) btnCloseRoute.addEventListener('click', clearCurrentRoute);
 
   // Nút chuyển chế độ xem bản đồ (Đường phố, Vệ tinh, Ban đêm)
   const layerPills = document.querySelectorAll('.btn-layer-pill');
@@ -699,12 +1035,12 @@ function initHomeLocationModule() {
     });
   }
 
-  // Chips tìm địa điểm xung quanh
+  // Chips tìm địa điểm xung quanh trực tiếp trên Najimez
   const placeChips = document.querySelectorAll('.map-place-chip');
   placeChips.forEach(chip => {
     chip.addEventListener('click', () => {
       const q = chip.dataset.query;
-      if (q) handleSearchNearbyPlace(q);
+      if (q) searchAndDisplayNearbyPlaces(q, q);
     });
   });
 }
@@ -718,4 +1054,7 @@ window.renderMapTab = renderMapTab;
 window.navigateToHome = navigateToHome;
 window.switchTabToMap = switchTabToMap;
 window.switchMainMapLayer = switchMainMapLayer;
+window.calculateAndDrawRoute = calculateAndDrawRoute;
+window.clearCurrentRoute = clearCurrentRoute;
+window.searchAndDisplayNearbyPlaces = searchAndDisplayNearbyPlaces;
 window.initHomeLocationModule = initHomeLocationModule;

@@ -25,8 +25,8 @@
   <!-- Favicon Najimez -->
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
-  <link rel="stylesheet" href="style.css?v=3.95.15">
-  <link rel="stylesheet" href="css/map-location.css?v=3.95.15">
+  <link rel="stylesheet" href="style.css?v=3.95.16">
+  <link rel="stylesheet" href="css/map-location.css?v=3.95.16">
   <link rel="stylesheet" href="css/language-learning.css?v=3.95.7">
   <link rel="stylesheet" href="css/language-tutor.css?v=3.95.8">
   <link rel="stylesheet" href="css/timetable-matcher.css?v=3.95.10">
@@ -1409,6 +1409,30 @@
 
               <!-- Cột Phải: Bảng Thông Tin & Điều Khiển Vị Trí Nhà -->
               <div class="map-control-sidebar-col">
+                <!-- Thẻ Chỉ Đường Trực Tiếp Trên Najimez (In-App Navigation) -->
+                <div class="map-route-info-card" id="mapRouteInfoCard" style="display: none;">
+                  <div class="map-route-header">
+                    <div class="map-route-title">
+                      <i class="fa-solid fa-route"></i>
+                      <span id="routeCardTitle">Tuyến Đường Về Nhà</span>
+                    </div>
+                    <button type="button" class="btn-close-route" id="btnCloseRoute" title="Tắt tuyến đường">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+                  <div class="route-stats-bar">
+                    <div class="route-stat-item">
+                      <span class="route-stat-label"><i class="fa-solid fa-road"></i> Khoảng cách:</span>
+                      <span class="route-stat-val cyan" id="routeDistanceText">0 km</span>
+                    </div>
+                    <div class="route-stat-item">
+                      <span class="route-stat-label"><i class="fa-solid fa-motorcycle"></i> Thời gian:</span>
+                      <span class="route-stat-val gold" id="routeDurationText">0 phút</span>
+                    </div>
+                  </div>
+                  <div class="map-route-steps-list" id="mapRouteStepsList"></div>
+                </div>
+
                 <!-- Thẻ Thông Tin Nhà Riêng -->
                 <div class="map-info-card">
                   <div class="map-info-header">
@@ -1433,7 +1457,7 @@
                         <i class="fa-solid fa-floppy-disk"></i> Lưu Vị Trí Này Làm Nhà
                       </button>
                       <button type="button" class="btn-home-action gold" id="btnNavigateFromMainMap" style="width: 100%;" disabled>
-                        <i class="fa-solid fa-diamond-turn-right"></i> Mở Google Maps Dẫn Đường
+                        <i class="fa-solid fa-route"></i> Chỉ Đường Về Nhà (Trực Tiếp)
                       </button>
                       <button type="button" class="btn-home-action purple" id="btnGpsFromMainMap" style="width: 100%;">
                         <i class="fa-solid fa-crosshairs"></i> Lấy Vị Trí GPS Đang Đứng
@@ -3468,7 +3492,7 @@
   <script src="js/timetable-timeline.js?v=3.66.0"></script>
   <script src="js/lucky-wheel.js?v=3.70.0"></script>
   <script src="js/toolbox.js?v=3.95.11"></script>
-  <script src="js/map-location.js?v=3.95.15"></script>
+  <script src="js/map-location.js?v=3.95.16"></script>
   <script src="js/language-learning.js?v=3.95.10"></script>
   <script src="js/language-tutor.js?v=3.95.8"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
