@@ -386,19 +386,37 @@ function searchMainMapAddress(query) {
 
   // 1. Kiểm tra nếu người dùng nhập hoặc dán tọa độ trực tiếp (VD: "10.7768, 106.7008" hoặc link Google Maps)
   const coordsRegex = /@?(-?\d+\.\d+)[,\s/]+(-?\d+\.\d+)/;
-  const match = cleanQ.match(coordsRegex);
+  let match = cleanQ.match(coordsRegex);
+  let pLat = null;
+  let pLng = null;
+
   if (match) {
-    const pLat = parseFloat(match[1]);
-    const pLng = parseFloat(match[2]);
-    if (pLat >= -90 && pLat <= 90 && pLng >= -180 && pLng <= 180) {
-      setMainMapPickedLocation(pLat, pLng, null, true, true);
-      const resultsDropdown = document.getElementById('mainMapSearchResults');
-      if (resultsDropdown) resultsDropdown.style.display = 'none';
-      if (typeof showToast === 'function') {
-        showToast(`Đã bay tới tọa độ: ${pLat.toFixed(5)}, ${pLng.toFixed(5)}!`, 'success');
-      }
-      return;
+    pLat = parseFloat(match[1]);
+    pLng = parseFloat(match[2]);
+  } else {
+    // Thử bắt tọa độ DMS (Độ Phút Giây: VD 10°48'22.3"N 106°55'38.6"E)
+    const dmsRegex = /(\d+)[°\s]+(\d+)['\s]+([\d.]+)?["\s]*([NSns])?[,\s]+(\d+)[°\s]+(\d+)['\s]+([\d.]+)?["\s]*([EWew])?/;
+    const dmsMatch = cleanQ.match(dmsRegex);
+    if (dmsMatch) {
+      const latDeg = parseFloat(dmsMatch[1]) + parseFloat(dmsMatch[2]) / 60 + (parseFloat(dmsMatch[3]) || 0) / 3600;
+      const latDir = (dmsMatch[4] || 'N').toUpperCase();
+      pLat = latDir === 'S' ? -latDeg : latDeg;
+
+      const lngDeg = parseFloat(dmsMatch[5]) + parseFloat(dmsMatch[6]) / 60 + (parseFloat(dmsMatch[7]) || 0) / 3600;
+      const lngDir = (dmsMatch[8] || 'E').toUpperCase();
+      pLng = lngDir === 'W' ? -lngDeg : lngDeg;
     }
+  }
+
+  if (pLat !== null && pLng !== null && pLat >= -90 && pLat <= 90 && pLng >= -180 && pLng <= 180) {
+    setMainMapPickedLocation(pLat, pLng, null, true, true);
+    if (mainLeafletMap) mainLeafletMap.setView([pLat, pLng], 18);
+    const resultsDropdown = document.getElementById('mainMapSearchResults');
+    if (resultsDropdown) resultsDropdown.style.display = 'none';
+    if (typeof showToast === 'function') {
+      showToast(`Đã bay tới tọa độ: ${pLat.toFixed(6)}, ${pLng.toFixed(6)}!`, 'success');
+    }
+    return;
   }
 
   const resultsDropdown = document.getElementById('mainMapSearchResults');
@@ -512,10 +530,10 @@ function locateViaGPSOnMainMap() {
       }
 
       if (typeof showToast === 'function') {
-        if (acc > 500) {
-          showToast(`Đã định vị qua mạng Wi-Fi/IP (sai số ~${(acc / 1000).toFixed(1)}km). Hãy kéo ghim 🏠 vào đúng mái nhà bạn nhé!`, 'info');
+        if (acc > 300) {
+          showToast(`📍 Đã đưa bản đồ về khu vực của bạn (sai số Wi-Fi/IP ~${(acc / 1000).toFixed(1)}km). Máy tính không có chip GPS, bạn hãy kéo ghim 🏠 vào đúng nóc nhà nhé!`, 'info');
         } else {
-          showToast('Đã bắt vị trí GPS chính xác thành công!', 'success');
+          showToast('Đã bắt vị trí GPS thành công! Bạn có thể kéo ghim 🏠 để căn chuẩn từng mét.', 'success');
         }
       }
     },
@@ -526,6 +544,31 @@ function locateViaGPSOnMainMap() {
     },
     { enableHighAccuracy: true, timeout: 10000 }
   );
+}
+
+/**
+ * Hộp thoại hỗ trợ dán tọa độ Google Maps từ điện thoại hoặc link
+ */
+async function promptPasteCoordinates() {
+  let initialVal = '';
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    try {
+      const clipText = await navigator.clipboard.readText();
+      if (clipText && (clipText.includes(',') || clipText.includes('google') || /\d+\.\d+/.test(clipText))) {
+        initialVal = clipText.trim();
+      }
+    } catch (_) {}
+  }
+
+  const promptVal = prompt(
+    'Dán tọa độ (ví dụ: 10.8062, 106.9274) hoặc link Google Maps từ điện thoại vào đây:\n(Najimez sẽ bay tới đúng vị trí và phóng to nóc nhà của bạn)',
+    initialVal
+  );
+  if (!promptVal || !promptVal.trim()) return;
+
+  const searchInput = document.getElementById('mainMapSearchInput');
+  if (searchInput) searchInput.value = promptVal.trim();
+  searchMainMapAddress(promptVal.trim());
 }
 
 /**
@@ -976,6 +1019,7 @@ function initHomeLocationModule() {
   const btnSaveMain = document.getElementById('btnSaveFromMainMap');
   const btnNavMain = document.getElementById('btnNavigateFromMainMap');
   const btnGpsMain = document.getElementById('btnGpsFromMainMap');
+  const btnPasteCoords = document.getElementById('btnPasteCoordsFromMainMap');
   const btnClearMain = document.getElementById('btnClearFromMainMap');
   const btnHudGps = document.getElementById('btnMainMapGps');
   const btnHudDir = document.getElementById('btnMainMapDirections');
@@ -984,6 +1028,7 @@ function initHomeLocationModule() {
   if (btnSaveMain) btnSaveMain.addEventListener('click', handleSaveFromMainMap);
   if (btnNavMain) btnNavMain.addEventListener('click', navigateToHome);
   if (btnGpsMain) btnGpsMain.addEventListener('click', locateViaGPSOnMainMap);
+  if (btnPasteCoords) btnPasteCoords.addEventListener('click', promptPasteCoordinates);
   if (btnClearMain) btnClearMain.addEventListener('click', handleClearHomeLocation);
   if (btnHudGps) btnHudGps.addEventListener('click', locateViaGPSOnMainMap);
   if (btnHudDir) btnHudDir.addEventListener('click', navigateToHome);
@@ -1057,4 +1102,5 @@ window.switchMainMapLayer = switchMainMapLayer;
 window.calculateAndDrawRoute = calculateAndDrawRoute;
 window.clearCurrentRoute = clearCurrentRoute;
 window.searchAndDisplayNearbyPlaces = searchAndDisplayNearbyPlaces;
+window.promptPasteCoordinates = promptPasteCoordinates;
 window.initHomeLocationModule = initHomeLocationModule;
