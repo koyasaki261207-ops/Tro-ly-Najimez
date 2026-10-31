@@ -136,28 +136,36 @@
   100% { transform: scale(0.9); opacity: 0.7; }
 }
 
-.lang-brand-desc {
-  font-size: 0.76rem;
-  color: #94a3b8;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
 
-.lang-brand-desc span {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
 
 /* ==========================================================================
-   2.1. Ô ĐẠI DIỆN NGÔN NGỮ HIỆN TẠI & DROPDOWN PICKER (BÊN PHẢI HEADER)
+   2.1. CỤM ĐIỀU KHIỂN HEADER: 3 NÚT CHUYỂN CHẾ ĐỘ & DROPDOWN NGÔN NGỮ
    ========================================================================== */
 .lang-hud-controls {
   display: flex;
   align-items: center;
+  gap: 12px;
   position: relative;
+}
+
+/* Khung bo tròn Cyber Glassmorphism chứa 3 nút chế độ học tập trên Header */
+.lang-hud-mode-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(8, 14, 28, 0.96));
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lang-hud-mode-pill:hover {
+  border-color: rgba(6, 182, 212, 0.55);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 16px rgba(6, 182, 212, 0.2);
 }
 
 .lang-dropdown-wrapper {
@@ -407,47 +415,16 @@
 }
 
 /* ==========================================================================
-   3. KHUNG KHÔNG GIAN LÀM VIỆC (WORKSPACE BODY) & KHUNG 3 NÚT DỌC
+   3. KHUNG KHÔNG GIAN LÀM VIỆC (WORKSPACE BODY)
    ========================================================================== */
 .lang-workspace-body {
   display: flex;
-  gap: 16px;
-  align-items: flex-start;
   width: 100%;
   flex: 1;
   min-height: 0;
 }
 
-/* Khung bo tròn nhỏ gọn bao bọc 3 nút icon dọc theo rìa trái phía dưới Avatar Najimez */
-.lang-sidebar-nav-card {
-  width: auto;
-  flex-shrink: 0;
-  background: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(8, 14, 28, 0.94));
-  border: 1px solid rgba(6, 182, 212, 0.28);
-  border-radius: 18px;
-  padding: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.lang-sidebar-nav-card:hover {
-  border-color: rgba(6, 182, 212, 0.45);
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 18px rgba(6, 182, 212, 0.15);
-}
-
-.lang-nav-vertical-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-/* Nút icon nhỏ gọn */
+/* Nút icon chuyển chế độ học tập (Flashcard, Quiz, Sổ từ) */
 .lang-nav-vbtn {
   width: 36px;
   height: 36px;
@@ -456,27 +433,27 @@
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
   color: #94a3b8;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   user-select: none;
 }
 
 .lang-nav-vbtn i {
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   color: #94a3b8;
   transition: color 0.2s ease, transform 0.2s ease;
   line-height: 1;
 }
 
 .lang-nav-vbtn:hover {
-  background: rgba(6, 182, 212, 0.12);
-  border-color: rgba(6, 182, 212, 0.45);
+  background: rgba(6, 182, 212, 0.14);
+  border-color: rgba(6, 182, 212, 0.5);
   color: #ffffff;
-  transform: translateY(-1px) scale(1.05);
+  transform: translateY(-1px);
 }
 
 .lang-nav-vbtn:hover i {
@@ -485,20 +462,21 @@
 }
 
 .lang-nav-vbtn.active {
-  background: linear-gradient(135deg, rgba(6, 182, 212, 0.28), rgba(56, 189, 248, 0.18));
-  border-color: rgba(6, 182, 212, 0.75);
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.28), rgba(56, 189, 248, 0.2));
+  border-color: rgba(6, 182, 212, 0.8);
   color: #38bdf8;
-  box-shadow: 0 0 14px rgba(6, 182, 212, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 14px rgba(6, 182, 212, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .lang-nav-vbtn.active i {
   color: #38bdf8;
-  text-shadow: 0 0 10px rgba(6, 182, 212, 0.7);
+  text-shadow: 0 0 10px rgba(6, 182, 212, 0.75);
 }
 
-/* Vùng hiển thị chính bên phải */
+/* Vùng hiển thị chính toàn màn hình */
 .lang-main-stage {
   flex: 1;
+  width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -776,16 +754,22 @@
 }
 
 @media (max-width: 768px) {
-  .lang-workspace-body {
-    flex-direction: column;
+  .lang-hud-header {
+    padding: 10px 12px;
+    gap: 10px;
   }
-  .lang-sidebar-nav-card {
-    width: auto;
-    padding: 6px 10px;
-  }
-  .lang-nav-vertical-group {
-    flex-direction: row;
+  .lang-hud-controls {
+    width: 100%;
+    justify-content: space-between;
     gap: 8px;
+  }
+  .lang-hud-mode-pill {
+    padding: 3px 5px;
+    gap: 4px;
+  }
+  .lang-nav-vbtn {
+    width: 32px;
+    height: 32px;
   }
 }
 

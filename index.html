@@ -26,7 +26,7 @@
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
   <link rel="stylesheet" href="style.css?v=3.92.1">
-  <link rel="stylesheet" href="css/language-learning.css?v=3.95.3">
+  <link rel="stylesheet" href="css/language-learning.css?v=3.95.6">
   <link rel="stylesheet" href="css/timetable-matcher.css?v=3.78.0">
   <link rel="stylesheet" href="css/responsive.css?v=3.81.0">
 
@@ -1264,20 +1264,25 @@
                       <span class="lang-pulse-dot"></span> POLYGLOT 6-IN-1
                     </span>
                   </div>
-                  <div class="lang-brand-desc">
-                    <span><i class="fa-solid fa-earth-americas"></i> 6 Ngôn Ngữ Phổ Biến</span>
-                    <span>•</span>
-                    <span><i class="fa-solid fa-clone"></i> Thẻ Flashcard 3D</span>
-                    <span>•</span>
-                    <span><i class="fa-solid fa-trophy"></i> Trắc Nghiệm Phản Xạ</span>
-                    <span>•</span>
-                    <span><i class="fa-solid fa-book-bookmark"></i> Sổ Từ Cá Nhân</span>
-                  </div>
                 </div>
               </div>
 
-              <!-- Ô đại diện ngôn ngữ hiện tại & Dropdown chọn ngôn ngữ phía bên phải -->
+              <!-- Cụm điều khiển phía bên phải: 3 nút chuyển chế độ học tập (bên trái) & Dropdown chọn ngôn ngữ (bên phải) -->
               <div class="lang-hud-controls">
+                <!-- Khung bo tròn Cyber Glassmorphism chứa 3 nút chế độ học tập -->
+                <div class="lang-hud-mode-pill" id="langHudModePill">
+                  <button type="button" class="lang-nav-vbtn active" data-view="flashcard" id="btnLangNav1" onclick="switchNavRailView('flashcard', event)" title="Thẻ Flashcard 3D (Học từ Sổ Từ)" aria-label="Thẻ Flashcard 3D">
+                    <i class="fa-solid fa-clone"></i>
+                  </button>
+                  <button type="button" class="lang-nav-vbtn" data-view="quiz" id="btnLangNav2" onclick="switchNavRailView('quiz', event)" title="Kiểm Tra Phản Xạ (Tự Gõ 2 Chiều)" aria-label="Kiểm Tra Phản Xạ">
+                    <i class="fa-solid fa-fire"></i>
+                  </button>
+                  <button type="button" class="lang-nav-vbtn" data-view="my-vocab" id="btnLangNav3" onclick="switchNavRailView('my-vocab', event)" title="Từ Vựng Của Tôi" aria-label="Từ Vựng Của Tôi">
+                    <i class="fa-solid fa-book-bookmark"></i>
+                  </button>
+                </div>
+
+                <!-- Ô đại diện ngôn ngữ hiện tại & Dropdown chọn ngôn ngữ -->
                 <div class="lang-dropdown-wrapper" id="langDropdownWrapper">
                   <button type="button" class="btn-curr-lang-picker" id="btnCurrLangPicker" title="Bấm để đổi ngôn ngữ học tập">
                     <span class="curr-lang-flag" id="currLangFlag">
@@ -1353,22 +1358,7 @@
 
             <!-- Vùng không gian làm việc (Body) -->
             <div class="lang-workspace-body" id="langWorkspaceBody">
-              <!-- Khung bo tròn nhỏ gọn chứa 3 nút icon dọc theo rìa trái phía dưới Avatar Najimez -->
-              <aside class="lang-sidebar-nav-card" id="langSidebarNavCard">
-                <div class="lang-nav-vertical-group">
-                  <button type="button" class="lang-nav-vbtn active" data-view="flashcard" id="btnLangNav1" onclick="switchNavRailView('flashcard', event)" title="Thẻ Flashcard 3D (Học từ Sổ Từ)" aria-label="Thẻ Flashcard 3D">
-                    <i class="fa-solid fa-clone"></i>
-                  </button>
-                  <button type="button" class="lang-nav-vbtn" data-view="quiz" id="btnLangNav2" onclick="switchNavRailView('quiz', event)" title="Kiểm Tra Phản Xạ (Tự Gõ 2 Chiều)" aria-label="Kiểm Tra Phản Xạ">
-                    <i class="fa-solid fa-fire"></i>
-                  </button>
-                  <button type="button" class="lang-nav-vbtn" data-view="my-vocab" id="btnLangNav3" onclick="switchNavRailView('my-vocab', event)" title="Từ Vựng Của Tôi" aria-label="Từ Vựng Của Tôi">
-                    <i class="fa-solid fa-book-bookmark"></i>
-                  </button>
-                </div>
-              </aside>
-
-              <!-- Vùng hiển thị nội dung bên phải -->
+              <!-- Vùng hiển thị nội dung chính -->
               <main class="lang-main-stage" id="langMainStage">
                 <!-- PANE 1: THẺ FLASHCARD 3D (HỌC TỪ VỰNG TỪ SỔ TỪ CỦA TÔI) -->
                 <div class="lang-view-pane active" id="paneFlashcard">
@@ -3118,7 +3108,7 @@
   <script src="js/timetable-timeline.js?v=3.66.0"></script>
   <script src="js/lucky-wheel.js?v=3.70.0"></script>
   <script src="js/toolbox.js?v=3.75.0"></script>
-  <script src="js/language-learning.js?v=3.95.5"></script>
+  <script src="js/language-learning.js?v=3.95.6"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
   <script src="js/copilot-image.js?v=3.60.1"></script>
   <script src="js/copilot.js?v=3.95.4"></script>
