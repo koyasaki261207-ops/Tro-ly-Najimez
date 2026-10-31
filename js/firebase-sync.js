@@ -231,6 +231,10 @@ function applyRemoteCloudData(cloudData) {
       try {
         localStorage.setItem('najimez_home_location', JSON.stringify(cloudData.homeLocation));
         if (typeof updateHomeLocationUI === 'function') updateHomeLocationUI();
+        if (typeof updateMainMapWorkspaceUI === 'function') updateMainMapWorkspaceUI();
+        if (typeof setMainMapPickedLocation === 'function' && cloudData.homeLocation.lat && cloudData.homeLocation.lng) {
+          setMainMapPickedLocation(cloudData.homeLocation.lat, cloudData.homeLocation.lng, cloudData.homeLocation.address, true, false);
+        }
       } catch (e) {}
     }
 

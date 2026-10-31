@@ -1134,6 +1134,7 @@ function initHomeLocationModule() {
 // Xuất ra global scope
 window.getSavedHomeLocation = getSavedHomeLocation;
 window.saveHomeLocationData = saveHomeLocationData;
+window.setMainMapPickedLocation = setMainMapPickedLocation;
 window.updateHomeLocationUI = updateHomeLocationUI;
 window.updateMainMapWorkspaceUI = updateMainMapWorkspaceUI;
 window.renderMapTab = renderMapTab;
