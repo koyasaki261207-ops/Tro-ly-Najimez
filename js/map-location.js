@@ -394,53 +394,104 @@ function reverseGeocodeLocation(lat, lng, callback) {
     });
 }
 
+let userGpsAccuracyCircle = null;
+
 /**
- * Tìm kiếm địa chỉ qua Nominatim trên Main Map
+ * Tìm kiếm địa chỉ qua tọa độ trực tiếp, Photon API hoặc Nominatim
  */
 function searchMainMapAddress(query) {
   if (!query || query.trim().length < 2) return;
   const cleanQ = query.trim();
-  const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanQ)}&countrycodes=vn&limit=5&addressdetails=1`;
+
+  // 1. Kiểm tra nếu người dùng nhập hoặc dán tọa độ trực tiếp (VD: "10.7768, 106.7008" hoặc link Google Maps)
+  const coordsRegex = /@?(-?\d+\.\d+)[,\s/]+(-?\d+\.\d+)/;
+  const match = cleanQ.match(coordsRegex);
+  if (match) {
+    const pLat = parseFloat(match[1]);
+    const pLng = parseFloat(match[2]);
+    if (pLat >= -90 && pLat <= 90 && pLng >= -180 && pLng <= 180) {
+      setMainMapPickedLocation(pLat, pLng, null, true, true);
+      const resultsDropdown = document.getElementById('mainMapSearchResults');
+      if (resultsDropdown) resultsDropdown.style.display = 'none';
+      if (typeof showToast === 'function') {
+        showToast(`Đã bay tới tọa độ: ${pLat.toFixed(5)}, ${pLng.toFixed(5)}!`, 'success');
+      }
+      return;
+    }
+  }
 
   const resultsDropdown = document.getElementById('mainMapSearchResults');
   if (resultsDropdown) {
-    resultsDropdown.innerHTML = '<div class="search-result-item" style="color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
+    resultsDropdown.innerHTML = '<div class="search-result-item" style="color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tìm kiếm địa điểm...</div>';
     resultsDropdown.style.display = 'block';
   }
 
-  fetch(url, { headers: { 'Accept-Language': 'vi,en' } })
+  // 2. Thử Photon Geocoding API (nhanh, hỗ trợ gõ không dấu, sửa lỗi chính tả)
+  const photonUrl = `https://photon.komoot.io/api/?q=${encodeURIComponent(cleanQ)}&limit=6`;
+  fetch(photonUrl)
     .then(res => res.json())
-    .then(list => {
-      if (!resultsDropdown) return;
-      if (!list || list.length === 0) {
-        resultsDropdown.innerHTML = '<div class="search-result-item" style="color:#f87171;">Không tìm thấy địa điểm. Thử tìm tên đường/quận rộng hơn.</div>';
+    .then(data => {
+      const features = (data && data.features) || [];
+      if (features.length > 0) {
+        renderSearchResultsList(features.map(f => {
+          const p = f.properties || {};
+          const c = (f.geometry && f.geometry.coordinates) || [0, 0];
+          const parts = [p.name, p.street, p.district, p.city, p.state, p.country].filter(Boolean);
+          return {
+            displayName: parts.join(', ') || p.name || cleanQ,
+            lat: c[1],
+            lng: c[0]
+          };
+        }));
         return;
       }
-
-      resultsDropdown.innerHTML = '';
-      list.forEach(item => {
-        const itemEl = document.createElement('div');
-        itemEl.className = 'search-result-item';
-        itemEl.innerHTML = `<i class="fa-solid fa-location-dot" style="color:#38bdf8; margin-right:6px;"></i> ${item.display_name}`;
-        itemEl.addEventListener('click', () => {
-          const lat = parseFloat(item.lat);
-          const lng = parseFloat(item.lon);
-          setMainMapPickedLocation(lat, lng, item.display_name, true, false);
-          resultsDropdown.style.display = 'none';
-        });
-        resultsDropdown.appendChild(itemEl);
-      });
+      throw new Error('No photon results');
     })
-    .catch(err => {
-      console.warn('[MapLocation] Lỗi tìm kiếm:', err);
-      if (resultsDropdown) {
-        resultsDropdown.innerHTML = '<div class="search-result-item" style="color:#f87171;">Lỗi kết nối tra cứu địa chỉ.</div>';
-      }
+    .catch(() => {
+      // 3. Dự phòng OpenStreetMap Nominatim
+      const osmUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanQ)}&countrycodes=vn&limit=5&addressdetails=1`;
+      fetch(osmUrl, { headers: { 'Accept-Language': 'vi,en' } })
+        .then(res => res.json())
+        .then(list => {
+          if (!list || list.length === 0) {
+            if (resultsDropdown) {
+              resultsDropdown.innerHTML = '<div class="search-result-item" style="color:#f87171;">Không tìm thấy địa điểm. Thử gõ tên đường, quận, thành phố hoặc dán tọa độ.</div>';
+            }
+            return;
+          }
+          renderSearchResultsList(list.map(item => ({
+            displayName: item.display_name,
+            lat: parseFloat(item.lat),
+            lng: parseFloat(item.lon)
+          })));
+        })
+        .catch(err => {
+          console.warn('[MapLocation] Lỗi tìm kiếm:', err);
+          if (resultsDropdown) {
+            resultsDropdown.innerHTML = '<div class="search-result-item" style="color:#f87171;">Lỗi kết nối tra cứu địa chỉ.</div>';
+          }
+        });
     });
 }
 
+function renderSearchResultsList(items) {
+  const resultsDropdown = document.getElementById('mainMapSearchResults');
+  if (!resultsDropdown) return;
+  resultsDropdown.innerHTML = '';
+  items.forEach(item => {
+    const itemEl = document.createElement('div');
+    itemEl.className = 'search-result-item';
+    itemEl.innerHTML = `<i class="fa-solid fa-location-dot" style="color:#38bdf8; margin-right:6px;"></i> ${item.displayName}`;
+    itemEl.addEventListener('click', () => {
+      setMainMapPickedLocation(item.lat, item.lng, item.displayName, true, false);
+      resultsDropdown.style.display = 'none';
+    });
+    resultsDropdown.appendChild(itemEl);
+  });
+}
+
 /**
- * Định vị GPS qua trình duyệt trên Main Map
+ * Định vị GPS qua trình duyệt trên Main Map (có thông báo sai số Wi-Fi/IP)
  */
 function locateViaGPSOnMainMap() {
   if (!navigator.geolocation) {
@@ -460,9 +511,31 @@ function locateViaGPSOnMainMap() {
       if (overlay) overlay.style.display = 'none';
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
+      const acc = pos.coords.accuracy || 0;
+
       setMainMapPickedLocation(lat, lng, null, true, true);
+
+      // Vẽ vòng tròn thể hiện bán kính sai số định vị
+      if (mainLeafletMap) {
+        if (userGpsAccuracyCircle) {
+          mainLeafletMap.removeLayer(userGpsAccuracyCircle);
+        }
+        userGpsAccuracyCircle = L.circle([lat, lng], {
+          radius: Math.max(acc, 50),
+          color: '#38bdf8',
+          fillColor: '#38bdf8',
+          fillOpacity: 0.1,
+          weight: 1.5,
+          dashArray: '4, 6'
+        }).addTo(mainLeafletMap);
+      }
+
       if (typeof showToast === 'function') {
-        showToast('Đã bắt vị trí GPS thành công!', 'success');
+        if (acc > 500) {
+          showToast(`Đã định vị qua mạng Wi-Fi/IP (sai số ~${(acc / 1000).toFixed(1)}km). Hãy kéo ghim 🏠 vào đúng mái nhà bạn nhé!`, 'info');
+        } else {
+          showToast('Đã bắt vị trí GPS chính xác thành công!', 'success');
+        }
       }
     },
     (err) => {
