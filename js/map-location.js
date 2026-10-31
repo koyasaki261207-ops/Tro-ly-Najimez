@@ -161,8 +161,8 @@ function saveHomeLocationData(locData) {
       if (inlineMiniMap) inlineMiniMap.setView([locData.lat, locData.lng], 15);
     }
 
-    if (typeof syncLedgerToFirebase === 'function') {
-      syncLedgerToFirebase(null, true);
+    if (typeof triggerAutoSyncToCloud === 'function') {
+      triggerAutoSyncToCloud();
     }
     return true;
   } catch (err) {
@@ -1296,8 +1296,8 @@ function saveSavedPlacesList(list) {
   savedPlaces = list;
   try {
     localStorage.setItem(SAVED_PLACES_STORAGE_KEY, JSON.stringify(savedPlaces));
-    if (typeof syncLedgerToFirebase === 'function') {
-      syncLedgerToFirebase(null, true);
+    if (typeof triggerAutoSyncToCloud === 'function') {
+      triggerAutoSyncToCloud();
     }
   } catch (e) {
     console.error('[MapLocation] Lỗi lưu saved places:', e);

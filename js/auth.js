@@ -88,6 +88,11 @@ async function handleAuthStateChanged(user) {
     await syncOrMigrateUserData();
   }
 
+  // Cứu hộ và khôi phục dữ liệu thất lạc nếu có
+  if (typeof rescueAndHealUserData === 'function') {
+    await rescueAndHealUserData();
+  }
+
   // Làm mới giao diện theo kho dữ liệu của tài khoản hiện tại
   if (typeof updateHeaderStats === 'function') updateHeaderStats();
   if (typeof renderFinanceTab === 'function') renderFinanceTab();

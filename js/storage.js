@@ -330,6 +330,13 @@ function getLedgerData() {
 function saveLedgerData(data) {
   try {
     localStorage.setItem(getCurrentLedgerKey(), JSON.stringify(data));
+    if (
+      (data.transactions && data.transactions.length > 0) ||
+      (data.calendarEvents && data.calendarEvents.length > 0) ||
+      (data.debts && data.debts.length > 0)
+    ) {
+      localStorage.setItem('najimez_ledger_backup_safety', JSON.stringify(data));
+    }
     if (typeof updateHeaderStats === 'function') updateHeaderStats();
     if (typeof renderFinanceTab === 'function') renderFinanceTab();
     if (typeof renderTodosTab === 'function') renderTodosTab();

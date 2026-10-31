@@ -139,15 +139,41 @@ function applyRemoteCloudData(cloudData) {
     isApplyingRemoteUpdate = true;
     const currentLocal = typeof getLedgerData === 'function' ? getLedgerData() : {};
 
-    // Cập nhật các danh sách từ đám mây (đảm bảo phản ánh chính xác thêm/sửa/xóa)
-    const mergedData = {
-      transactions: Array.isArray(cloudData.transactions) ? cloudData.transactions : (currentLocal.transactions || []),
-      debts: Array.isArray(cloudData.debts) ? cloudData.debts : (currentLocal.debts || []),
-      tasks: Array.isArray(cloudData.tasks) ? cloudData.tasks : (currentLocal.tasks || []),
-      calendarEvents: Array.isArray(cloudData.calendarEvents) ? cloudData.calendarEvents : (currentLocal.calendarEvents || []),
-      bank: { ...(currentLocal.bank || {}), ...(cloudData.bank || {}) },
-      contacts: { ...(currentLocal.contacts || {}), ...(cloudData.contacts || {}) }
+    let guestFallback = null;
+    try {
+      const gRaw = localStorage.getItem(APP_CONFIG.ledgerKey);
+      if (gRaw) guestFallback = JSON.parse(gRaw);
+    } catch (_) {}
+
+    const resolveSafeList = (cloudArr, localArr, guestArr) => {
+      if (Array.isArray(cloudArr) && cloudArr.length > 0) return cloudArr;
+      if (Array.isArray(localArr) && localArr.length > 0) return localArr;
+      if (Array.isArray(guestArr) && guestArr.length > 0) return guestArr;
+      return [];
     };
+
+    const safeTx = resolveSafeList(cloudData.transactions, currentLocal.transactions, guestFallback && guestFallback.transactions);
+    const safeDebts = resolveSafeList(cloudData.debts, currentLocal.debts, guestFallback && guestFallback.debts);
+    const safeTasks = resolveSafeList(cloudData.tasks, currentLocal.tasks, guestFallback && guestFallback.tasks);
+    const safeEvents = resolveSafeList(cloudData.calendarEvents, currentLocal.calendarEvents, guestFallback && guestFallback.calendarEvents);
+
+    const mergedData = {
+      transactions: safeTx,
+      debts: safeDebts,
+      tasks: safeTasks,
+      calendarEvents: safeEvents,
+      bank: { ...(guestFallback && guestFallback.bank), ...(currentLocal.bank || {}), ...(cloudData.bank || {}) },
+      contacts: { ...(guestFallback && guestFallback.contacts), ...(currentLocal.contacts || {}), ...(cloudData.contacts || {}) }
+    };
+
+    if (
+      ((!Array.isArray(cloudData.transactions) || cloudData.transactions.length === 0) && safeTx.length > 0) ||
+      ((!Array.isArray(cloudData.calendarEvents) || cloudData.calendarEvents.length === 0) && safeEvents.length > 0)
+    ) {
+      if (window.currentUserUid) {
+        setTimeout(() => { if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(); }, 1000);
+      }
+    }
 
     // Đồng bộ cài đặt vòng quay may mắn nếu có
     if (Array.isArray(cloudData.wheelItems) && cloudData.wheelItems.length >= 2) {
@@ -181,45 +207,25 @@ function applyRemoteCloudData(cloudData) {
     localStorage.setItem(targetKey, JSON.stringify(healed));
     localStorage.setItem(FIREBASE_LAST_SYNC_STORAGE, Date.now().toString());
 
-    // Đồng bộ Sổ từ vựng ngoại ngữ cá nhân & Trạng thái đã thuộc (Đánh sao)
-    if (Array.isArray(cloudData.vocabNotebook)) {
-      try {
-        const curNbRaw = localStorage.getItem('NAJIMEZ_VOCAB_NOTEBOOK_V1');
-        const curNb = curNbRaw ? JSON.parse(curNbRaw) : [];
-        if (cloudData.vocabNotebook.length > 0) {
-          // Hợp nhất thông minh: Nếu local máy hiện tại cũng có từ vựng thì không làm mất từ nào
-          let mergedVocab = cloudData.vocabNotebook;
-          if (curNb.length > 0) {
-            const cloudKeys = new Set(cloudData.vocabNotebook.map(x => ((x.word || '') + '_' + (x.lang || 'en')).toLowerCase().trim()));
-            const missingFromCloud = curNb.filter(x => !cloudKeys.has(((x.word || '') + '_' + (x.lang || 'en')).toLowerCase().trim()));
-            if (missingFromCloud.length > 0) {
-              mergedVocab = [...cloudData.vocabNotebook, ...missingFromCloud];
-              setTimeout(() => {
-                if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud();
-              }, 600);
-            }
+    // Đồng bộ Sổ từ vựng ngoại ngữ cá nhân
+    try {
+      const curNbRaw = localStorage.getItem('NAJIMEZ_VOCAB_NOTEBOOK_V1');
+      const curNb = curNbRaw ? JSON.parse(curNbRaw) : [];
+      if (Array.isArray(cloudData.vocabNotebook) && cloudData.vocabNotebook.length > 0) {
+        let mergedVocab = cloudData.vocabNotebook;
+        if (curNb.length > 0) {
+          const cloudKeys = new Set(cloudData.vocabNotebook.map(x => ((x.word || '') + '_' + (x.lang || 'en')).toLowerCase().trim()));
+          const missing = curNb.filter(x => !cloudKeys.has(((x.word || '') + '_' + (x.lang || 'en')).toLowerCase().trim()));
+          if (missing.length > 0) {
+            mergedVocab = [...cloudData.vocabNotebook, ...missing];
+            setTimeout(() => { if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(); }, 600);
           }
-          localStorage.setItem('NAJIMEZ_VOCAB_NOTEBOOK_V1', JSON.stringify(mergedVocab));
-        } else if (curNb.length > 0 && window.currentUserUid) {
-          // Cloud rỗng nhưng máy đang có từ vựng -> Đẩy từ máy lên Cloud
-          setTimeout(() => {
-            if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud();
-          }, 600);
         }
-      } catch (e) {}
-    } else {
-      // Trường hợp tài khoản trên Cloud chưa có trường vocabNotebook:
-      // Nếu máy hiện tại đang có từ vựng -> Tự động đẩy lên Cloud!
-      try {
-        const curNbRaw = localStorage.getItem('NAJIMEZ_VOCAB_NOTEBOOK_V1');
-        const curNb = curNbRaw ? JSON.parse(curNbRaw) : [];
-        if (curNb.length > 0 && window.currentUserUid) {
-          setTimeout(() => {
-            if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud();
-          }, 600);
-        }
-      } catch (e) {}
-    }
+        localStorage.setItem('NAJIMEZ_VOCAB_NOTEBOOK_V1', JSON.stringify(mergedVocab));
+      } else if (curNb.length > 0 && window.currentUserUid) {
+        setTimeout(() => { if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(); }, 600);
+      }
+    } catch (e) {}
 
     if (Array.isArray(cloudData.vocabMasteredIds)) {
       try {
@@ -294,46 +300,36 @@ function syncLedgerToFirebase(data, isImmediate = false) {
       if (!currentSyncKey) return;
       const docRef = firestoreDb.collection('najimez_vault').doc(currentSyncKey);
 
-      // Thu thập thêm cài đặt bổ trợ (Vòng quay, Giọng nói, API Key, Sổ từ vựng)
-      let customWheel = null;
-      try {
-        const rawWheel = localStorage.getItem('najimez_wheel_custom_items');
-        if (rawWheel) customWheel = JSON.parse(rawWheel);
-      } catch (e) {}
-
-      let customVoice = null;
-      try {
-        const rawVoice = localStorage.getItem('najimez_voice_settings');
-        if (rawVoice) customVoice = JSON.parse(rawVoice);
-      } catch (e) {}
-
-      let vocabNotebook = [];
-      try {
-        const rawNb = localStorage.getItem('NAJIMEZ_VOCAB_NOTEBOOK_V1');
-        if (rawNb) vocabNotebook = JSON.parse(rawNb);
-      } catch (e) {}
-
-      let vocabMasteredIds = [];
-      try {
-        const rawM = localStorage.getItem('NAJIMEZ_VOCAB_MASTERED_V1');
-        if (rawM) vocabMasteredIds = JSON.parse(rawM);
-      } catch (e) {}
-
-      let homeLoc = null;
-      try {
-        const rawHome = localStorage.getItem('najimez_home_location');
-        if (rawHome) homeLoc = JSON.parse(rawHome);
-      } catch (e) {}
+      const getJson = (key, fallback) => {
+        try { const r = localStorage.getItem(key); return r ? JSON.parse(r) : fallback; } catch (_) { return fallback; }
+      };
+      const customWheel = getJson('najimez_wheel_custom_items', null);
+      const customVoice = getJson('najimez_voice_settings', null);
+      const vocabNotebook = getJson('NAJIMEZ_VOCAB_NOTEBOOK_V1', []);
+      const vocabMasteredIds = getJson('NAJIMEZ_VOCAB_MASTERED_V1', []);
+      const homeLoc = getJson('najimez_home_location', null);
 
       const apiKey = localStorage.getItem(APP_CONFIG.storageKey) || '';
 
+      let src = (data && typeof data === 'object') ? data : null;
+      if (!src || (!src.transactions && !src.calendarEvents)) {
+        src = typeof getLedgerData === 'function' ? getLedgerData() : {};
+      }
+      let gData = null;
+      try {
+        const gRaw = localStorage.getItem(APP_CONFIG.ledgerKey);
+        if (gRaw) gData = JSON.parse(gRaw);
+      } catch (_) {}
+
+      const pickSafe = (a, b) => (Array.isArray(a) && a.length > 0) ? a : ((Array.isArray(b) && b.length > 0) ? b : []);
+
       const payload = {
-        transactions: (data && data.transactions) || [],
-        debts: (data && data.debts) || [],
-        tasks: (data && data.tasks) || [],
-        calendarEvents: (data && data.calendarEvents) || [],
-        bank: (data && data.bank) || {},
-        contacts: (data && data.contacts) || {},
+        transactions: pickSafe(src.transactions, gData && gData.transactions),
+        debts: pickSafe(src.debts, gData && gData.debts),
+        tasks: pickSafe(src.tasks, gData && gData.tasks),
+        calendarEvents: pickSafe(src.calendarEvents, gData && gData.calendarEvents),
+        bank: (src && src.bank) || (gData && gData.bank) || {},
+        contacts: (src && src.contacts) || (gData && gData.contacts) || {},
         wheelItems: customWheel,
         voiceSettings: customVoice,
         geminiApiKey: apiKey ? apiKey.trim() : '',
@@ -392,6 +388,9 @@ async function syncOrMigrateUserData() {
     if (docSnap.exists) {
       // Đã có dữ liệu trên Cloud cho tài khoản Google này -> Nạp về máy
       applyRemoteCloudData(docSnap.data());
+      if (typeof rescueAndHealUserData === 'function') {
+        setTimeout(rescueAndHealUserData, 300);
+      }
     } else {
       // Tài khoản Google mới -> Kiểm tra và di chuyển dữ liệu từ Khách sang
       const guestKey = APP_CONFIG.ledgerKey;
@@ -406,7 +405,8 @@ async function syncOrMigrateUserData() {
       const isUserEmpty = !localData || (
         (!localData.transactions || localData.transactions.length === 0) &&
         (!localData.debts || localData.debts.length === 0) &&
-        (!localData.tasks || localData.tasks.length === 0)
+        (!localData.tasks || localData.tasks.length === 0) &&
+        (!localData.calendarEvents || localData.calendarEvents.length === 0)
       );
 
       if (isUserEmpty) {
@@ -417,7 +417,8 @@ async function syncOrMigrateUserData() {
             if (guestData && (
               (guestData.transactions && guestData.transactions.length > 0) ||
               (guestData.debts && guestData.debts.length > 0) ||
-              (guestData.tasks && guestData.tasks.length > 0)
+              (guestData.tasks && guestData.tasks.length > 0) ||
+              (guestData.calendarEvents && guestData.calendarEvents.length > 0)
             )) {
               localStorage.setItem(userKey, JSON.stringify(guestData));
               localData = guestData;
@@ -446,6 +447,10 @@ function triggerAutoSyncToCloud() {
 // Khởi tạo các bộ lắng nghe toàn cục cho module đồng bộ đám mây
 function initFirebaseSyncModule() {
   initFirebaseModule();
+
+  if (typeof rescueAndHealUserData === 'function') {
+    setTimeout(rescueAndHealUserData, 500);
+  }
 
   // Đảm bảo dữ liệu luôn được đẩy lên trước khi người dùng tắt hoặc ẩn tab
   window.addEventListener('visibilitychange', () => {
