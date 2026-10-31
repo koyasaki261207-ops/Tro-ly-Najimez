@@ -613,11 +613,13 @@ function matchAutoImage(rawText) {
     };
   }
 
-  // 32. Mượn tiền, vay tiền, trả nợ
+  // 32. Mượn tiền, vay tiền, trả nợ, thu nợ, thanh toán nợ
   if (
     norm.includes('muon tien') || norm.includes('vay tien') || norm.includes('tien mat') ||
     norm.includes('chuyen khoan') || norm.includes('muon') || norm.includes('vay') ||
-    norm.includes('no tien') || norm.includes('tien') || norm.includes('tra no')
+    norm.includes('no tien') || norm.includes('tien') || norm.includes('tra no') ||
+    norm.includes('thu no') || norm.includes('thu hoi no') || norm.includes('da tra no') ||
+    norm.includes('thanh toan no') || norm.includes('tat toan')
   ) {
     return AUTO_SMART_VISUALS.tien;
   }
@@ -683,6 +685,23 @@ function resolveTransactionImage(item) {
       src: getAutoSvgDataUri('default_money'),
       label: 'Giao dịch',
       key: 'default_money',
+      isAuto: true
+    };
+  }
+
+  // Nếu là giao dịch Thu nợ / Trả nợ / Thu hồi nợ, dùng hình TIỀN MẶT chuẩn
+  const normCategory = (item.category || '').toLowerCase();
+  const normNote = (item.note || item.reason || '').toLowerCase();
+  if (
+    normCategory.includes('thu nợ') || normCategory.includes('trả nợ') ||
+    normNote.includes('thu hồi nợ') || normNote.includes('đã trả nợ') ||
+    normNote.includes('thanh toán nợ') || normNote.includes('tất toán')
+  ) {
+    const moneyVisual = AUTO_SMART_VISUALS.tien || AUTO_SMART_VISUALS.default_money;
+    return {
+      src: moneyVisual.url,
+      label: item.note || 'Tiền mặt',
+      key: 'tien',
       isAuto: true
     };
   }
@@ -1722,6 +1741,19 @@ function initBillImageModule() {
 
   // Bắt sự kiện click vào ảnh phóng to trên bất kỳ hàng nào
   document.body.addEventListener('click', (e) => {
+    // 0. Click thumbnail thu hồi nợ / trả nợ (luôn xem ảnh tiền mặt)
+    const viewSettleBtn = e.target.closest('[data-action="view-settle-img"]');
+    if (viewSettleBtn) {
+      e.stopPropagation();
+      const moneyUrl = (typeof AUTO_SMART_VISUALS !== 'undefined' && AUTO_SMART_VISUALS.tien)
+        ? AUTO_SMART_VISUALS.tien.url
+        : 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?auto=format&fit=crop&w=400&q=80';
+      const imgSrc = viewSettleBtn.dataset.img || moneyUrl;
+      const label = viewSettleBtn.dataset.label || 'Thu hồi nợ (Tiền mặt)';
+      openViewImageModal(imgSrc, 'settle', 'settle', label, { src: imgSrc, label, key: 'tien' });
+      return;
+    }
+
     // 1. Click thumbnail khoản nợ
     const viewDebtBtn = e.target.closest('[data-action="view-debt-img"]');
     if (viewDebtBtn) {

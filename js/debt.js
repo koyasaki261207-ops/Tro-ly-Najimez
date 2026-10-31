@@ -496,7 +496,14 @@ function buildDebtTimelineEvents(debtsList) {
       const isRec = firstDebt.direction === 'they_owe_me';
       const totalAmount = b.items.reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
       const debtIds = b.items.map(it => it.id);
-      const repImage = b.items.find(it => it.image)?.image || null;
+
+      // Thu hồi nợ / trả nợ luôn dùng hình TIỀN MẶT theo yêu cầu người dùng
+      const moneyVisual = (typeof AUTO_SMART_VISUALS !== 'undefined' && AUTO_SMART_VISUALS.tien) || {
+        key: 'tien',
+        label: isRec ? 'Đã thu hồi nợ (Tiền mặt)' : 'Đã thanh toán nợ (Tiền mặt)',
+        url: 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?auto=format&fit=crop&w=400&q=80'
+      };
+      const moneyImg = moneyVisual.url;
 
       events.push({
         id: 'settle-batch-' + firstDebt.id + '-' + b.settleTime,
@@ -517,8 +524,14 @@ function buildDebtTimelineEvents(debtsList) {
         statusBadgeText: 'Đã hoàn tất',
         statusBadgeClass: 'paid-complete',
         timestamp: b.settleTime,
-        image: repImage,
-        rawDebt: firstDebt
+        image: moneyImg,
+        rawDebt: {
+          id: 'settle-' + firstDebt.id,
+          person: personName,
+          note: isRec ? 'Thu hồi nợ (Tiền mặt)' : 'Trả nợ (Tiền mặt)',
+          amount: totalAmount,
+          image: moneyImg
+        }
       });
     });
   });
@@ -595,9 +608,20 @@ function openPersonHistoryModal(personName) {
           hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'
         }) : 'Vừa xong';
 
-        const imgInfo = typeof resolveTransactionImage === 'function'
-          ? resolveTransactionImage(ev.rawDebt)
-          : { src: ev.image || '', label: ev.note || '', key: 'com' };
+        const moneyUrl = (typeof AUTO_SMART_VISUALS !== 'undefined' && AUTO_SMART_VISUALS.tien && AUTO_SMART_VISUALS.tien.url)
+          ? AUTO_SMART_VISUALS.tien.url
+          : 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?auto=format&fit=crop&w=400&q=80';
+
+        const imgInfo = ev.isSettlementEvent
+          ? {
+              src: moneyUrl,
+              label: ev.dirTagText || 'Tiền mặt',
+              key: 'tien',
+              isAuto: true
+            }
+          : (typeof resolveTransactionImage === 'function'
+              ? resolveTransactionImage(ev.rawDebt)
+              : { src: ev.image || '', label: ev.note || '', key: 'com' });
 
         return `
           <div class="history-timeline-item ${ev.isSettlementEvent ? 'settlement-event-item' : ''}">
@@ -630,8 +654,8 @@ function openPersonHistoryModal(personName) {
                   ${escapeHTML(ev.statusBadgeText)}
                 </span>
               </div>
-              <div class="history-item-thumb-wrap" data-action="view-debt-img" data-id="${ev.debtId}" title="${escapeHTML(imgInfo.label)} (Nhấn để phóng to)">
-                <img src="${escapeHTML(imgInfo.src)}" alt="${escapeHTML(imgInfo.label)}" class="history-item-thumb" onerror="if(typeof handleAutoImgError==='function') handleAutoImgError(this, '${imgInfo.key}')" />
+              <div class="history-item-thumb-wrap" data-action="${ev.isSettlementEvent ? 'view-settle-img' : 'view-debt-img'}" data-id="${ev.debtId}" data-img="${escapeHTML(imgInfo.src)}" data-label="${escapeHTML(ev.displayTitle)}" title="${escapeHTML(imgInfo.label)} (Nhấn để phóng to)">
+                <img src="${escapeHTML(imgInfo.src)}" alt="${escapeHTML(imgInfo.label)}" class="history-item-thumb" onerror="if(typeof handleAutoImgError==='function') handleAutoImgError(this, 'tien')" />
                 <span class="thumb-badge-zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
               </div>
               ${ev.isSettlementEvent ? `
@@ -749,9 +773,20 @@ function renderAllDebtHistoryUI(container, debts, contactsMap) {
       hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric'
     }) : 'Gần đây';
 
-    const imgInfo = typeof resolveTransactionImage === 'function'
-      ? resolveTransactionImage(ev.rawDebt)
-      : { src: ev.image || '', label: ev.note || '', key: 'com' };
+    const moneyUrl = (typeof AUTO_SMART_VISUALS !== 'undefined' && AUTO_SMART_VISUALS.tien && AUTO_SMART_VISUALS.tien.url)
+      ? AUTO_SMART_VISUALS.tien.url
+      : 'https://images.unsplash.com/photo-1580519542036-c47de6196ba5?auto=format&fit=crop&w=400&q=80';
+
+    const imgInfo = ev.isSettlementEvent
+      ? {
+          src: moneyUrl,
+          label: ev.dirTagText || 'Tiền mặt',
+          key: 'tien',
+          isAuto: true
+        }
+      : (typeof resolveTransactionImage === 'function'
+          ? resolveTransactionImage(ev.rawDebt)
+          : { src: ev.image || '', label: ev.note || '', key: 'com' });
 
     return `
       <div class="history-timeline-item all-history-item ${ev.isSettlementEvent ? 'settlement-event-item' : ''}" data-person="${escapeHTML(personName)}">
@@ -786,8 +821,8 @@ function renderAllDebtHistoryUI(container, debts, contactsMap) {
               ${escapeHTML(ev.statusBadgeText)}
             </span>
           </div>
-          <div class="history-item-thumb-wrap" data-action="view-debt-img" data-id="${ev.debtId}" title="${escapeHTML(imgInfo.label)} (Nhấn để phóng to)">
-            <img src="${escapeHTML(imgInfo.src)}" alt="${escapeHTML(imgInfo.label)}" class="history-item-thumb" onerror="if(typeof handleAutoImgError==='function') handleAutoImgError(this, '${imgInfo.key}')" />
+          <div class="history-item-thumb-wrap" data-action="${ev.isSettlementEvent ? 'view-settle-img' : 'view-debt-img'}" data-id="${ev.debtId}" data-img="${escapeHTML(imgInfo.src)}" data-label="${escapeHTML(ev.displayTitle)}" title="${escapeHTML(imgInfo.label)} (Nhấn để phóng to)">
+            <img src="${escapeHTML(imgInfo.src)}" alt="${escapeHTML(imgInfo.label)}" class="history-item-thumb" onerror="if(typeof handleAutoImgError==='function') handleAutoImgError(this, 'tien')" />
             <span class="thumb-badge-zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
           </div>
           ${ev.isSettlementEvent ? `
