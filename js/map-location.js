@@ -738,7 +738,7 @@ function calculateAndDrawRoute(startLat, startLng, endLat, endLng, routeTitle = 
       mainLeafletMap.fitBounds(currentRouteLineLayer.getBounds(), { padding: [50, 50] });
 
       // 3. Hiển thị bảng Turn-by-Turn Navigation
-      displayRouteInfoCard(routeTitle, distKm, durMins, route.legs && route.legs[0] && route.legs[0].steps);
+      displayRouteInfoCard(routeTitle, distKm, durMins, route.legs && route.legs[0] && route.legs[0].steps, startLat, startLng, endLat, endLng);
 
       if (typeof showToast === 'function') {
         showToast(`Đã tìm thấy lộ trình: ${distKm} km (~${durMins} phút)!`, 'success');
@@ -775,17 +775,23 @@ function clearCurrentRoute() {
 /**
  * Hiển thị thẻ chỉ đường chi tiết từng ngã rẽ
  */
-function displayRouteInfoCard(title, distKm, durMins, steps = []) {
+function displayRouteInfoCard(title, distKm, durMins, steps = [], startLat = null, startLng = null, endLat = null, endLng = null) {
   const card = document.getElementById('mapRouteInfoCard');
   const titleEl = document.getElementById('routeCardTitle');
   const distEl = document.getElementById('routeDistanceText');
   const durEl = document.getElementById('routeDurationText');
   const stepsList = document.getElementById('mapRouteStepsList');
+  const btnGmaps = document.getElementById('btnOpenGmapDirections');
 
   if (!card) return;
   if (titleEl) titleEl.textContent = title;
   if (distEl) distEl.textContent = `${distKm} km`;
   if (durEl) durEl.textContent = `~${durMins} phút`;
+
+  // Cập nhật link dẫn đường Google Maps với chế độ Xe Máy (two_wheeler)
+  if (btnGmaps && startLat && startLng && endLat && endLng) {
+    btnGmaps.href = `https://www.google.com/maps/dir/?api=1&origin=${startLat},${startLng}&destination=${endLat},${endLng}&travelmode=two_wheeler`;
+  }
 
   if (stepsList) {
     stepsList.innerHTML = '';
@@ -1133,6 +1139,8 @@ function renderSavedPlacesListUI() {
     return;
   }
 
+  const curLoc = getMyLocationCoords();
+
   listEl.innerHTML = savedPlaces.map(place => {
     const typeInfo = getPlaceTypeInfo(place.type);
     const addrDisplay = place.address || `Tọa độ: ${place.lat.toFixed(5)}, ${place.lng.toFixed(5)}`;
@@ -1170,6 +1178,9 @@ function renderSavedPlacesListUI() {
           <button type="button" class="btn-place-route" data-id="${place.id}">
             <i class="fa-solid fa-route"></i> Chỉ Đường
           </button>
+          <a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(curLoc[0] + ',' + curLoc[1])}&destination=${place.lat},${place.lng}&travelmode=two_wheeler" target="_blank" rel="noopener noreferrer" class="btn-place-gmaps" title="Mở ứng dụng Google Maps dẫn đường xe máy">
+            <i class="fa-solid fa-diamond-turn-right"></i> GG Maps
+          </a>
         </div>
       </div>
     `;
@@ -1227,6 +1238,7 @@ function renderAllSavedPlaceMarkers() {
     const marker = L.marker([place.lat, place.lng], { icon: divIcon }).addTo(mainLeafletMap);
 
     const addrDisplay = place.address || `Tọa độ: ${place.lat.toFixed(5)}, ${place.lng.toFixed(5)}`;
+    const curLoc = getMyLocationCoords();
     const popupContent = `
       <div class="saved-place-popup">
         <div class="popup-place-header">
@@ -1237,9 +1249,14 @@ function renderAllSavedPlaceMarkers() {
         ${place.notes ? `<div class="popup-place-notes"><em>"${escapeHtml(place.notes)}"</em></div>` : ''}
         <div class="popup-place-footer">
           <span class="popup-time">${formatPlaceTime(place.createdAt)}</span>
-          <button type="button" class="popup-btn-route" onclick="window.routeToSavedPlace('${place.id}')">
-            <i class="fa-solid fa-route"></i> Chỉ đường
-          </button>
+          <div style="display:flex;gap:5px;align-items:center;">
+            <button type="button" class="popup-btn-route" onclick="window.routeToSavedPlace('${place.id}')">
+              <i class="fa-solid fa-route"></i> Chỉ đường
+            </button>
+            <a href="https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(curLoc[0] + ',' + curLoc[1])}&destination=${place.lat},${place.lng}&travelmode=two_wheeler" target="_blank" rel="noopener noreferrer" style="background:#16a34a;color:#fff;border-radius:5px;padding:4px 7px;font-size:0.72rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:3px;" title="Mở Google Maps dẫn đường xe máy">
+              <i class="fa-solid fa-diamond-turn-right"></i> GG Maps
+            </a>
+          </div>
         </div>
       </div>
     `;
