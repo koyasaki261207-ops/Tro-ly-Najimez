@@ -111,7 +111,8 @@ function renderDebtsUI() {
   });
 
   if (currentDebtView === 'history') {
-    if (countBadge) countBadge.textContent = `${debts.length} giao dịch`;
+    const timelineEvents = buildDebtTimelineEvents(debts);
+    if (countBadge) countBadge.textContent = `${timelineEvents.length} giao dịch`;
     if (recEl) recEl.textContent = formatCurrency(totalRecNet);
     if (payEl) payEl.textContent = formatCurrency(totalPayNet);
     if (!container) return;
@@ -413,10 +414,12 @@ function renderDebtsUI() {
 /**
  * Chuyển đổi danh sách nợ thành Dòng thời gian giao dịch chi tiết (Timeline Events):
  * 1. Khoản nợ gốc: Ghi rõ "X nợ bạn" hoặc "Bạn nợ X" kèm số tiền và lý do
- * 2. Khoản trả nợ: Thêm một giao dịch độc lập riêng biệt "X đã trả nợ" hoặc "Bạn đã trả nợ cho X" khi khoản nợ đã hoàn tất
+ * 2. Khoản trả nợ: Gom các khoản trả nợ trong cùng đợt thành duy nhất 1 giao dịch "... đã trả nợ : xx.xxxđ",
+ *    không ghi rườm rà tất toán cho từng khoản lẻ làm dài lịch sử giao dịch.
  */
 function buildDebtTimelineEvents(debtsList) {
   const events = [];
+  const paidDebts = [];
 
   (debtsList || []).forEach(d => {
     if (!d) return;
@@ -424,7 +427,6 @@ function buildDebtTimelineEvents(debtsList) {
     const isRec = d.direction === 'they_owe_me';
     const isPaid = d.status === 'paid';
     const debtTime = Number(d.timestamp) || Date.now();
-    const settleTime = Number(d.settledAt) || (debtTime + 1000);
 
     // 1. GIAO DỊCH PHÁT SINH NỢ GỐC
     events.push({
@@ -449,30 +451,76 @@ function buildDebtTimelineEvents(debtsList) {
       rawDebt: d
     });
 
-    // 2. GIAO DỊCH THANH TOÁN / TRẢ NỢ (NẾU ĐÃ TRẢ): TẠO THÊM 1 GIAO DỊCH ĐỘC LẬP THEO ĐÚNG Ý NGƯỜI DÙNG!
     if (isPaid) {
+      paidDebts.push(d);
+    }
+  });
+
+  // 2. GIAO DỊCH THANH TOÁN / TRẢ NỢ: GOM CÁC KHOẢN TRẢ CÙNG ĐỢT THÀNH ĐÚNG 1 GIAO DỊCH DUY NHẤT
+  // Gom các khoản trả nợ theo: cùng người, cùng chiều giao dịch, cùng đợt thời gian tất toán
+  const paidGroups = {};
+  paidDebts.forEach(d => {
+    const personName = (d.person || 'Người quen').trim();
+    const debtTime = Number(d.timestamp) || Date.now();
+    const settleTime = Number(d.settledAt) || (debtTime + 1000);
+    const groupKey = `${personName.toLowerCase()}__${d.direction}`;
+    if (!paidGroups[groupKey]) {
+      paidGroups[groupKey] = [];
+    }
+    paidGroups[groupKey].push({ debt: d, settleTime });
+  });
+
+  Object.values(paidGroups).forEach(groupItems => {
+    // Sắp xếp các khoản trả theo thời gian giảm dần
+    groupItems.sort((a, b) => b.settleTime - a.settleTime);
+
+    // Gom các khoản có thời gian thanh toán gần nhau (trong vòng 3 phút = 180.000ms) thành 1 đợt thanh toán
+    const batches = [];
+    groupItems.forEach(item => {
+      let matchedBatch = batches.find(b => Math.abs(b.settleTime - item.settleTime) <= 180000);
+      if (matchedBatch) {
+        matchedBatch.items.push(item.debt);
+        matchedBatch.settleTime = Math.max(matchedBatch.settleTime, item.settleTime);
+      } else {
+        batches.push({
+          settleTime: item.settleTime,
+          items: [item.debt]
+        });
+      }
+    });
+
+    // Tạo duy nhất 1 giao dịch cho mỗi đợt trả nợ
+    batches.forEach(b => {
+      const firstDebt = b.items[0];
+      const personName = (firstDebt.person || 'Người quen').trim();
+      const isRec = firstDebt.direction === 'they_owe_me';
+      const totalAmount = b.items.reduce((sum, it) => sum + (Number(it.amount) || 0), 0);
+      const debtIds = b.items.map(it => it.id);
+      const repImage = b.items.find(it => it.image)?.image || null;
+
       events.push({
-        id: 'settle-' + d.id,
-        debtId: d.id,
+        id: 'settle-batch-' + firstDebt.id + '-' + b.settleTime,
+        debtId: firstDebt.id,
+        debtIds: debtIds,
         isSettlementEvent: true,
         person: personName,
-        // Hiển thị rõ ràng: "Khang đã trả nợ" hoặc "Bạn đã trả nợ cho Khang"
-        displayTitle: isRec ? `${personName} đã trả nợ` : `Bạn đã trả nợ cho ${personName}`,
+        // Hiển thị chuẩn theo đúng yêu cầu: "[Tên người] đã trả nợ : xx.xxxđ"
+        displayTitle: isRec ? `${personName} đã trả nợ : ${formatCurrency(totalAmount)}` : `Bạn đã trả nợ cho ${personName} : ${formatCurrency(totalAmount)}`,
         dirTagText: isRec ? 'Đã thu hồi nợ' : 'Đã thanh toán nợ',
         dirClass: isRec ? 'settle-rec' : 'settle-pay',
         dirIcon: isRec ? 'fa-circle-check' : 'fa-check-double',
-        note: `Tất toán cho: "${d.note || (isRec ? 'Cho mượn tiền' : 'Vay mượn tiền')}"`,
-        amount: Number(d.amount) || 0,
-        amountStr: `${isRec ? '+' : '-'}${formatCurrency(d.amount)}`,
+        note: isRec ? 'Đã thu hồi nợ thành công' : 'Đã hoàn tất thanh toán trả nợ',
+        amount: totalAmount,
+        amountStr: `${isRec ? '+' : '-'}${formatCurrency(totalAmount)}`,
         amountClass: isRec ? 'settle-income' : 'settle-expense',
         isPaid: true,
         statusBadgeText: 'Đã hoàn tất',
         statusBadgeClass: 'paid-complete',
-        timestamp: settleTime,
-        image: d.image || null,
-        rawDebt: d
+        timestamp: b.settleTime,
+        image: repImage,
+        rawDebt: firstDebt
       });
-    }
+    });
   });
 
   // Sắp xếp các sự kiện mới nhất lên đầu dòng thời gian
@@ -587,7 +635,7 @@ function openPersonHistoryModal(personName) {
                 <span class="thumb-badge-zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
               </div>
               ${ev.isSettlementEvent ? `
-                <button type="button" class="btn-debt-item-del" data-action="unsettle-debt-item" data-id="${ev.debtId}" data-person="${escapeHTML(personName)}" title="Hoàn tác thanh toán (chuyển lại Chưa thanh toán)">
+                <button type="button" class="btn-debt-item-del" data-action="unsettle-debt-item" data-id="${ev.debtId}" data-ids="${(ev.debtIds || [ev.debtId]).join(',')}" data-person="${escapeHTML(personName)}" title="Hoàn tác thanh toán (chuyển lại Chưa thanh toán)">
                   <i class="fa-solid fa-rotate-left" style="color: #fbbf24;"></i>
                 </button>
               ` : `
@@ -629,28 +677,31 @@ function openPersonHistoryModal(personName) {
       listEl.querySelectorAll('[data-action="unsettle-debt-item"]').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           e.stopPropagation();
-          const id = btn.dataset.id;
+          const idsStr = btn.dataset.ids || btn.dataset.id || '';
+          const ids = idsStr.split(',').filter(Boolean);
           const person = btn.dataset.person || personName;
-          if (!id) return;
+          if (ids.length === 0) return;
 
           const confirmed = typeof showAppConfirm === 'function'
-            ? await showAppConfirm(`Bạn có muốn hoàn tác việc trả nợ này và chuyển khoản nợ về trạng thái Chưa thanh toán không?`, {
+            ? await showAppConfirm(`Bạn có muốn hoàn tác việc trả nợ này và chuyển lại trạng thái Chưa thanh toán không?`, {
                 title: 'Hoàn tác thanh toán',
                 btnText: 'Xác nhận hoàn tác',
                 btnIcon: 'fa-solid fa-rotate-left'
               })
-            : confirm(`Bạn có muốn hoàn tác việc trả nợ này và chuyển khoản nợ về trạng thái Chưa thanh toán không?`);
+            : confirm(`Bạn có muốn hoàn tác việc trả nợ này và chuyển lại trạng thái Chưa thanh toán không?`);
 
           if (confirmed) {
             const curData = getLedgerData();
-            const target = (curData.debts || []).find(x => x.id === id);
-            if (target) {
-              target.status = 'pending';
-              delete target.settledAt;
-              saveLedgerData(curData);
-              if (typeof renderDebtsUI === 'function') renderDebtsUI();
-              openPersonHistoryModal(person);
-            }
+            ids.forEach(targetId => {
+              const target = (curData.debts || []).find(x => x.id === targetId);
+              if (target) {
+                target.status = 'pending';
+                delete target.settledAt;
+              }
+            });
+            saveLedgerData(curData);
+            if (typeof renderDebtsUI === 'function') renderDebtsUI();
+            openPersonHistoryModal(person);
           }
         });
       });
@@ -740,7 +791,7 @@ function renderAllDebtHistoryUI(container, debts, contactsMap) {
             <span class="thumb-badge-zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></span>
           </div>
           ${ev.isSettlementEvent ? `
-            <button type="button" class="btn-debt-item-del" data-action="unsettle-debt-item" data-id="${ev.debtId}" data-person="${escapeHTML(personName)}" title="Hoàn tác thanh toán (chuyển lại Chưa thanh toán)">
+            <button type="button" class="btn-debt-item-del" data-action="unsettle-debt-item" data-id="${ev.debtId}" data-ids="${(ev.debtIds || [ev.debtId]).join(',')}" data-person="${escapeHTML(personName)}" title="Hoàn tác thanh toán (chuyển lại Chưa thanh toán)">
               <i class="fa-solid fa-rotate-left" style="color: #fbbf24;"></i>
             </button>
           ` : `
@@ -783,27 +834,30 @@ function renderAllDebtHistoryUI(container, debts, contactsMap) {
   container.querySelectorAll('[data-action="unsettle-debt-item"]').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
-      const id = btn.dataset.id;
+      const idsStr = btn.dataset.ids || btn.dataset.id || '';
+      const ids = idsStr.split(',').filter(Boolean);
       const person = btn.dataset.person || '';
-      if (!id) return;
+      if (ids.length === 0) return;
 
       const confirmed = typeof showAppConfirm === 'function'
-        ? await showAppConfirm(`Bạn có muốn hoàn tác việc trả nợ này và chuyển khoản nợ về trạng thái Chưa thanh toán không?`, {
+        ? await showAppConfirm(`Bạn có muốn hoàn tác việc trả nợ này và chuyển lại trạng thái Chưa thanh toán không?`, {
             title: 'Hoàn tác thanh toán',
             btnText: 'Xác nhận hoàn tác',
             btnIcon: 'fa-solid fa-rotate-left'
           })
-        : confirm(`Bạn có muốn hoàn tác việc trả nợ này và chuyển khoản nợ về trạng thái Chưa thanh toán không?`);
+        : confirm(`Bạn có muốn hoàn tác việc trả nợ này và chuyển lại trạng thái Chưa thanh toán không?`);
 
       if (confirmed) {
         const curData = getLedgerData();
-        const target = (curData.debts || []).find(x => x.id === id);
-        if (target) {
-          target.status = 'pending';
-          delete target.settledAt;
-          saveLedgerData(curData);
-          if (typeof renderDebtsUI === 'function') renderDebtsUI();
-        }
+        ids.forEach(targetId => {
+          const target = (curData.debts || []).find(x => x.id === targetId);
+          if (target) {
+            target.status = 'pending';
+            delete target.settledAt;
+          }
+        });
+        saveLedgerData(curData);
+        if (typeof renderDebtsUI === 'function') renderDebtsUI();
       }
     });
   });
