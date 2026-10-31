@@ -160,40 +160,10 @@ function updateHomeLocationUI() {
  * Cập nhật bảng điều khiển tại Trung Tâm Bản Đồ (tab-map)
  */
 function updateMainMapWorkspaceUI() {
-  const homeData = getSavedHomeLocation();
-  const statusBadge = document.getElementById('mainMapStatusBadge');
-  const addressText = document.getElementById('mainMapAddressText');
-  const coordsRow = document.getElementById('mainMapCoordsRow');
-  const coordsVal = document.getElementById('mainMapCoordsVal');
-  const btnNav = document.getElementById('btnNavigateFromMainMap');
-  const btnClear = document.getElementById('btnClearFromMainMap');
-  const btnHudDir = document.getElementById('btnMainMapDirections');
-
-  if (homeData && homeData.lat && homeData.lng) {
-    if (statusBadge) {
-      statusBadge.textContent = 'Đã ghim vị trí';
-      statusBadge.classList.add('active');
-    }
-    if (addressText) {
-      addressText.textContent = homeData.address || `Tọa độ: ${homeData.lat.toFixed(6)}, ${homeData.lng.toFixed(6)}`;
-    }
-    if (coordsRow) coordsRow.style.display = 'block';
-    if (coordsVal) coordsVal.textContent = `${homeData.lat.toFixed(6)}, ${homeData.lng.toFixed(6)}`;
-    if (btnNav) btnNav.disabled = false;
-    if (btnHudDir) btnHudDir.disabled = false;
-    if (btnClear) btnClear.style.display = 'inline-flex';
-  } else {
-    if (statusBadge) {
-      statusBadge.textContent = 'Chưa thiết lập';
-      statusBadge.classList.remove('active');
-    }
-    if (addressText) {
-      addressText.textContent = 'Chưa có vị trí. Hãy nhấp chuột hoặc kéo ghim 🏠 trên bản đồ để chọn nhà bạn.';
-    }
-    if (coordsRow) coordsRow.style.display = 'none';
-    if (btnNav) btnNav.disabled = true;
-    if (btnHudDir) btnHudDir.disabled = true;
-    if (btnClear) btnClear.style.display = 'none';
+  loadSavedPlaces();
+  renderSavedPlacesListUI();
+  if (mainLeafletMap) {
+    renderAllSavedPlaceMarkers();
   }
 }
 
@@ -278,6 +248,10 @@ function initMainLeafletMap() {
   if (homeData && homeData.address) {
     setMainMapPickedLocation(homeData.lat, homeData.lng, homeData.address, false, false);
   }
+
+  // Nạp và cắm ghim toàn bộ các địa điểm đã lưu lên bản đồ
+  loadSavedPlaces();
+  renderAllSavedPlaceMarkers();
 }
 
 /**
@@ -976,6 +950,397 @@ function navigateToHome() {
 }
 
 /**
+ * ============================================================================
+ * QUẢN LÝ ĐỊA ĐIỂM ĐÃ LƯU (SAVED PLACES WORKSPACE)
+ * ============================================================================
+ */
+const SAVED_PLACES_STORAGE_KEY = 'NAJIMEZ_SAVED_PLACES_V1';
+let savedPlaces = [];
+const savedPlaceMarkersMap = new Map();
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function getPlaceTypeInfo(type) {
+  const map = {
+    general: { icon: 'fa-solid fa-location-dot', label: 'Chung', color: '#0ea5e9' },
+    home:    { icon: 'fa-solid fa-house-chimney', label: 'Nhà riêng', color: '#38bdf8' },
+    cafe:    { icon: 'fa-solid fa-mug-hot', label: 'Cà phê', color: '#f59e0b' },
+    work:    { icon: 'fa-solid fa-briefcase', label: 'Công ty', color: '#a855f7' },
+    food:    { icon: 'fa-solid fa-utensils', label: 'Quán ăn', color: '#f43f5e' },
+    shop:    { icon: 'fa-solid fa-cart-shopping', label: 'Mua sắm', color: '#10b981' },
+    star:    { icon: 'fa-solid fa-star', label: 'Yêu thích', color: '#eab308' }
+  };
+  return map[type] || map.general;
+}
+
+function formatPlaceTime(ts) {
+  if (!ts) return '';
+  const d = new Date(ts);
+  const hours = String(d.getHours()).padStart(2, '0');
+  const mins = String(d.getMinutes()).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const year = d.getFullYear();
+  return `${hours}:${mins} - ${day}/${month}/${year}`;
+}
+
+function loadSavedPlaces() {
+  try {
+    const raw = localStorage.getItem(SAVED_PLACES_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        savedPlaces = parsed;
+        return savedPlaces;
+      }
+    }
+  } catch (e) {
+    console.warn('[MapLocation] Lỗi đọc saved places:', e);
+  }
+  savedPlaces = [];
+  return savedPlaces;
+}
+
+function saveSavedPlacesList(list) {
+  savedPlaces = list;
+  try {
+    localStorage.setItem(SAVED_PLACES_STORAGE_KEY, JSON.stringify(savedPlaces));
+    if (typeof syncLedgerToFirebase === 'function') {
+      syncLedgerToFirebase(null, true);
+    }
+  } catch (e) {
+    console.error('[MapLocation] Lỗi lưu saved places:', e);
+  }
+}
+
+function renderSavedPlacesListUI() {
+  const badge = document.getElementById('savedPlacesCountBadge');
+  const listEl = document.getElementById('savedPlacesList');
+  if (badge) {
+    badge.textContent = `${savedPlaces.length} địa điểm`;
+  }
+  if (!listEl) return;
+
+  if (savedPlaces.length === 0) {
+    listEl.innerHTML = `
+      <div class="saved-places-empty">
+        <div class="empty-icon"><i class="fa-solid fa-map-location-dot"></i></div>
+        <div class="empty-title">Chưa có địa điểm đã lưu</div>
+        <div class="empty-desc">Nhấp chuột trên bản đồ để chọn vị trí, sau đó bấm <strong>"Thêm Vị Trí Hiện Tại"</strong> ở trên để lưu lại nhé!</div>
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = savedPlaces.map(place => {
+    const typeInfo = getPlaceTypeInfo(place.type);
+    const addrDisplay = place.address || `Tọa độ: ${place.lat.toFixed(5)}, ${place.lng.toFixed(5)}`;
+    return `
+      <div class="saved-place-item" data-id="${place.id}">
+        <div class="place-item-top">
+          <div class="place-item-icon-tag type-${place.type || 'general'}" title="${typeInfo.label}">
+            <i class="${typeInfo.icon}"></i>
+          </div>
+          <div class="place-item-main">
+            <div class="place-item-name" title="${escapeHtml(place.name)}">${escapeHtml(place.name)}</div>
+            <div class="place-item-time"><i class="fa-regular fa-clock"></i> ${formatPlaceTime(place.createdAt)}</div>
+          </div>
+          <button type="button" class="btn-del-place" data-id="${place.id}" title="Xóa địa điểm này">
+            <i class="fa-regular fa-trash-can"></i>
+          </button>
+        </div>
+
+        <div class="place-item-addr" title="${escapeHtml(addrDisplay)}">
+          <i class="fa-solid fa-location-dot"></i>
+          <span>${escapeHtml(addrDisplay)}</span>
+        </div>
+
+        ${place.notes ? `
+          <div class="place-item-notes">
+            <i class="fa-regular fa-note-sticky"></i>
+            <span>${escapeHtml(place.notes)}</span>
+          </div>
+        ` : ''}
+
+        <div class="place-item-actions">
+          <button type="button" class="btn-place-pan" data-id="${place.id}">
+            <i class="fa-solid fa-crosshairs"></i> Xem Trên Map
+          </button>
+          <button type="button" class="btn-place-route" data-id="${place.id}">
+            <i class="fa-solid fa-route"></i> Chỉ Đường
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Bắt sự kiện
+  listEl.querySelectorAll('.saved-place-item').forEach(card => {
+    const placeId = card.dataset.id;
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.btn-del-place') || e.target.closest('.btn-place-route')) return;
+      focusSavedPlaceOnMap(placeId);
+    });
+  });
+
+  listEl.querySelectorAll('.btn-del-place').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteSavedPlace(btn.dataset.id);
+    });
+  });
+
+  listEl.querySelectorAll('.btn-place-pan').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      focusSavedPlaceOnMap(btn.dataset.id);
+    });
+  });
+
+  listEl.querySelectorAll('.btn-place-route').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      routeToSavedPlace(btn.dataset.id);
+    });
+  });
+}
+
+function renderAllSavedPlaceMarkers() {
+  if (!mainLeafletMap) return;
+
+  savedPlaceMarkersMap.forEach(marker => {
+    try { mainLeafletMap.removeLayer(marker); } catch (_) {}
+  });
+  savedPlaceMarkersMap.clear();
+
+  savedPlaces.forEach(place => {
+    const typeInfo = getPlaceTypeInfo(place.type);
+    const divIcon = L.divIcon({
+      className: 'custom-saved-pin-wrapper',
+      html: `<div class="saved-place-neon-marker type-${place.type || 'general'}" title="${escapeHtml(place.name)}"><i class="${typeInfo.icon}"></i></div>`,
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+      popupAnchor: [0, -18]
+    });
+
+    const marker = L.marker([place.lat, place.lng], { icon: divIcon }).addTo(mainLeafletMap);
+
+    const addrDisplay = place.address || `Tọa độ: ${place.lat.toFixed(5)}, ${place.lng.toFixed(5)}`;
+    const popupContent = `
+      <div class="saved-place-popup">
+        <div class="popup-place-header">
+          <i class="${typeInfo.icon}" style="color: ${typeInfo.color};"></i>
+          <strong>${escapeHtml(place.name)}</strong>
+        </div>
+        <div class="popup-place-addr">${escapeHtml(addrDisplay)}</div>
+        ${place.notes ? `<div class="popup-place-notes"><em>"${escapeHtml(place.notes)}"</em></div>` : ''}
+        <div class="popup-place-footer">
+          <span class="popup-time">${formatPlaceTime(place.createdAt)}</span>
+          <button type="button" class="popup-btn-route" onclick="window.routeToSavedPlace('${place.id}')">
+            <i class="fa-solid fa-route"></i> Chỉ đường
+          </button>
+        </div>
+      </div>
+    `;
+    marker.bindPopup(popupContent);
+    savedPlaceMarkersMap.set(place.id, marker);
+  });
+}
+
+function openAddSavedPlaceModal() {
+  let lat = currentPickedLat;
+  let lng = currentPickedLng;
+  if (!lat || !lng) {
+    if (mainLeafletMap) {
+      const c = mainLeafletMap.getCenter();
+      lat = c.lat;
+      lng = c.lng;
+    } else {
+      lat = DEFAULT_MAP_CENTER[0];
+      lng = DEFAULT_MAP_CENTER[1];
+    }
+  }
+
+  const coordsText = document.getElementById('addPlaceCoordsText');
+  const addrText = document.getElementById('addPlaceAddrText');
+  if (coordsText) coordsText.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+
+  if (currentPickedAddress) {
+    if (addrText) addrText.textContent = currentPickedAddress;
+  } else {
+    if (addrText) addrText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xác định tên địa chỉ...';
+    reverseGeocodeLocation(lat, lng, (resolved) => {
+      const el = document.getElementById('addPlaceAddrText');
+      if (el) el.textContent = resolved;
+    });
+  }
+
+  // Reset form
+  const inputName = document.getElementById('inputPlaceName');
+  const inputNotes = document.getElementById('inputPlaceNotes');
+  if (inputName) inputName.value = '';
+  if (inputNotes) inputNotes.value = '';
+
+  const typeOpts = document.querySelectorAll('#placeTypeSelector .type-opt');
+  typeOpts.forEach(o => {
+    const isGeneral = o.dataset.type === 'general';
+    o.classList.toggle('active', isGeneral);
+    const radio = o.querySelector('input[type="radio"]');
+    if (radio) radio.checked = isGeneral;
+  });
+
+  const modal = document.getElementById('modalAddSavedPlace');
+  if (modal) {
+    modal.style.display = 'flex';
+    setTimeout(() => {
+      if (inputName) inputName.focus();
+    }, 100);
+  }
+}
+
+function closeAddSavedPlaceModal() {
+  const modal = document.getElementById('modalAddSavedPlace');
+  if (modal) modal.style.display = 'none';
+}
+
+function handleConfirmAddSavedPlace(e) {
+  if (e) e.preventDefault();
+
+  const inputName = document.getElementById('inputPlaceName');
+  const inputNotes = document.getElementById('inputPlaceNotes');
+  const activeTypeOpt = document.querySelector('#placeTypeSelector .type-opt.active');
+
+  const name = (inputName && inputName.value.trim()) || '';
+  if (!name) {
+    if (typeof showToast === 'function') showToast('Vui lòng nhập tên địa điểm!', 'warning');
+    else alert('Vui lòng nhập tên địa điểm!');
+    if (inputName) inputName.focus();
+    return;
+  }
+
+  const type = (activeTypeOpt && activeTypeOpt.dataset.type) || 'general';
+  const notes = (inputNotes && inputNotes.value.trim()) || '';
+
+  let lat = currentPickedLat;
+  let lng = currentPickedLng;
+  if (!lat || !lng) {
+    if (mainLeafletMap) {
+      const c = mainLeafletMap.getCenter();
+      lat = c.lat;
+      lng = c.lng;
+    } else {
+      lat = DEFAULT_MAP_CENTER[0];
+      lng = DEFAULT_MAP_CENTER[1];
+    }
+  }
+
+  const addrEl = document.getElementById('addPlaceAddrText');
+  const addr = (addrEl && addrEl.textContent && !addrEl.textContent.includes('Đang xác định'))
+    ? addrEl.textContent.trim()
+    : (currentPickedAddress || `Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+
+  const newPlace = {
+    id: 'place_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+    name: name,
+    type: type,
+    lat: lat,
+    lng: lng,
+    address: addr,
+    notes: notes,
+    createdAt: Date.now()
+  };
+
+  savedPlaces.unshift(newPlace);
+  saveSavedPlacesList(savedPlaces);
+
+  closeAddSavedPlaceModal();
+  renderSavedPlacesListUI();
+  renderAllSavedPlaceMarkers();
+
+  // Focus tới marker trên map
+  focusSavedPlaceOnMap(newPlace.id);
+
+  if (typeof showToast === 'function') {
+    showToast(`Đã lưu "${newPlace.name}" vào danh sách địa điểm!`, 'success');
+  }
+}
+
+function deleteSavedPlace(id) {
+  const p = savedPlaces.find(x => x.id === id);
+  if (!p) return;
+
+  const ok = confirm(`Bạn có chắc muốn xóa địa điểm "${p.name}" khỏi danh sách đã lưu?`);
+  if (!ok) return;
+
+  savedPlaces = savedPlaces.filter(x => x.id !== id);
+  saveSavedPlacesList(savedPlaces);
+
+  const marker = savedPlaceMarkersMap.get(id);
+  if (marker && mainLeafletMap) {
+    try { mainLeafletMap.removeLayer(marker); } catch (_) {}
+    savedPlaceMarkersMap.delete(id);
+  }
+
+  renderSavedPlacesListUI();
+  if (typeof showToast === 'function') {
+    showToast(`Đã xóa "${p.name}" khỏi danh sách!`, 'info');
+  }
+}
+
+function focusSavedPlaceOnMap(id) {
+  const p = savedPlaces.find(x => x.id === id);
+  if (!p || !mainLeafletMap) return;
+
+  mainLeafletMap.setView([p.lat, p.lng], 17);
+  const m = savedPlaceMarkersMap.get(id);
+  if (m) {
+    setTimeout(() => {
+      m.openPopup();
+    }, 250);
+  }
+}
+
+function routeToSavedPlace(id) {
+  const p = savedPlaces.find(x => x.id === id);
+  if (!p) return;
+
+  if (navigator.geolocation) {
+    const overlay = document.getElementById('mainMapLoadingOverlay');
+    const overlayText = document.getElementById('mainMapLoadingText');
+    if (overlay) {
+      if (overlayText) overlayText.textContent = `Đang tìm tuyến đường tới ${p.name}...`;
+      overlay.style.display = 'flex';
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (overlay) overlay.style.display = 'none';
+        calculateAndDrawRoute(pos.coords.latitude, pos.coords.longitude, p.lat, p.lng, `Tới: ${p.name}`);
+      },
+      () => {
+        if (overlay) overlay.style.display = 'none';
+        const startLat = (currentPickedLat && currentPickedLat !== p.lat) ? currentPickedLat : DEFAULT_MAP_CENTER[0];
+        const startLng = (currentPickedLng && currentPickedLng !== p.lng) ? currentPickedLng : DEFAULT_MAP_CENTER[1];
+        calculateAndDrawRoute(startLat, startLng, p.lat, p.lng, `Tới: ${p.name}`);
+      },
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  } else {
+    const startLat = (currentPickedLat && currentPickedLat !== p.lat) ? currentPickedLat : DEFAULT_MAP_CENTER[0];
+    const startLng = (currentPickedLng && currentPickedLng !== p.lng) ? currentPickedLng : DEFAULT_MAP_CENTER[1];
+    calculateAndDrawRoute(startLat, startLng, p.lat, p.lng, `Tới: ${p.name}`);
+  }
+}
+
+/**
  * Lưu vị trí từ Main Map làm nhà riêng
  */
 function handleSaveFromMainMap() {
@@ -1022,6 +1387,7 @@ function renderMapTab() {
     initMainLeafletMap();
     if (mainLeafletMap) {
       mainLeafletMap.invalidateSize();
+      renderAllSavedPlaceMarkers();
       const homeData = getSavedHomeLocation();
       if (homeData && homeData.lat && homeData.lng) {
         mainLeafletMap.setView([homeData.lat, homeData.lng], 16);
@@ -1057,20 +1423,45 @@ function initHomeLocationModule() {
   if (btnRefresh) btnRefresh.addEventListener('click', updateHomeLocationUI);
 
   // Nút trên Main Map Workspace (tab-map)
-  const btnSaveMain = document.getElementById('btnSaveFromMainMap');
-  const btnNavMain = document.getElementById('btnNavigateFromMainMap');
-  const btnGpsMain = document.getElementById('btnGpsFromMainMap');
-  const btnPasteCoords = document.getElementById('btnPasteCoordsFromMainMap');
-  const btnClearMain = document.getElementById('btnClearFromMainMap');
+  const btnAddPlace = document.getElementById('btnAddSavedPlace');
+  const btnCloseModal = document.getElementById('btnCloseAddPlaceModal');
+  const btnCancelModal = document.getElementById('btnCancelAddPlace');
+  const formAddPlace = document.getElementById('formAddSavedPlace');
+  const modalAdd = document.getElementById('modalAddSavedPlace');
+
+  if (btnAddPlace) btnAddPlace.addEventListener('click', openAddSavedPlaceModal);
+  if (btnCloseModal) btnCloseModal.addEventListener('click', closeAddSavedPlaceModal);
+  if (btnCancelModal) btnCancelModal.addEventListener('click', closeAddSavedPlaceModal);
+  if (formAddPlace) formAddPlace.addEventListener('submit', handleConfirmAddSavedPlace);
+
+  if (modalAdd) {
+    modalAdd.addEventListener('click', (e) => {
+      if (e.target === modalAdd) closeAddSavedPlaceModal();
+    });
+  }
+
+  // Bộ chọn loại địa điểm trong Modal
+  const typeOpts = document.querySelectorAll('#placeTypeSelector .type-opt');
+  typeOpts.forEach(opt => {
+    opt.addEventListener('click', () => {
+      typeOpts.forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      const radio = opt.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const m = document.getElementById('modalAddSavedPlace');
+      if (m && m.style.display !== 'none') closeAddSavedPlaceModal();
+    }
+  });
+
   const btnHudGps = document.getElementById('btnMainMapGps');
   const btnHudDir = document.getElementById('btnMainMapDirections');
   const btnCloseRoute = document.getElementById('btnCloseRoute');
 
-  if (btnSaveMain) btnSaveMain.addEventListener('click', handleSaveFromMainMap);
-  if (btnNavMain) btnNavMain.addEventListener('click', navigateToHome);
-  if (btnGpsMain) btnGpsMain.addEventListener('click', locateViaGPSOnMainMap);
-  if (btnPasteCoords) btnPasteCoords.addEventListener('click', promptPasteCoordinates);
-  if (btnClearMain) btnClearMain.addEventListener('click', handleClearHomeLocation);
   if (btnHudGps) btnHudGps.addEventListener('click', locateViaGPSOnMainMap);
   if (btnHudDir) btnHudDir.addEventListener('click', navigateToHome);
   if (btnCloseRoute) btnCloseRoute.addEventListener('click', clearCurrentRoute);
@@ -1145,4 +1536,12 @@ window.calculateAndDrawRoute = calculateAndDrawRoute;
 window.clearCurrentRoute = clearCurrentRoute;
 window.searchAndDisplayNearbyPlaces = searchAndDisplayNearbyPlaces;
 window.promptPasteCoordinates = promptPasteCoordinates;
+window.openAddSavedPlaceModal = openAddSavedPlaceModal;
+window.closeAddSavedPlaceModal = closeAddSavedPlaceModal;
+window.handleConfirmAddSavedPlace = handleConfirmAddSavedPlace;
+window.deleteSavedPlace = deleteSavedPlace;
+window.focusSavedPlaceOnMap = focusSavedPlaceOnMap;
+window.routeToSavedPlace = routeToSavedPlace;
+window.renderSavedPlacesListUI = renderSavedPlacesListUI;
+window.renderAllSavedPlaceMarkers = renderAllSavedPlaceMarkers;
 window.initHomeLocationModule = initHomeLocationModule;

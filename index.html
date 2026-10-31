@@ -25,8 +25,8 @@
   <!-- Favicon Najimez -->
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
-  <link rel="stylesheet" href="style.css?v=3.95.19">
-  <link rel="stylesheet" href="css/map-location.css?v=3.95.19">
+  <link rel="stylesheet" href="style.css?v=3.95.20">
+  <link rel="stylesheet" href="css/map-location.css?v=3.95.20">
   <link rel="stylesheet" href="css/language-learning.css?v=3.95.7">
   <link rel="stylesheet" href="css/language-tutor.css?v=3.95.8">
   <link rel="stylesheet" href="css/timetable-matcher.css?v=3.95.10">
@@ -1433,81 +1433,30 @@
                   <div class="map-route-steps-list" id="mapRouteStepsList"></div>
                 </div>
 
-                <!-- Thẻ Thông Tin Nhà Riêng -->
-                <div class="map-info-card">
-                  <div class="map-info-header">
-                    <div class="map-info-title">
-                      <i class="fa-solid fa-house-chimney-user" style="color: #38bdf8;"></i>
-                      <span>Vị Trí Nhà Riêng Của Bạn</span>
+                <!-- Thẻ Quản Lý Địa Điểm Đã Lưu -->
+                <div class="map-saved-places-card">
+                  <div class="map-saved-header">
+                    <div class="map-saved-title">
+                      <i class="fa-solid fa-bookmark" style="color: #38bdf8;"></i>
+                      <span>Địa Điểm Đã Lưu</span>
                     </div>
-                    <span class="home-loc-badge" id="mainMapStatusBadge">Chưa thiết lập</span>
+                    <span class="saved-places-count-badge" id="savedPlacesCountBadge">0 địa điểm</span>
                   </div>
 
-                  <div class="map-info-body">
-                    <div class="map-info-addr-box">
-                      <div class="map-info-addr-label"><i class="fa-solid fa-location-dot" style="color: #f43f5e;"></i> Địa chỉ đã ghim:</div>
-                      <p class="map-info-addr-text" id="mainMapAddressText">Chưa có vị trí. Hãy nhấp chuột hoặc kéo ghim 🏠 trên bản đồ để chọn nhà bạn.</p>
-                      <div class="map-info-coords-row" id="mainMapCoordsRow" style="display: none;">
-                        <span><i class="fa-solid fa-compass"></i> Tọa độ: <strong id="mainMapCoordsVal" style="color: #38bdf8;">--</strong></span>
+                  <div class="map-saved-body">
+                    <!-- Nút Thêm Vị Trí Hiện Tại nổi bật trên cùng -->
+                    <button type="button" class="btn-add-saved-place" id="btnAddSavedPlace">
+                      <div class="btn-add-place-left">
+                        <i class="fa-solid fa-map-pin"></i>
+                        <span>Thêm Vị Trí Hiện Tại</span>
                       </div>
-                    </div>
+                      <i class="fa-solid fa-plus add-plus-icon"></i>
+                    </button>
 
-                    <div class="map-control-buttons-stack" style="margin-top: 12px;">
-                      <button type="button" class="btn-home-action cyan" id="btnSaveFromMainMap" style="width: 100%;">
-                        <i class="fa-solid fa-floppy-disk"></i> Lưu Vị Trí Này Làm Nhà
-                      </button>
-                      <button type="button" class="btn-home-action gold" id="btnNavigateFromMainMap" style="width: 100%;" disabled>
-                        <i class="fa-solid fa-route"></i> Chỉ Đường Về Nhà (Trực Tiếp)
-                      </button>
-                      <button type="button" class="btn-home-action purple" id="btnGpsFromMainMap" style="width: 100%;">
-                        <i class="fa-solid fa-crosshairs"></i> Lấy Vị Trí GPS Đang Đứng
-                      </button>
-                      <button type="button" class="btn-home-action emerald" id="btnPasteCoordsFromMainMap" style="width: 100%;">
-                        <i class="fa-solid fa-paste"></i> Dán Tọa Độ / Link Google Maps
-                      </button>
-                      <button type="button" class="btn-home-action slate" id="btnClearFromMainMap" style="width: 100%; display: none;">
-                        <i class="fa-regular fa-trash-can"></i> Xóa Vị Trí Đã Lưu
-                      </button>
+                    <!-- Danh sách các vị trí đã thêm (cuộn overflow-y: auto) -->
+                    <div class="saved-places-list" id="savedPlacesList">
+                      <!-- Render động qua JavaScript -->
                     </div>
-
-                    <div class="map-gps-tip-box" style="margin-top: 10px; background: rgba(30, 41, 59, 0.6); border: 1px dashed rgba(56, 189, 248, 0.4); border-radius: 8px; padding: 10px; font-size: 0.75rem; color: #cbd5e1; line-height: 1.45;">
-                      <div style="font-weight: 700; color: #38bdf8; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-                        <i class="fa-solid fa-circle-question"></i> Vị trí máy tính bị lệch vài trăm mét?
-                      </div>
-                      <span>Máy tính bàn/laptop không có chip GPS vệ tinh (chỉ ước lượng qua Wi-Fi/IP). Để chuẩn 100%:</span>
-                      <ul style="margin: 4px 0 0 16px; padding: 0; color: #94a3b8;">
-                        <li><strong style="color: #e2e8f0;">Cách 1:</strong> Bật chế độ <em>Vệ tinh</em> rồi <em>kéo ghim 🏠</em> đặt vào nóc nhà.</li>
-                        <li><strong style="color: #e2e8f0;">Cách 2:</strong> Mở Google Maps trên điện thoại, copy tọa độ rồi bấm nút <em>Dán Tọa Độ</em> ở trên.</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Thẻ Tiện Ích Gợi Ý Tìm Nhanh Quanh Nhà -->
-                <div class="map-quick-places-card">
-                  <div class="map-places-title">
-                    <i class="fa-solid fa-compass-drafting" style="color: #fbbf24;"></i>
-                    <span>Tìm Nhanh Quanh Vị Trí Này</span>
-                  </div>
-                  <div class="map-places-chips">
-                    <button type="button" class="map-place-chip" data-query="quán cà phê">
-                      ☕ Quán Cà Phê
-                    </button>
-                    <button type="button" class="map-place-chip" data-query="cây xăng">
-                      ⛽ Cây Xăng
-                    </button>
-                    <button type="button" class="map-place-chip" data-query="tiệm thuốc">
-                      💊 Tiệm Thuốc
-                    </button>
-                    <button type="button" class="map-place-chip" data-query="siêu thị">
-                      🛒 Siêu Thị
-                    </button>
-                    <button type="button" class="map-place-chip" data-query="bệnh viện">
-                      🏥 Bệnh Viện
-                    </button>
-                    <button type="button" class="map-place-chip" data-query="quán ăn">
-                      🍜 Quán Ăn
-                    </button>
                   </div>
                 </div>
 
@@ -3483,6 +3432,99 @@
     </div>
   </div>
 
+  <!-- MODAL: THÊM ĐỊA ĐIỂM ĐÃ LƯU TRÊN BẢN ĐỒ -->
+  <div class="modal-backdrop" id="modalAddSavedPlace" style="display: none;">
+    <div class="modal-dialog add-saved-place-dialog" style="max-width: 480px;">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-map-location-dot" style="color: #38bdf8;"></i>
+          <span>Lưu Địa Điểm Mới</span>
+        </div>
+        <button type="button" class="btn-close-modal" id="btnCloseAddPlaceModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="formAddSavedPlace" class="modal-body" style="padding: 18px 22px;">
+        <!-- Tọa độ & địa chỉ tóm tắt -->
+        <div class="add-place-coord-preview">
+          <div class="preview-coord-badge">
+            <i class="fa-solid fa-crosshairs"></i>
+            <span id="addPlaceCoordsText">--</span>
+          </div>
+          <div class="preview-addr-text" id="addPlaceAddrText">
+            Đang xác định địa chỉ...
+          </div>
+        </div>
+
+        <!-- Tên địa điểm -->
+        <div class="form-group-custom" style="margin-top: 14px;">
+          <label for="inputPlaceName" class="form-label-custom">
+            <i class="fa-solid fa-tag"></i> Tên địa điểm <span style="color: #f43f5e;">*</span>
+          </label>
+          <input type="text" id="inputPlaceName" class="form-input-custom" placeholder="Ví dụ: Quán cà phê quen, Nhà bạn Nam, Công ty..." required>
+        </div>
+
+        <!-- Chọn loại / Icon -->
+        <div class="form-group-custom" style="margin-top: 14px;">
+          <label class="form-label-custom"><i class="fa-solid fa-icons"></i> Loại địa điểm</label>
+          <div class="place-type-selector" id="placeTypeSelector">
+            <label class="type-opt active" data-type="general">
+              <input type="radio" name="placeTypeOpt" value="general" checked>
+              <i class="fa-solid fa-location-dot"></i>
+              <span>Chung</span>
+            </label>
+            <label class="type-opt" data-type="home">
+              <input type="radio" name="placeTypeOpt" value="home">
+              <i class="fa-solid fa-house-chimney"></i>
+              <span>Nhà riêng</span>
+            </label>
+            <label class="type-opt" data-type="cafe">
+              <input type="radio" name="placeTypeOpt" value="cafe">
+              <i class="fa-solid fa-mug-hot"></i>
+              <span>Cà phê</span>
+            </label>
+            <label class="type-opt" data-type="work">
+              <input type="radio" name="placeTypeOpt" value="work">
+              <i class="fa-solid fa-briefcase"></i>
+              <span>Công ty</span>
+            </label>
+            <label class="type-opt" data-type="food">
+              <input type="radio" name="placeTypeOpt" value="food">
+              <i class="fa-solid fa-utensils"></i>
+              <span>Quán ăn</span>
+            </label>
+            <label class="type-opt" data-type="shop">
+              <input type="radio" name="placeTypeOpt" value="shop">
+              <i class="fa-solid fa-cart-shopping"></i>
+              <span>Mua sắm</span>
+            </label>
+            <label class="type-opt" data-type="star">
+              <input type="radio" name="placeTypeOpt" value="star">
+              <i class="fa-solid fa-star"></i>
+              <span>Yêu thích</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Ghi chú thêm -->
+        <div class="form-group-custom" style="margin-top: 14px;">
+          <label for="inputPlaceNotes" class="form-label-custom">
+            <i class="fa-regular fa-note-sticky"></i> Ghi chú / Mô tả thêm
+          </label>
+          <textarea id="inputPlaceNotes" class="form-textarea-custom" rows="2" placeholder="Ví dụ: Pass wifi: 12345678, gặp nhau sáng CN, có chỗ đậu xe..."></textarea>
+        </div>
+
+        <div class="modal-actions-row" style="margin-top: 20px;">
+          <button type="button" class="btn-modal-action secondary" id="btnCancelAddPlace">Hủy</button>
+          <button type="submit" class="btn-modal-action primary" id="btnConfirmAddPlace">
+            <i class="fa-solid fa-floppy-disk"></i> Lưu Địa Điểm
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- Firebase SDK Compat v10 (Chạy mượt mà trực tiếp không cần npm build) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
@@ -3506,7 +3548,7 @@
   <script src="js/timetable-timeline.js?v=3.66.0"></script>
   <script src="js/lucky-wheel.js?v=3.70.0"></script>
   <script src="js/toolbox.js?v=3.95.11"></script>
-  <script src="js/map-location.js?v=3.95.19"></script>
+  <script src="js/map-location.js?v=3.95.20"></script>
   <script src="js/language-learning.js?v=3.95.10"></script>
   <script src="js/language-tutor.js?v=3.95.8"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>

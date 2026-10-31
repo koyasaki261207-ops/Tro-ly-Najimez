@@ -1178,6 +1178,510 @@
   box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
 }
 
+/* ============================================================================
+   KHU VỰC QUẢN LÝ ĐỊA ĐIỂM ĐÃ LƯU (SAVED PLACES WORKSPACE)
+   ============================================================================ */
+.map-saved-places-card {
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(56, 189, 248, 0.22);
+  border-radius: 14px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  min-height: 480px;
+}
+
+.map-saved-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.map-saved-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.saved-places-count-badge {
+  background: rgba(56, 189, 248, 0.15);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  color: #38bdf8;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.map-saved-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+/* Nút Thêm Vị Trí Hiện Tại nổi bật */
+.btn-add-saved-place {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  color: #ffffff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 18px rgba(2, 132, 199, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: all 0.22s ease;
+}
+
+.btn-add-saved-place:hover {
+  background: linear-gradient(135deg, #0369a1 0%, #0ea5e9 100%);
+  box-shadow: 0 6px 24px rgba(56, 189, 248, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-add-place-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-add-place-left i {
+  font-size: 1rem;
+  color: #bae6fd;
+}
+
+.add-plus-icon {
+  background: rgba(255, 255, 255, 0.2);
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+}
+
+/* Danh sách cuộn */
+.saved-places-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.saved-places-list::-webkit-scrollbar {
+  width: 5px;
+}
+.saved-places-list::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: 4px;
+}
+.saved-places-list::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.3);
+  border-radius: 4px;
+}
+.saved-places-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.6);
+}
+
+/* Thẻ địa điểm */
+.saved-place-item {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.saved-place-item:hover {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.place-item-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.place-item-icon-tag {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.place-item-icon-tag.type-general { background: rgba(14, 165, 233, 0.18); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); }
+.place-item-icon-tag.type-home    { background: rgba(56, 189, 248, 0.2);  color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.5); }
+.place-item-icon-tag.type-cafe    { background: rgba(245, 158, 11, 0.18); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); }
+.place-item-icon-tag.type-work    { background: rgba(139, 92, 246, 0.18); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4); }
+.place-item-icon-tag.type-food    { background: rgba(244, 63, 94, 0.18);  color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.4); }
+.place-item-icon-tag.type-shop    { background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); }
+.place-item-icon-tag.type-star    { background: rgba(234, 179, 8, 0.2);   color: #fde047; border: 1px solid rgba(234, 179, 8, 0.45); }
+
+.place-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.place-item-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #f8fafc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.place-item-time {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 1px;
+}
+
+.btn-del-place {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  transition: all 0.15s ease;
+}
+
+.btn-del-place:hover {
+  background: rgba(239, 68, 68, 0.18);
+  color: #f87171;
+}
+
+.place-item-addr {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.place-item-addr i {
+  color: #f43f5e;
+  font-size: 0.72rem;
+}
+
+.place-item-notes {
+  font-size: 0.73rem;
+  color: #cbd5e1;
+  background: rgba(15, 23, 42, 0.45);
+  border-left: 2px solid #38bdf8;
+  border-radius: 0 6px 6px 0;
+  padding: 4px 8px;
+  font-style: italic;
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.place-item-notes i {
+  color: #fbbf24;
+  font-size: 0.7rem;
+  margin-top: 2px;
+}
+
+.place-item-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.06);
+}
+
+.btn-place-pan {
+  background: rgba(100, 116, 139, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  color: #cbd5e1;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.18s ease;
+}
+
+.btn-place-pan:hover {
+  background: rgba(56, 189, 248, 0.18);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+}
+
+.btn-place-route {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.3));
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  color: #fef3c7;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.73rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.18s ease;
+}
+
+.btn-place-route:hover {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(217, 119, 6, 0.5));
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.35);
+}
+
+/* Empty state */
+.saved-places-empty {
+  text-align: center;
+  padding: 32px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.saved-places-empty .empty-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px dashed rgba(56, 189, 248, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: #38bdf8;
+  margin-bottom: 4px;
+}
+
+.saved-places-empty .empty-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.saved-places-empty .empty-desc {
+  font-size: 0.76rem;
+  color: #94a3b8;
+  line-height: 1.45;
+  max-width: 240px;
+}
+
+/* Modal Thêm Địa Điểm Mới */
+.add-saved-place-dialog {
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.85), 0 0 30px rgba(56, 189, 248, 0.2);
+  border-radius: 14px;
+}
+
+.add-place-coord-preview {
+  background: rgba(30, 41, 59, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preview-coord-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.preview-addr-text {
+  font-size: 0.75rem;
+  color: #cbd5e1;
+  line-height: 1.35;
+}
+
+.place-type-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.type-opt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.type-opt input {
+  display: none;
+}
+
+.type-opt:hover {
+  background: rgba(56, 189, 248, 0.12);
+  color: #e0f2fe;
+}
+
+.type-opt.active {
+  background: rgba(56, 189, 248, 0.22);
+  border-color: rgba(56, 189, 248, 0.55);
+  color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
+
+/* Neon Marker trên bản đồ Leaflet */
+.custom-saved-pin-wrapper {
+  background: transparent;
+  border: none;
+}
+
+.saved-place-neon-marker {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.95rem;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.saved-place-neon-marker:hover {
+  transform: scale(1.15) translateY(-3px);
+  z-index: 9999 !important;
+}
+
+.saved-place-neon-marker.type-general { background: radial-gradient(circle, #38bdf8 0%, #0284c7 100%); border: 2px solid #bae6fd; box-shadow: 0 0 14px #0284c7; }
+.saved-place-neon-marker.type-home    { background: radial-gradient(circle, #0ea5e9 0%, #0369a1 100%); border: 2px solid #7dd3fc; box-shadow: 0 0 14px #0ea5e9; }
+.saved-place-neon-marker.type-cafe    { background: radial-gradient(circle, #f59e0b 0%, #b45309 100%); border: 2px solid #fde68a; box-shadow: 0 0 14px #f59e0b; }
+.saved-place-neon-marker.type-work    { background: radial-gradient(circle, #a855f7 0%, #7e22ce 100%); border: 2px solid #e9d5ff; box-shadow: 0 0 14px #a855f7; }
+.saved-place-neon-marker.type-food    { background: radial-gradient(circle, #f43f5e 0%, #be123c 100%); border: 2px solid #fecdd3; box-shadow: 0 0 14px #f43f5e; }
+.saved-place-neon-marker.type-shop    { background: radial-gradient(circle, #10b981 0%, #047857 100%); border: 2px solid #a7f3d0; box-shadow: 0 0 14px #10b981; }
+.saved-place-neon-marker.type-star    { background: radial-gradient(circle, #eab308 0%, #a16207 100%); border: 2px solid #fef08a; box-shadow: 0 0 14px #eab308; }
+
+/* Popup Marker */
+.saved-place-popup {
+  padding: 6px 4px;
+  font-family: inherit;
+  min-width: 200px;
+  max-width: 260px;
+}
+
+.popup-place-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.popup-place-addr {
+  font-size: 0.74rem;
+  color: #475569;
+  line-height: 1.35;
+  margin-bottom: 6px;
+}
+
+.popup-place-notes {
+  font-size: 0.72rem;
+  color: #0369a1;
+  background: #f0f9ff;
+  border-left: 2px solid #0284c7;
+  padding: 3px 6px;
+  border-radius: 0 4px 4px 0;
+  margin-bottom: 8px;
+}
+
+.popup-place-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.popup-time {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.popup-btn-route {
+  background: #0284c7;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.popup-btn-route:hover {
+  background: #0369a1;
+}
+
 @media (max-width: 992px) {
   .map-center-grid {
     grid-template-columns: 1fr;
