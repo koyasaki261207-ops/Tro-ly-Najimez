@@ -452,8 +452,17 @@
 
   /* Thời Khóa Biểu */
   .timetable-workspace-layout {
-    padding: 8px;
+    padding: 8px 8px 0 !important;
+    scroll-padding-bottom: 0px !important;
     gap: 8px;
+  }
+
+  .timetable-weekly-section {
+    height: calc(100% - 8px) !important;
+    min-height: calc(100% - 8px) !important;
+    max-height: calc(100% - 8px) !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
   }
 
   .timetable-header-card {

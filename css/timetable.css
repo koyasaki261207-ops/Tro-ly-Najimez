@@ -11,7 +11,8 @@
   flex-direction: column;
   gap: 14px;
   height: 100%;
-  padding: 12px 18px 24px;
+  padding: 12px 18px 0 !important; /* Giới hạn điểm cuộn chạm sát mép dưới, loại bỏ padding-bottom dư thừa */
+  scroll-padding-bottom: 0px !important;
   overflow-y: auto !important; /* GIỮ NGUYÊN THANH CUỘN DỌC */
   overflow-x: hidden;
   box-sizing: border-box;
@@ -195,14 +196,16 @@
 .timetable-weekly-section {
   flex-shrink: 0;
   width: 100%;
-  height: calc(100vh - 92px);
-  min-height: calc(100vh - 92px);
-  max-height: calc(100vh - 92px);
+  height: calc(100% - 12px) !important;
+  min-height: calc(100% - 12px) !important;
+  max-height: calc(100% - 12px) !important;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
   scroll-snap-align: start;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .timetable-grid-card {
@@ -218,6 +221,8 @@
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 /* Hàng tiêu đề 7 cột ngày */
@@ -525,6 +530,8 @@
   overflow: hidden;
   border-bottom-left-radius: var(--radius-md);
   border-bottom-right-radius: var(--radius-md);
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 /* Cột mốc giờ bên trái */
@@ -538,6 +545,8 @@
   background: rgba(15, 23, 42, 0.65);
   user-select: none;
   z-index: 10;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .tt-time-axis-hour {
@@ -552,6 +561,10 @@
   justify-content: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   box-sizing: border-box;
+}
+
+.tt-time-axis-hour:last-child {
+  border-bottom: none !important;
 }
 
 .tt-time-label {
@@ -572,6 +585,8 @@
   min-height: 0 !important;
   overflow: hidden !important;
   position: relative;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .tt-day-col {
@@ -584,6 +599,8 @@
   border-right: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.008);
   transition: background 0.15s;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .tt-day-col:last-child {
@@ -608,12 +625,18 @@
   box-sizing: border-box;
 }
 
+.tt-hour-slot:last-child {
+  border-bottom: none !important;
+}
+
 /* Chế độ Cuộn Thoải Mái (Scroll Mode - nếu người dùng chủ động bật) */
 .timetable-grid-card.mode-scroll .timetable-grid-body {
   overflow-y: auto !important;
   overflow-x: hidden;
   scrollbar-width: thin;
   scrollbar-color: rgba(168, 85, 247, 0.45) rgba(15, 23, 42, 0.6);
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .timetable-grid-card.mode-scroll .timetable-grid-body::-webkit-scrollbar {
@@ -636,16 +659,21 @@
 .timetable-grid-card.mode-scroll .tt-time-axis,
 .timetable-grid-card.mode-scroll .tt-days-columns,
 .timetable-grid-card.mode-scroll .tt-day-col {
-  height: calc(var(--tt-slot-height, 50px) * var(--tt-active-hours, 24)) !important;
-  min-height: calc(var(--tt-slot-height, 50px) * var(--tt-active-hours, 24)) !important;
+  height: calc(var(--tt-slot-height, 52px) * var(--tt-active-hours, 24)) !important;
+  min-height: calc(var(--tt-slot-height, 52px) * var(--tt-active-hours, 24)) !important;
+  max-height: calc(var(--tt-slot-height, 52px) * var(--tt-active-hours, 24)) !important;
   overflow: visible !important;
+  box-sizing: border-box !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .timetable-grid-card.mode-scroll .tt-hour-slot,
 .timetable-grid-card.mode-scroll .tt-time-axis-hour {
   flex: none !important;
-  height: var(--tt-slot-height, 50px) !important;
-  min-height: var(--tt-slot-height, 50px) !important;
+  height: var(--tt-slot-height, 52px) !important;
+  min-height: var(--tt-slot-height, 52px) !important;
+  max-height: var(--tt-slot-height, 52px) !important;
 }
 
 /* ==========================================================================
@@ -899,8 +927,15 @@
    ========================================================================== */
 @media (max-width: 900px) {
   .timetable-workspace-layout {
-    padding: 10px;
+    padding: 10px 10px 0 !important;
+    scroll-padding-bottom: 0px !important;
     gap: 8px;
+  }
+
+  .timetable-weekly-section {
+    height: calc(100% - 10px) !important;
+    min-height: calc(100% - 10px) !important;
+    max-height: calc(100% - 10px) !important;
   }
 
   .timetable-header-card {

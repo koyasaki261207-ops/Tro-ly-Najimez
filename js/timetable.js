@@ -447,7 +447,11 @@ function renderTimetableTab() {
         // Tính vị trí top và height theo %
         const topPct = ((effStart - baseMinutes) / totalActiveMinutes) * 100;
         const durMin = effEnd - effStart;
-        const heightPct = Math.max(2.2, (durMin / totalActiveMinutes) * 100);
+        let heightPct = Math.max(2.2, (durMin / totalActiveMinutes) * 100);
+        // Ngăn chặn absolute elements vượt quá 100% chiều cao cột gây dư thừa khoảng trống cuộn bên dưới
+        if (topPct + heightPct > 100) {
+          heightPct = Math.max(1, 100 - topPct);
+        }
 
         blockEl.style.top = `${topPct}%`;
         blockEl.style.height = `${heightPct}%`;
@@ -548,7 +552,7 @@ function renderTimetableTab() {
       if (day.isToday && currentTotalMin >= baseMinutes && currentTotalMin <= 1440) {
         const timeLineEl = document.createElement('div');
         timeLineEl.className = 'tt-current-time-line';
-        const topPct = ((currentTotalMin - baseMinutes) / totalActiveMinutes) * 100;
+        const topPct = Math.min(99.8, ((currentTotalMin - baseMinutes) / totalActiveMinutes) * 100);
         timeLineEl.style.top = `${topPct}%`;
         timeLineEl.id = 'ttCurrentTimeIndicator';
 
