@@ -17,7 +17,9 @@
   overflow-x: hidden;
   box-sizing: border-box;
   scroll-behavior: smooth;
-  scroll-snap-type: y proximity;
+  /* Vô hiệu hóa Scroll Snap để cuộn mượt mà tự nhiên, không bị giật/tự động lướt xuống */
+  scroll-snap-type: none !important;
+  -webkit-overflow-scrolling: touch !important;
   scrollbar-width: thin;
   scrollbar-color: rgba(168, 85, 247, 0.45) rgba(15, 23, 42, 0.6);
 }
@@ -203,7 +205,7 @@
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
-  scroll-snap-align: start;
+  scroll-snap-align: none !important;
   margin-bottom: 0 !important;
   padding-bottom: 0 !important;
 }
@@ -929,13 +931,18 @@
   .timetable-workspace-layout {
     padding: 10px 10px 0 !important;
     scroll-padding-bottom: 0px !important;
-    gap: 8px;
+    scroll-snap-type: none !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 10px;
   }
 
   .timetable-weekly-section {
-    height: calc(100% - 10px) !important;
-    min-height: calc(100% - 10px) !important;
-    max-height: calc(100% - 10px) !important;
+    height: auto !important;
+    min-height: calc(100vh - 120px) !important;
+    max-height: none !important;
+    scroll-snap-align: none !important;
+    margin-bottom: 24px !important;
+    flex: none !important;
   }
 
   .timetable-header-card {
@@ -948,6 +955,9 @@
 
   /* Khung cuộn ngang mượt mà cho toàn bộ bảng tuần */
   .timetable-grid-card {
+    height: calc(100vh - 140px) !important;
+    min-height: 520px !important;
+    max-height: none !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     -webkit-overflow-scrolling: touch !important;

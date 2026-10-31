@@ -130,8 +130,11 @@ function initTabNavigation() {
         } else if (targetTabId === 'tab-calendar') {
           if (typeof renderCalendarTab === 'function') renderCalendarTab();
         } else if (targetTabId === 'tab-timetable') {
+          const ttLayout = document.querySelector('.timetable-workspace-layout');
+          if (ttLayout) {
+            ttLayout.scrollTop = 0;
+          }
           if (typeof renderTimetableTab === 'function') renderTimetableTab();
-          if (typeof autoScrollTimetableToCurrentTime === 'function') autoScrollTimetableToCurrentTime();
         } else if (targetTabId === 'tab-toolbox') {
           if (typeof renderToolboxTab === 'function') renderToolboxTab();
         } else if (targetTabId === 'tab-map') {

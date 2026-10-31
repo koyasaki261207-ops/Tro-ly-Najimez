@@ -454,15 +454,19 @@
   .timetable-workspace-layout {
     padding: 8px 8px 0 !important;
     scroll-padding-bottom: 0px !important;
+    scroll-snap-type: none !important;
+    -webkit-overflow-scrolling: touch !important;
     gap: 8px;
   }
 
   .timetable-weekly-section {
-    height: calc(100% - 8px) !important;
-    min-height: calc(100% - 8px) !important;
-    max-height: calc(100% - 8px) !important;
-    margin-bottom: 0 !important;
+    height: auto !important;
+    min-height: calc(100vh - 110px) !important;
+    max-height: none !important;
+    scroll-snap-align: none !important;
+    margin-bottom: 20px !important;
     padding-bottom: 0 !important;
+    flex: none !important;
   }
 
   .timetable-header-card {
@@ -479,6 +483,9 @@
 
   /* Đồng bộ cuộn ngang và định dạng bảng chuẩn cho Thời Khóa Biểu trên điện thoại */
   .timetable-grid-card {
+    height: calc(100vh - 130px) !important;
+    min-height: 520px !important;
+    max-height: none !important;
     overflow-x: auto !important;
     overflow-y: hidden !important;
     -webkit-overflow-scrolling: touch !important;

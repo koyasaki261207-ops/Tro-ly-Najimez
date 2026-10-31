@@ -963,11 +963,8 @@ function initTimetable() {
     initTimetableDailyTimeline();
   }
 
-  // Render lần đầu
+  // Render lần đầu (luôn giữ ở đầu trang để xem trọn vẹn Timeline Ngày và Header)
   renderTimetableTab();
-  if (timetableScrollMode) {
-    setTimeout(autoScrollTimetableToCurrentTime, 120);
-  }
 }
 
 window.initTimetable = initTimetable;
