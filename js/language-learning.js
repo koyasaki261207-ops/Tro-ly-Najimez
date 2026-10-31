@@ -373,6 +373,9 @@ function saveVocabNotebook(list) {
   try {
     localStorage.setItem(STORAGE_KEY_NOTEBOOK, JSON.stringify(list));
     updateNotebookBadge();
+    if (typeof triggerAutoSyncToCloud === 'function') {
+      triggerAutoSyncToCloud();
+    }
   } catch (e) {}
 }
 window.saveVocabNotebook = saveVocabNotebook;
@@ -389,6 +392,9 @@ function getMasteredVocabIds() {
 function saveMasteredVocabIds(ids) {
   try {
     localStorage.setItem(STORAGE_KEY_MASTERED, JSON.stringify(ids));
+    if (typeof triggerAutoSyncToCloud === 'function') {
+      triggerAutoSyncToCloud();
+    }
   } catch (e) {}
 }
 
@@ -782,7 +788,13 @@ function updateQuizMasteredBtn() {
 function toggleQuizCurrentWordMastered() {
   if (!quizState.currentVocab) return;
   toggleNotebookMastered(quizState.currentVocab.id);
+  const notebook = getVocabNotebook();
+  const updated = notebook.find(n => n.id === quizState.currentVocab.id);
+  if (updated) {
+    quizState.currentVocab = updated;
+  }
   updateQuizMasteredBtn();
+  renderFlashcardUI();
 }
 window.toggleQuizCurrentWordMastered = toggleQuizCurrentWordMastered;
 
@@ -1005,12 +1017,32 @@ function initNewQuizRound() {
   const activeContent = document.getElementById('quizActiveContent');
   if (!emptyState || !activeContent) return;
 
+  // Đồng bộ dropdown Phạm vi nếu có
+  const scopeSelect = document.getElementById('quizScopeSelect');
+  if (scopeSelect && scopeSelect.value !== quizScope) {
+    scopeSelect.value = quizScope;
+  }
+
   const pool = getQuizVocabPool();
 
-  // 1. Trường hợp Sổ từ rỗng
+  // 1. Trường hợp không có từ vựng theo phạm vi đã lọc
   if (pool.length === 0) {
     emptyState.style.display = 'flex';
     activeContent.style.display = 'none';
+
+    const emptyTitle = emptyState.querySelector('.quiz-empty-title');
+    const emptyDesc = emptyState.querySelector('.quiz-empty-desc');
+
+    if (quizScope === 'mastered') {
+      if (emptyTitle) emptyTitle.textContent = 'Chưa có từ vựng nào Đã thuộc (⭐)!';
+      if (emptyDesc) emptyDesc.innerHTML = 'Bạn chưa đánh dấu Đã thuộc cho từ vựng nào. Hãy chọn phạm vi <em>"Tất cả"</em> hoặc <em>"Chưa thuộc"</em> để kiểm tra phản xạ và ghi nhớ nhé.';
+    } else if (quizScope === 'unlearned') {
+      if (emptyTitle) emptyTitle.textContent = '🎉 Tuyệt vời! Bạn đã thuộc hết từ vựng!';
+      if (emptyDesc) emptyDesc.innerHTML = 'Toàn bộ từ trong Sổ từ vựng đều đã được đánh dấu Đã thuộc. Hãy chuyển sang phạm vi <em>"Đã thuộc"</em> để củng cố phản xạ hoặc nạp thêm từ mới nhé.';
+    } else {
+      if (emptyTitle) emptyTitle.textContent = 'Chưa có từ vựng nào để kiểm tra!';
+      if (emptyDesc) emptyDesc.innerHTML = 'Chế độ Kiểm tra phản xạ lấy từ vựng trực tiếp từ <strong>Từ Vựng Của Tôi</strong> để thử thách độ ghi nhớ chính xác, chống học vẹt qua hình thức tự gõ văn bản 2 chiều.';
+    }
     return;
   }
 
@@ -1055,7 +1087,8 @@ function initNewQuizRound() {
   const typingZone = document.getElementById('quizTypingZone');
 
   if (counterPill) {
-    counterPill.textContent = `${pool.length} từ trong sổ`;
+    const scopeLabel = quizScope === 'unlearned' ? ' • Chưa thuộc' : quizScope === 'mastered' ? ' • Đã thuộc' : '';
+    counterPill.textContent = `${pool.length} từ trong sổ${scopeLabel}`;
   }
 
   if (feedbackCard) feedbackCard.style.display = 'none';
@@ -1964,7 +1997,7 @@ function initLanguageLearning() {
     });
   });
 
-  // 3. Topic filter Flashcard
+  // 3. Topic filter Flashcard & Scope filter
   const topicSelect = document.getElementById('flashcardTopicSelect');
   if (topicSelect) {
     topicSelect.addEventListener('change', (e) => {
@@ -1972,6 +2005,20 @@ function initLanguageLearning() {
       flashcardIndex = 0;
       isPracticingNotebookOnly = false;
       renderFlashcardUI();
+    });
+  }
+
+  const fcScopeSelect = document.getElementById('flashcardScopeSelect');
+  if (fcScopeSelect) {
+    fcScopeSelect.addEventListener('change', (e) => {
+      changeFlashcardScope(e.target.value);
+    });
+  }
+
+  const qzScopeSelect = document.getElementById('quizScopeSelect');
+  if (qzScopeSelect) {
+    qzScopeSelect.addEventListener('change', (e) => {
+      changeQuizScope(e.target.value);
     });
   }
 

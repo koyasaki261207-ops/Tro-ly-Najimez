@@ -181,6 +181,58 @@ function applyRemoteCloudData(cloudData) {
     localStorage.setItem(targetKey, JSON.stringify(healed));
     localStorage.setItem(FIREBASE_LAST_SYNC_STORAGE, Date.now().toString());
 
+    // Đồng bộ Sổ từ vựng ngoại ngữ cá nhân & Trạng thái đã thuộc (Đánh sao)
+    if (Array.isArray(cloudData.vocabNotebook)) {
+      try {
+        const curNbRaw = localStorage.getItem('NAJIMEZ_VOCAB_NOTEBOOK_V1');
+        const curNb = curNbRaw ? JSON.parse(curNbRaw) : [];
+        if (cloudData.vocabNotebook.length > 0) {
+          // Hợp nhất thông minh: Nếu local máy hiện tại cũng có từ vựng thì không làm mất từ nào
+          let mergedVocab = cloudData.vocabNotebook;
+          if (curNb.length > 0) {
+            const cloudKeys = new Set(cloudData.vocabNotebook.map(x => ((x.word || '') + '_' + (x.lang || 'en')).toLowerCase().trim()));
+            const missingFromCloud = curNb.filter(x => !cloudKeys.has(((x.word || '') + '_' + (x.lang || 'en')).toLowerCase().trim()));
+            if (missingFromCloud.length > 0) {
+              mergedVocab = [...cloudData.vocabNotebook, ...missingFromCloud];
+              setTimeout(() => {
+                if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud();
+              }, 600);
+            }
+          }
+          localStorage.setItem('NAJIMEZ_VOCAB_NOTEBOOK_V1', JSON.stringify(mergedVocab));
+        } else if (curNb.length > 0 && window.currentUserUid) {
+          // Cloud rỗng nhưng máy đang có từ vựng -> Đẩy từ máy lên Cloud
+          setTimeout(() => {
+            if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud();
+          }, 600);
+        }
+      } catch (e) {}
+    } else {
+      // Trường hợp tài khoản trên Cloud chưa có trường vocabNotebook:
+      // Nếu máy hiện tại đang có từ vựng -> Tự động đẩy lên Cloud!
+      try {
+        const curNbRaw = localStorage.getItem('NAJIMEZ_VOCAB_NOTEBOOK_V1');
+        const curNb = curNbRaw ? JSON.parse(curNbRaw) : [];
+        if (curNb.length > 0 && window.currentUserUid) {
+          setTimeout(() => {
+            if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud();
+          }, 600);
+        }
+      } catch (e) {}
+    }
+
+    if (Array.isArray(cloudData.vocabMasteredIds)) {
+      try {
+        localStorage.setItem('NAJIMEZ_VOCAB_MASTERED_V1', JSON.stringify(cloudData.vocabMasteredIds));
+      } catch (e) {}
+    }
+
+    // Làm mới giao diện từ vựng & flashcard
+    if (typeof sanitizeVocabNotebook === 'function') sanitizeVocabNotebook();
+    if (typeof updateNotebookBadge === 'function') updateNotebookBadge();
+    if (typeof renderNotebookUI === 'function') renderNotebookUI();
+    if (typeof renderFlashcardUI === 'function') renderFlashcardUI();
+
     // Cập nhật tất cả các giao diện đang mở
     if (typeof updateHeaderStats === 'function') updateHeaderStats();
     if (typeof renderFinanceTab === 'function') renderFinanceTab();
@@ -231,7 +283,7 @@ function syncLedgerToFirebase(data, isImmediate = false) {
       if (!currentSyncKey) return;
       const docRef = firestoreDb.collection('najimez_vault').doc(currentSyncKey);
 
-      // Thu thập thêm cài đặt bổ trợ (Vòng quay, Giọng nói, API Key)
+      // Thu thập thêm cài đặt bổ trợ (Vòng quay, Giọng nói, API Key, Sổ từ vựng)
       let customWheel = null;
       try {
         const rawWheel = localStorage.getItem('najimez_wheel_custom_items');
@@ -244,18 +296,32 @@ function syncLedgerToFirebase(data, isImmediate = false) {
         if (rawVoice) customVoice = JSON.parse(rawVoice);
       } catch (e) {}
 
+      let vocabNotebook = [];
+      try {
+        const rawNb = localStorage.getItem('NAJIMEZ_VOCAB_NOTEBOOK_V1');
+        if (rawNb) vocabNotebook = JSON.parse(rawNb);
+      } catch (e) {}
+
+      let vocabMasteredIds = [];
+      try {
+        const rawM = localStorage.getItem('NAJIMEZ_VOCAB_MASTERED_V1');
+        if (rawM) vocabMasteredIds = JSON.parse(rawM);
+      } catch (e) {}
+
       const apiKey = localStorage.getItem(APP_CONFIG.storageKey) || '';
 
       const payload = {
-        transactions: data.transactions || [],
-        debts: data.debts || [],
-        tasks: data.tasks || [],
-        calendarEvents: data.calendarEvents || [],
-        bank: data.bank || {},
-        contacts: data.contacts || {},
+        transactions: (data && data.transactions) || [],
+        debts: (data && data.debts) || [],
+        tasks: (data && data.tasks) || [],
+        calendarEvents: (data && data.calendarEvents) || [],
+        bank: (data && data.bank) || {},
+        contacts: (data && data.contacts) || {},
         wheelItems: customWheel,
         voiceSettings: customVoice,
         geminiApiKey: apiKey ? apiKey.trim() : '',
+        vocabNotebook: vocabNotebook,
+        vocabMasteredIds: vocabMasteredIds,
         clientSourceId: getClientSourceId(),
         clientUpdatedAt: Date.now(),
         serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -351,11 +417,11 @@ async function syncOrMigrateUserData() {
   }
 }
 
-// Kích hoạt đồng bộ khi có thay đổi từ các module khác (API key, Giọng nói, Vòng quay)
+// Kích hoạt đồng bộ khi có thay đổi từ các module khác (API key, Giọng nói, Vòng quay, Từ vựng)
 function triggerAutoSyncToCloud() {
-  const data = typeof getLedgerData === 'function' ? getLedgerData() : null;
-  if (data && window.currentUserUid) {
-    syncLedgerToFirebase(data, false);
+  const data = typeof getLedgerData === 'function' ? getLedgerData() : {};
+  if (window.currentUserUid) {
+    syncLedgerToFirebase(data || {}, false);
   }
 }
 

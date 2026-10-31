@@ -94,6 +94,9 @@ async function handleAuthStateChanged(user) {
   if (typeof renderTodosTab === 'function') renderTodosTab();
   if (typeof renderCalendarTab === 'function') renderCalendarTab();
   if (typeof renderTimetableTab === 'function') renderTimetableTab();
+  if (typeof updateNotebookBadge === 'function') updateNotebookBadge();
+  if (typeof renderNotebookUI === 'function') renderNotebookUI();
+  if (typeof renderFlashcardUI === 'function') renderFlashcardUI();
   if (typeof initFriendsForUser === 'function') initFriendsForUser(user);
 }
 
