@@ -187,8 +187,13 @@ let quizState = {
   isAnswered: false,
   directionMode: 'mixed', // 'mixed' | 'en_vi' | 'vi_en'
   currentDirection: 'en_vi', // 'en_vi' (Anh ➔ Việt) hoặc 'vi_en' (Việt ➔ Anh)
-  lastVocabId: null
+  lastVocabId: null,
+  lastQuestionKey: null,
+  unaskedQueue: [],
+  totalQuestionsInCycle: 0,
+  currentQuestionIndex: 0
 };
+window.quizState = quizState;
 
 // ============================================================================
 // 3. QUẢN LÝ LƯU TRỮ SỔ TỪ VỰNG & TIẾN ĐỘ HỌC
@@ -724,7 +729,9 @@ function changeQuizScope(scope) {
   if (scopeSelect && scopeSelect.value !== quizScope) {
     scopeSelect.value = quizScope;
   }
+  quizState.lastQuestionKey = null;
   quizState.lastVocabId = null;
+  quizState.unaskedQueue = [];
   initNewQuizRound();
 }
 window.changeQuizScope = changeQuizScope;
@@ -741,9 +748,108 @@ function setQuizDirectionMode(mode, e) {
     btn.classList.toggle('active', btn.dataset.mode === quizState.directionMode);
   });
 
+  quizState.lastQuestionKey = null;
+  quizState.lastVocabId = null;
+  quizState.unaskedQueue = [];
   initNewQuizRound();
 }
 window.setQuizDirectionMode = setQuizDirectionMode;
+
+/**
+ * Thuật toán Fisher-Yates xáo trộn mảng ngẫu nhiên
+ */
+function shuffleQuizArray(array) {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/**
+ * Xây dựng hàng đợi câu hỏi (Unasked Queue) không trùng lặp cho đến khi duyệt hết danh sách.
+ * Phân tách độc lập giữa hai chiều kiểm tra:
+ * - Trộn 2 chiều ('mixed'): Mỗi cặp từ vựng sinh ra 2 câu hỏi riêng biệt: Anh ➔ Việt và Việt ➔ Anh.
+ * - 1 chiều ('en_vi'): Mỗi cặp từ vựng sinh ra 1 câu hỏi Anh ➔ Việt.
+ * - 1 chiều ('vi_en'): Mỗi cặp từ vựng sinh ra 1 câu hỏi Việt ➔ Anh.
+ */
+function buildQuizQuestionQueue() {
+  const pool = getQuizVocabPool();
+  if (!pool || pool.length === 0) {
+    quizState.unaskedQueue = [];
+    quizState.totalQuestionsInCycle = 0;
+    quizState.currentQuestionIndex = 0;
+    return;
+  }
+
+  const rawQuestions = [];
+  const mode = quizState.directionMode || 'mixed';
+
+  pool.forEach(item => {
+    if (mode === 'mixed') {
+      // 2 câu hỏi độc lập riêng biệt cho cùng 1 cặp từ vựng
+      rawQuestions.push({
+        wordId: item.id,
+        vocab: item,
+        direction: 'en_vi',
+        key: `${item.id}_en_vi`
+      });
+      rawQuestions.push({
+        wordId: item.id,
+        vocab: item,
+        direction: 'vi_en',
+        key: `${item.id}_vi_en`
+      });
+    } else if (mode === 'en_vi') {
+      rawQuestions.push({
+        wordId: item.id,
+        vocab: item,
+        direction: 'en_vi',
+        key: `${item.id}_en_vi`
+      });
+    } else if (mode === 'vi_en') {
+      rawQuestions.push({
+        wordId: item.id,
+        vocab: item,
+        direction: 'vi_en',
+        key: `${item.id}_vi_en`
+      });
+    }
+  });
+
+  // Xáo trộn ngẫu nhiên toàn bộ câu hỏi
+  let shuffled = shuffleQuizArray(rawQuestions);
+
+  // 1. Tránh để câu hỏi đầu tiên của chu kỳ mới trùng với câu hỏi vừa hoàn thành ở chu kỳ trước
+  if (shuffled.length > 1 && quizState.lastQuestionKey && shuffled[0].key === quizState.lastQuestionKey) {
+    const swapIdx = Math.floor(Math.random() * (shuffled.length - 1)) + 1;
+    [shuffled[0], shuffled[swapIdx]] = [shuffled[swapIdx], shuffled[0]];
+  }
+
+  // 2. Với chế độ 'mixed', tránh để 2 chiều của CÙNG 1 từ nằm liền kề nhau
+  if (mode === 'mixed' && shuffled.length > 2) {
+    for (let i = 1; i < shuffled.length; i++) {
+      if (shuffled[i].wordId === shuffled[i - 1].wordId) {
+        let foundIdx = -1;
+        for (let j = i + 1; j < shuffled.length; j++) {
+          if (shuffled[j].wordId !== shuffled[i - 1].wordId) {
+            foundIdx = j;
+            break;
+          }
+        }
+        if (foundIdx !== -1) {
+          [shuffled[i], shuffled[foundIdx]] = [shuffled[foundIdx], shuffled[i]];
+        }
+      }
+    }
+  }
+
+  quizState.unaskedQueue = shuffled;
+  quizState.totalQuestionsInCycle = shuffled.length;
+  quizState.currentQuestionIndex = 0;
+}
+window.buildQuizQuestionQueue = buildQuizQuestionQueue;
 
 function getQuizVocabPool() {
   const notebook = getVocabNotebook();
@@ -1027,6 +1133,11 @@ function initNewQuizRound() {
 
   // 1. Trường hợp không có từ vựng theo phạm vi đã lọc
   if (pool.length === 0) {
+    quizState.unaskedQueue = [];
+    quizState.totalQuestionsInCycle = 0;
+    quizState.currentQuestionIndex = 0;
+    quizState.currentVocab = null;
+
     emptyState.style.display = 'flex';
     activeContent.style.display = 'none';
 
@@ -1050,22 +1161,33 @@ function initNewQuizRound() {
   emptyState.style.display = 'none';
   activeContent.style.display = 'flex';
 
-  // Quyết định chiều kiểm tra
-  if (quizState.directionMode === 'mixed') {
-    quizState.currentDirection = Math.random() < 0.5 ? 'en_vi' : 'vi_en';
+  // Lọc lại hàng đợi hiện tại theo pool hiện tại (loại bỏ các từ không còn trong phạm vi)
+  const poolIds = new Set(pool.map(v => v.id));
+  if (Array.isArray(quizState.unaskedQueue)) {
+    quizState.unaskedQueue = quizState.unaskedQueue.filter(q => poolIds.has(q.wordId));
   } else {
-    quizState.currentDirection = quizState.directionMode;
+    quizState.unaskedQueue = [];
   }
 
-  // Chọn từ ngẫu nhiên trong pool (tránh lặp lại từ vừa xong nếu pool > 1)
-  let candidatePool = pool;
-  if (pool.length > 1 && quizState.lastVocabId) {
-    candidatePool = pool.filter(v => v.id !== quizState.lastVocabId);
-    if (candidatePool.length === 0) candidatePool = pool;
+  // Nếu hàng đợi đã duyệt hết (hoặc chưa khởi tạo), tự động xây dựng chu kỳ câu hỏi mới
+  if (quizState.unaskedQueue.length === 0) {
+    buildQuizQuestionQueue();
   }
-  const target = candidatePool[Math.floor(Math.random() * candidatePool.length)];
+
+  // Lấy câu hỏi tiếp theo từ đầu hàng đợi (Pop / Shift)
+  let currentQ = quizState.unaskedQueue.shift();
+  if (!currentQ) {
+    buildQuizQuestionQueue();
+    currentQ = quizState.unaskedQueue.shift();
+  }
+
+  // Luôn lấy bản ghi mới nhất từ pool (để đồng bộ trạng thái isMastered, meaning...)
+  const target = pool.find(v => v.id === currentQ.wordId) || currentQ.vocab;
   quizState.currentVocab = target;
+  quizState.currentDirection = currentQ.direction;
+  quizState.lastQuestionKey = currentQ.key;
   quizState.lastVocabId = target.id;
+  quizState.currentQuestionIndex++;
   quizState.isAnswered = false;
   updateQuizMasteredBtn();
 
@@ -1088,7 +1210,7 @@ function initNewQuizRound() {
 
   if (counterPill) {
     const scopeLabel = quizScope === 'unlearned' ? ' • Chưa thuộc' : quizScope === 'mastered' ? ' • Đã thuộc' : '';
-    counterPill.textContent = `${pool.length} từ trong sổ${scopeLabel}`;
+    counterPill.textContent = `Câu ${quizState.currentQuestionIndex}/${quizState.totalQuestionsInCycle} • ${pool.length} từ trong sổ${scopeLabel}`;
   }
 
   if (feedbackCard) feedbackCard.style.display = 'none';
@@ -1812,6 +1934,7 @@ function switchLanguage(langCode, e) {
   currentLangCode = langCode;
   flashcardIndex = 0;
   isPracticingNotebookOnly = false;
+  quizState.unaskedQueue = [];
 
   const langPack = NAJIMEZ_LANG_DATA[langCode];
 
@@ -1925,7 +2048,9 @@ function switchNavRailView(viewName, e) {
   } else if (viewName === 'quiz') {
     const pane = document.getElementById('paneQuiz');
     if (pane) pane.classList.add('active');
-    initNewQuizRound();
+    if (!quizState.currentVocab || quizState.isAnswered) {
+      initNewQuizRound();
+    }
     if (typeof initNajimeTutor === 'function') initNajimeTutor();
     if (typeof scrollTutorChatToBottom === 'function') setTimeout(scrollTutorChatToBottom, 100);
   }
