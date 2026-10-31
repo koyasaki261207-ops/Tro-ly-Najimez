@@ -6,8 +6,9 @@
  */
 
 const HOME_LOC_STORAGE_KEY = 'najimez_home_location';
+const LAST_GPS_STORAGE_KEY = 'najimez_last_known_gps';
 const DEFAULT_MAP_CENTER = [10.762622, 106.660172]; // TP. Hồ Chí Minh
-const DEFAULT_MAP_ZOOM = 15;
+const DEFAULT_MAP_ZOOM = 16;
 
 // Cấu hình các lớp bản đồ (Google Maps chính thức qua Tile Server)
 const MAP_LAYERS = {
@@ -54,6 +55,12 @@ let routeStartMarker = null;
 let userGpsAccuracyCircle = null;
 let droppedPinMarker = null;
 
+// Quản lý Live GPS Navigation Tracking thời gian thực & Bám theo vị trí
+let liveGpsWatchId = null;
+let userLiveCoords = null; // { lat, lng, accuracy, heading, speed, timestamp }
+let isFollowUserMode = true; // Mặc định tự động bám theo Chấm Xanh khi đi đường
+let tempPickedPinCoords = null; // Tọa độ ghim tạm thời khi người dùng chủ động chọn trên bản đồ
+
 // Quản lý các ghim địa điểm tìm kiếm xung quanh (Nearby Places)
 let nearbyPlaceMarkers = [];
 
@@ -61,6 +68,67 @@ let currentPickedLat = null;
 let currentPickedLng = null;
 let currentPickedAddress = '';
 let searchDebounceTimeout = null;
+
+/**
+ * Đọc tọa độ GPS gần nhất từ localStorage
+ */
+function getLastKnownGpsLocation() {
+  try {
+    const raw = localStorage.getItem(LAST_GPS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.lat === 'number' && typeof parsed.lng === 'number') {
+        return parsed;
+      }
+    }
+  } catch (_) {}
+  return null;
+}
+
+/**
+ * Lưu tọa độ GPS mới nhất vào localStorage
+ */
+function saveLastKnownGpsLocation(lat, lng, accuracy = 0) {
+  try {
+    localStorage.setItem(LAST_GPS_STORAGE_KEY, JSON.stringify({
+      lat,
+      lng,
+      accuracy,
+      time: Date.now()
+    }));
+  } catch (_) {}
+}
+
+/**
+ * Cập nhật giao diện trạng thái bám theo vị trí (Follow Me UI)
+ */
+function updateGpsFollowUI(isActive) {
+  const floatBtn = document.getElementById('btnMapFloatingGps');
+  const hudBtn = document.getElementById('btnMainMapGps');
+  if (floatBtn) {
+    floatBtn.classList.toggle('active', isActive);
+    floatBtn.setAttribute('title', isActive 
+      ? 'Đang bám theo vị trí của bạn khi đi đường (Nhấp để tắt bám theo)' 
+      : 'Bật chế độ bám theo vị trí của bạn');
+  }
+  if (hudBtn) {
+    hudBtn.classList.toggle('live-tracking', isActive);
+  }
+}
+
+/**
+ * Xóa ghim tạm trên bản đồ và đóng popup
+ */
+function clearDroppedPin() {
+  if (droppedPinMarker && mainLeafletMap) {
+    try {
+      droppedPinMarker.closePopup();
+      mainLeafletMap.removeLayer(droppedPinMarker);
+    } catch (_) {}
+    droppedPinMarker = null;
+  }
+  tempPickedPinCoords = null;
+}
 
 /**
  * Đọc dữ liệu vị trí nhà riêng đã lưu
@@ -206,11 +274,13 @@ function initMainLeafletMap() {
   const mapContainer = document.getElementById('mainLeafletMap');
   if (!mapContainer) return;
 
+  // Ưu tiên: Vị trí GPS gần nhất của người dùng -> Vị trí nhà riêng -> TP.HCM
+  const lastGps = getLastKnownGpsLocation();
   const homeData = getSavedHomeLocation();
-  const initialCenter = (homeData && homeData.lat && homeData.lng)
-    ? [homeData.lat, homeData.lng]
-    : DEFAULT_MAP_CENTER;
-  const initialZoom = (homeData && homeData.lat && homeData.lng) ? 16 : DEFAULT_MAP_ZOOM;
+  const initialCenter = (lastGps && typeof lastGps.lat === 'number' && typeof lastGps.lng === 'number')
+    ? [lastGps.lat, lastGps.lng]
+    : ((homeData && homeData.lat && homeData.lng) ? [homeData.lat, homeData.lng] : DEFAULT_MAP_CENTER);
+  const initialZoom = 17;
 
   mainLeafletMap = L.map('mainLeafletMap', {
     center: initialCenter,
@@ -242,6 +312,15 @@ function initMainLeafletMap() {
   currentPickedLat = initialCenter[0];
   currentPickedLng = initialCenter[1];
 
+  // Khi người dùng chủ động vuốt/kéo bản đồ, tạm tắt chế độ tự động bám theo để tự do xem map
+  mainLeafletMap.on('dragstart', () => {
+    if (isFollowUserMode) {
+      isFollowUserMode = false;
+      updateGpsFollowUI(false);
+    }
+  });
+
+  // Khi nhấp vào bản đồ: Nếu có ghim tạm thì xóa bỏ, hoặc tạo ghim mới mà KHÔNG bung popup tự động đập vào mắt
   mainLeafletMap.on('click', (e) => {
     handleMapClickToPickLocation(e.latlng.lat, e.latlng.lng);
   });
@@ -253,18 +332,29 @@ function initMainLeafletMap() {
   // Nạp và cắm ghim toàn bộ các địa điểm đã lưu lên bản đồ
   loadSavedPlaces();
   renderAllSavedPlaceMarkers();
+
+  // Tự động kích hoạt Live GPS Tracking liên tục ngay khi nạp map
+  startLiveGpsTracking(true);
+  updateGpsFollowUI(true);
 }
 
 /**
  * Xử lý khi click chuột trên bản đồ để chọn một địa điểm bất kỳ
+ * Thông minh: Nếu đã có ghim tạm thì chạm vào map sẽ dọn sạch ghim (Clear).
+ * Không tự động bung popup đè màn hình gây phiền toái cho người dùng.
  */
-function handleMapClickToPickLocation(lat, lng) {
-  currentPickedLat = lat;
-  currentPickedLng = lng;
+function handleMapClickToPickLocation(lat, lng, autoOpenPopup = false) {
+  // Nếu người dùng nhấp vào bản đồ khi đã có ghim tạm đỏ, xóa ghim và thoát (Dọn sạch map)
+  if (droppedPinMarker && !autoOpenPopup) {
+    clearDroppedPin();
+    return;
+  }
+
+  tempPickedPinCoords = { lat: lat, lng: lng, address: '' };
 
   const droppedPinIcon = L.divIcon({
     className: 'custom-dropped-pin-wrapper',
-    html: '<div class="gmap-dropped-pin" title="Điểm đã chọn"><i class="fa-solid fa-location-dot"></i></div>',
+    html: '<div class="gmap-dropped-pin" title="Điểm đã chọn (Nhấp để xem hoặc lưu)"><i class="fa-solid fa-location-dot"></i></div>',
     iconSize: [32, 38],
     iconAnchor: [16, 36],
     popupAnchor: [0, -36]
@@ -280,17 +370,27 @@ function handleMapClickToPickLocation(lat, lng) {
   }
 
   reverseGeocodeLocation(lat, lng, (resolved) => {
-    currentPickedAddress = resolved;
+    if (tempPickedPinCoords) tempPickedPinCoords.address = resolved;
     if (droppedPinMarker) {
       droppedPinMarker.bindPopup(`
         <div class="dropped-pin-popup">
           <div class="dropped-pin-title"><i class="fa-solid fa-location-dot" style="color:#ef4444;"></i> Điểm Đã Chọn</div>
           <div class="dropped-pin-addr">${escapeHtml(resolved)}</div>
-          <button type="button" class="btn-save-dropped-pin" onclick="window.openAddSavedPlaceModal()">
-            <i class="fa-solid fa-plus"></i> Lưu Địa Điểm Này
-          </button>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <button type="button" class="btn-save-dropped-pin" onclick="window.openAddSavedPlaceModal()" style="flex:1;">
+              <i class="fa-solid fa-plus"></i> Lưu Địa Điểm Này
+            </button>
+            <button type="button" class="btn-save-dropped-pin" onclick="window.clearDroppedPin()" style="background:#475569;flex:initial;padding:0 10px;" title="Xóa ghim này">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
         </div>
-      `).openPopup();
+      `);
+
+      // Chỉ mở popup nếu có cờ yêu cầu (ví dụ khi tìm kiếm địa chỉ cụ thể)
+      if (autoOpenPopup) {
+        droppedPinMarker.openPopup();
+      }
     }
   });
 }
@@ -429,7 +529,7 @@ function searchMainMapAddress(query) {
   }
 
   if (pLat !== null && pLng !== null && pLat >= -90 && pLat <= 90 && pLng >= -180 && pLng <= 180) {
-    handleMapClickToPickLocation(pLat, pLng);
+    handleMapClickToPickLocation(pLat, pLng, true);
     if (mainLeafletMap) mainLeafletMap.setView([pLat, pLng], 18);
     const resultsDropdown = document.getElementById('mainMapSearchResults');
     if (resultsDropdown) resultsDropdown.style.display = 'none';
@@ -502,7 +602,7 @@ function renderSearchResultsList(items) {
     itemEl.className = 'search-result-item';
     itemEl.innerHTML = `<i class="fa-solid fa-location-dot" style="color:#38bdf8; margin-right:6px;"></i> ${item.displayName}`;
     itemEl.addEventListener('click', () => {
-      handleMapClickToPickLocation(item.lat, item.lng);
+      handleMapClickToPickLocation(item.lat, item.lng, true);
       if (mainLeafletMap) mainLeafletMap.setView([item.lat, item.lng], 17);
       resultsDropdown.style.display = 'none';
       const searchInput = document.getElementById('mainMapSearchInput');
@@ -513,101 +613,180 @@ function renderSearchResultsList(items) {
 }
 
 /**
- * Định vị GPS qua trình duyệt trên Main Map với cơ chế Progressive High-Accuracy
- * Lắng nghe dò sóng Wi-Fi/GPS thời gian thực, ép xóa cache (maximumAge: 0) để bắt vị trí chuẩn nhất
+ * Khởi chạy Live GPS Navigation Tracking liên tục thời gian thực (Chuẩn Google Maps)
+ * Không tự ngắt, liên tục theo dõi vị trí khi di chuyển xe máy / đi bộ
  */
-function locateViaGPSOnMainMap() {
+function startLiveGpsTracking(forceCenter = false) {
+  if (!navigator.geolocation) {
+    console.warn('[MapLocation] Trình duyệt không hỗ trợ Geolocation.');
+    return;
+  }
+
+  // Nếu đã có tọa độ và yêu cầu forceCenter, căn giữa camera ngay
+  if (forceCenter && userLiveCoords && mainLeafletMap) {
+    mainLeafletMap.panTo([userLiveCoords.lat, userLiveCoords.lng], { animate: true, duration: 0.6 });
+  }
+
+  // Nếu watchId đang hoạt động, không khởi tạo lặp
+  if (liveGpsWatchId !== null) return;
+
+  liveGpsWatchId = navigator.geolocation.watchPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const acc = pos.coords.accuracy || 0;
+      const heading = pos.coords.heading;
+      const speed = pos.coords.speed;
+
+      userLiveCoords = {
+        lat: lat,
+        lng: lng,
+        accuracy: acc,
+        heading: heading,
+        speed: speed,
+        timestamp: Date.now()
+      };
+
+      // Lưu lại tọa độ GPS gần nhất để mở lại ngay trong lần sau
+      saveLastKnownGpsLocation(lat, lng, acc);
+
+      // Cập nhật vị trí Chấm Xanh Google Maps trên bản đồ
+      if (mainHomeMarker) {
+        mainHomeMarker.setLatLng([lat, lng]);
+      }
+
+      // Cập nhật vòng tròn mờ hiển thị bán kính sai số thực tế quanh Chấm Xanh
+      if (mainLeafletMap) {
+        const safeRadius = Math.max(acc, 8);
+        if (!userGpsAccuracyCircle) {
+          userGpsAccuracyCircle = L.circle([lat, lng], {
+            radius: safeRadius,
+            color: '#0284c7',
+            fillColor: '#38bdf8',
+            fillOpacity: 0.12,
+            weight: 1.5,
+            dashArray: '3, 4',
+            interactive: false
+          }).addTo(mainLeafletMap);
+        } else {
+          userGpsAccuracyCircle.setLatLng([lat, lng]);
+          userGpsAccuracyCircle.setRadius(safeRadius);
+          if (!mainLeafletMap.hasLayer(userGpsAccuracyCircle)) {
+            userGpsAccuracyCircle.addTo(mainLeafletMap);
+          }
+        }
+      }
+
+      // Chế độ Bám Theo Vị Trí (Follow Me Mode) khi đi đường:
+      // Tự động lướt camera giữ Chấm Xanh ở trung tâm
+      if (isFollowUserMode && mainLeafletMap) {
+        mainLeafletMap.panTo([lat, lng], { animate: true, duration: 0.6 });
+      }
+
+      updateGpsFollowUI(isFollowUserMode);
+
+      // Tắt màn hình chờ nếu có
+      const overlay = document.getElementById('mainMapLoadingOverlay');
+      if (overlay && overlay.dataset.temporaryGpsLoading === 'true') {
+        overlay.style.display = 'none';
+        delete overlay.dataset.temporaryGpsLoading;
+      }
+    },
+    (err) => {
+      console.warn('[MapLocation] Lỗi Live GPS Watch:', err.message);
+      updateGpsFollowUI(false);
+    },
+    {
+      enableHighAccuracy: true,
+      timeout: 12000,
+      maximumAge: 1000 // Tối đa 1 giây cache, đảm bảo cập nhật liên tục khi di chuyển
+    }
+  );
+}
+
+/**
+ * Định vị GPS qua trình duyệt trên Main Map
+ * Kích hoạt chế độ bám theo vị trí (Follow Me), bay camera về Chấm Xanh và dọn sạch ghim lạ
+ */
+function locateViaGPSOnMainMap(centerNow = true) {
   if (!navigator.geolocation) {
     alert('Trình duyệt của bạn không hỗ trợ định vị GPS!');
     return;
   }
 
+  // Bật chế độ bám theo vị trí
+  isFollowUserMode = true;
+  updateGpsFollowUI(true);
+
+  // Xóa bỏ bất kỳ ghim lạ nào đang hiển thị
+  clearDroppedPin();
+
+  // Đảm bảo Live GPS Tracking đang chạy liên tục
+  startLiveGpsTracking(false);
+
+  // Nếu đã có tọa độ thời gian thực, bay ngay về tâm Chấm Xanh
+  if (userLiveCoords && mainLeafletMap && centerNow) {
+    mainLeafletMap.setView([userLiveCoords.lat, userLiveCoords.lng], Math.max(mainLeafletMap.getZoom(), 17), { animate: true });
+    if (typeof showToast === 'function') {
+      showToast('Đang bám theo vị trí của bạn theo thời gian thực!', 'success');
+    }
+    return;
+  }
+
+  // Nếu chưa có tọa độ, hiển thị loading nhẹ và lấy ngay vị trí tức thì
   const overlay = document.getElementById('mainMapLoadingOverlay');
   const overlayText = document.getElementById('mainMapLoadingText');
   if (overlay) {
-    if (overlayText) overlayText.textContent = 'Đang dò sóng Wi-Fi & định vị độ chính xác cao...';
+    if (overlayText) overlayText.textContent = 'Đang kết nối GPS và định vị chính xác...';
+    overlay.dataset.temporaryGpsLoading = 'true';
     overlay.style.display = 'flex';
   }
 
-  let bestAccuracy = Infinity;
-  let watchId = null;
-  let timerId = null;
-  let hasReceivedAnyPosition = false;
-
-  const stopWatching = () => {
-    if (watchId !== null) {
-      navigator.geolocation.clearWatch(watchId);
-      watchId = null;
-    }
-    if (timerId !== null) {
-      clearTimeout(timerId);
-      timerId = null;
-    }
-    if (overlay) overlay.style.display = 'none';
-  };
-
-  // Giới hạn thời gian lắng nghe tối đa 10 giây
-  timerId = setTimeout(() => {
-    stopWatching();
-    if (!hasReceivedAnyPosition) {
-      if (typeof showToast === 'function') {
-        showToast('Không bắt được tín hiệu định vị. Hãy thử dán tọa độ hoặc nhấp chọn vị trí nhé!', 'warning');
-      }
-    }
-  }, 10000);
-
-  watchId = navigator.geolocation.watchPosition(
+  navigator.geolocation.getCurrentPosition(
     (pos) => {
-      hasReceivedAnyPosition = true;
+      if (overlay) {
+        overlay.style.display = 'none';
+        delete overlay.dataset.temporaryGpsLoading;
+      }
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
       const acc = pos.coords.accuracy || 0;
 
-      // Cập nhật nếu bắt được tọa độ có độ chính xác cao hơn
-      if (acc < bestAccuracy || bestAccuracy === Infinity) {
-        bestAccuracy = acc;
-        currentPickedLat = lat;
-        currentPickedLng = lng;
+      userLiveCoords = {
+        lat: lat,
+        lng: lng,
+        accuracy: acc,
+        timestamp: Date.now()
+      };
+      saveLastKnownGpsLocation(lat, lng, acc);
 
-        // Cập nhật vị trí Chấm Xanh Google Maps của người dùng
-        if (mainHomeMarker) {
-          mainHomeMarker.setLatLng([lat, lng]);
-        }
-        if (mainLeafletMap) {
-          mainLeafletMap.setView([lat, lng], 17);
-          if (droppedPinMarker) {
-            mainLeafletMap.removeLayer(droppedPinMarker);
-            droppedPinMarker = null;
-          }
-          if (userGpsAccuracyCircle) {
-            mainLeafletMap.removeLayer(userGpsAccuracyCircle);
-            userGpsAccuracyCircle = null;
-          }
-        }
+      if (mainHomeMarker) {
+        mainHomeMarker.setLatLng([lat, lng]);
+      }
+      if (mainLeafletMap && centerNow) {
+        mainLeafletMap.setView([lat, lng], 17, { animate: true });
+      }
 
-        reverseGeocodeLocation(lat, lng, (addr) => {
-          currentPickedAddress = addr;
-        });
+      startLiveGpsTracking(true);
+      updateGpsFollowUI(true);
 
-        // Nếu đã đạt độ chính xác dưới 60m (chuẩn sóng Wi-Fi triangulation)
-        if (acc <= 60) {
-          stopWatching();
-          if (typeof showToast === 'function') {
-            showToast('Đã định vị chính xác vị trí của bạn!', 'success');
-          }
-          return;
-        }
+      if (typeof showToast === 'function') {
+        showToast('Đã định vị chính xác và bật chế độ bám theo khi đi đường!', 'success');
       }
     },
     (err) => {
-      stopWatching();
-      console.warn('[MapLocation] Lỗi GPS:', err.message);
-      alert('Không thể lấy vị trí GPS. Hãy kiểm tra quyền truy cập vị trí của trình duyệt!');
+      if (overlay) {
+        overlay.style.display = 'none';
+        delete overlay.dataset.temporaryGpsLoading;
+      }
+      console.warn('[MapLocation] Lỗi GPS getCurrentPosition:', err.message);
+      updateGpsFollowUI(false);
+      alert('Không thể lấy vị trí GPS. Hãy kiểm tra quyền truy cập vị trí trên trình duyệt của bạn!');
     },
     {
       enableHighAccuracy: true,
-      timeout: 9000,
-      maximumAge: 0 // Không dùng cache cũ, ép dò sóng Wi-Fi mới
+      timeout: 8000,
+      maximumAge: 0
     }
   );
 }
@@ -639,16 +818,21 @@ async function promptPasteCoordinates() {
 
 /**
  * Lấy tọa độ Chấm Xanh Google Maps (Vị trí hiện tại của người dùng)
+ * Ưu tiên: Tọa độ GPS Live thời gian thực -> Tọa độ GPS gần nhất -> Marker -> Nhà -> Mặc định
  */
 function getMyLocationCoords() {
+  if (userLiveCoords && typeof userLiveCoords.lat === 'number' && typeof userLiveCoords.lng === 'number') {
+    return [userLiveCoords.lat, userLiveCoords.lng];
+  }
+  const lastGps = getLastKnownGpsLocation();
+  if (lastGps && typeof lastGps.lat === 'number' && typeof lastGps.lng === 'number') {
+    return [lastGps.lat, lastGps.lng];
+  }
   if (mainHomeMarker && mainHomeMarker.getLatLng) {
     const cur = mainHomeMarker.getLatLng();
     if (cur && cur.lat && cur.lng) {
       return [cur.lat, cur.lng];
     }
-  }
-  if (currentPickedLat && currentPickedLng) {
-    return [currentPickedLat, currentPickedLng];
   }
   const homeData = getSavedHomeLocation();
   if (homeData && homeData.lat && homeData.lng) {
@@ -1265,26 +1449,42 @@ function renderAllSavedPlaceMarkers() {
   });
 }
 
+let modalTargetCoords = null;
+
 function openAddSavedPlaceModal() {
-  let lat = currentPickedLat;
-  let lng = currentPickedLng;
-  if (!lat || !lng) {
-    if (mainLeafletMap) {
-      const c = mainLeafletMap.getCenter();
-      lat = c.lat;
-      lng = c.lng;
-    } else {
-      lat = DEFAULT_MAP_CENTER[0];
-      lng = DEFAULT_MAP_CENTER[1];
-    }
+  let lat = null;
+  let lng = null;
+  let addrHint = '';
+
+  // Ưu tiên 1: Nếu người dùng đã chủ động cắm ghim đỏ trên bản đồ để chọn một vị trí khác
+  if (tempPickedPinCoords && tempPickedPinCoords.lat && tempPickedPinCoords.lng) {
+    lat = tempPickedPinCoords.lat;
+    lng = tempPickedPinCoords.lng;
+    addrHint = tempPickedPinCoords.address || '';
+  } else if (droppedPinMarker) {
+    const pin = droppedPinMarker.getLatLng();
+    lat = pin.lat;
+    lng = pin.lng;
+  } else {
+    // Ưu tiên 2: Chuẩn 100% vị trí hiện tại của Chấm Xanh GPS (Đúng ý nghĩa nút "Thêm Vị Trí Hiện Tại")
+    const myCoords = getMyLocationCoords();
+    lat = myCoords[0];
+    lng = myCoords[1];
   }
+
+  if (!lat || !lng) {
+    lat = DEFAULT_MAP_CENTER[0];
+    lng = DEFAULT_MAP_CENTER[1];
+  }
+
+  modalTargetCoords = { lat, lng };
 
   const coordsText = document.getElementById('addPlaceCoordsText');
   const addrText = document.getElementById('addPlaceAddrText');
   if (coordsText) coordsText.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 
-  if (currentPickedAddress) {
-    if (addrText) addrText.textContent = currentPickedAddress;
+  if (addrHint) {
+    if (addrText) addrText.textContent = addrHint;
   } else {
     if (addrText) addrText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xác định tên địa chỉ...';
     reverseGeocodeLocation(lat, lng, (resolved) => {
@@ -1319,6 +1519,7 @@ function openAddSavedPlaceModal() {
 function closeAddSavedPlaceModal() {
   const modal = document.getElementById('modalAddSavedPlace');
   if (modal) modal.style.display = 'none';
+  modalTargetCoords = null;
 }
 
 function handleConfirmAddSavedPlace(e) {
@@ -1339,23 +1540,18 @@ function handleConfirmAddSavedPlace(e) {
   const type = (activeTypeOpt && activeTypeOpt.dataset.type) || 'general';
   const notes = (inputNotes && inputNotes.value.trim()) || '';
 
-  let lat = currentPickedLat;
-  let lng = currentPickedLng;
+  let lat = modalTargetCoords ? modalTargetCoords.lat : null;
+  let lng = modalTargetCoords ? modalTargetCoords.lng : null;
   if (!lat || !lng) {
-    if (mainLeafletMap) {
-      const c = mainLeafletMap.getCenter();
-      lat = c.lat;
-      lng = c.lng;
-    } else {
-      lat = DEFAULT_MAP_CENTER[0];
-      lng = DEFAULT_MAP_CENTER[1];
-    }
+    const cur = getMyLocationCoords();
+    lat = cur[0];
+    lng = cur[1];
   }
 
   const addrEl = document.getElementById('addPlaceAddrText');
   const addr = (addrEl && addrEl.textContent && !addrEl.textContent.includes('Đang xác định'))
     ? addrEl.textContent.trim()
-    : (currentPickedAddress || `Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+    : `Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
 
   const newPlace = {
     id: 'place_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
@@ -1372,6 +1568,7 @@ function handleConfirmAddSavedPlace(e) {
   saveSavedPlacesList(savedPlaces);
 
   closeAddSavedPlaceModal();
+  clearDroppedPin(); // Dọn sạch ghim tạm đỏ nếu có
   renderSavedPlacesListUI();
   renderAllSavedPlaceMarkers();
 
@@ -1480,11 +1677,22 @@ function renderMapTab() {
     if (mainLeafletMap) {
       mainLeafletMap.invalidateSize();
       renderAllSavedPlaceMarkers();
-      const homeData = getSavedHomeLocation();
-      if (homeData && homeData.lat && homeData.lng) {
-        mainLeafletMap.setView([homeData.lat, homeData.lng], 16);
+
+      // Nếu có vị trí GPS thời gian thực hoặc GPS gần nhất, ưu tiên hiển thị ngay vị trí đó
+      const curCoords = getMyLocationCoords();
+      if (curCoords && (curCoords[0] !== DEFAULT_MAP_CENTER[0] || curCoords[1] !== DEFAULT_MAP_CENTER[1])) {
+        mainLeafletMap.setView(curCoords, 17);
+      } else {
+        const homeData = getSavedHomeLocation();
+        if (homeData && homeData.lat && homeData.lng) {
+          mainLeafletMap.setView([homeData.lat, homeData.lng], 16);
+        }
       }
     }
+
+    // Đảm bảo Live GPS Tracking liên tục bám theo
+    startLiveGpsTracking(true);
+    updateGpsFollowUI(isFollowUserMode);
     updateMainMapWorkspaceUI();
   }, 100);
 }
@@ -1500,6 +1708,24 @@ function initHomeLocationModule() {
   setTimeout(() => {
     initInlineMiniMap();
   }, 600);
+
+  // Nút tròn nổi GPS chuẩn Google Maps trên bản đồ
+  const btnMapFloatingGps = document.getElementById('btnMapFloatingGps');
+  if (btnMapFloatingGps) {
+    btnMapFloatingGps.addEventListener('click', () => {
+      if (!isFollowUserMode) {
+        isFollowUserMode = true;
+        locateViaGPSOnMainMap(true);
+        if (typeof showToast === 'function') {
+          showToast('Đã bật chế độ bám theo vị trí khi đi đường!', 'success');
+        }
+      } else {
+        const coords = getMyLocationCoords();
+        if (mainLeafletMap) mainLeafletMap.setView(coords, 17, { animate: true });
+        updateGpsFollowUI(true);
+      }
+    });
+  }
 
   // Nút trên Thẻ Hộp Dụng Cụ
   const btnOpenFullMap = document.getElementById('btnOpenFullMapFromCard');
@@ -1638,4 +1864,7 @@ window.routeToCoordinates = routeToCoordinates;
 window.getMyLocationCoords = getMyLocationCoords;
 window.renderSavedPlacesListUI = renderSavedPlacesListUI;
 window.renderAllSavedPlaceMarkers = renderAllSavedPlaceMarkers;
+window.clearDroppedPin = clearDroppedPin;
+window.startLiveGpsTracking = startLiveGpsTracking;
+window.updateGpsFollowUI = updateGpsFollowUI;
 window.initHomeLocationModule = initHomeLocationModule;

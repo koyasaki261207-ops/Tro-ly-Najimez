@@ -946,6 +946,64 @@
   background: #0b1120;
 }
 
+/* Nút nổi GPS Target trên bản đồ (Floating Action Button chuẩn Google Maps) */
+.btn-map-floating-gps {
+  position: absolute;
+  bottom: 24px;
+  right: 14px;
+  z-index: 500;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1.5px solid rgba(56, 189, 248, 0.4);
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(12px);
+  transition: all 0.22s ease;
+}
+
+.btn-map-floating-gps:hover {
+  background: rgba(15, 23, 42, 0.98);
+  border-color: #38bdf8;
+  color: #38bdf8;
+  transform: scale(1.08);
+  box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45);
+}
+
+.btn-map-floating-gps.active {
+  background: rgba(14, 165, 233, 0.28);
+  border-color: #38bdf8;
+  color: #38bdf8;
+  box-shadow: 0 0 16px rgba(56, 189, 248, 0.55), inset 0 0 10px rgba(56, 189, 248, 0.25);
+}
+
+.btn-map-floating-gps.active i {
+  animation: pulseCrosshairs 2.2s infinite ease-in-out;
+}
+
+.btn-map-hud-action.cyan.live-tracking {
+  background: rgba(56, 189, 248, 0.28);
+  border-color: #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.45);
+}
+
+.btn-map-hud-action.cyan.live-tracking i {
+  color: #38bdf8;
+  animation: pulseCrosshairs 2.2s infinite ease-in-out;
+}
+
+@keyframes pulseCrosshairs {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.22); color: #7dd3fc; }
+  100% { transform: scale(1); }
+}
+
 /* Cột Phải: Bảng điều khiển */
 .map-control-sidebar-col {
   display: flex;
