@@ -25,8 +25,8 @@
   <!-- Favicon Najimez -->
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
-  <link rel="stylesheet" href="style.css?v=3.95.13">
-  <link rel="stylesheet" href="css/map-location.css?v=3.95.13">
+  <link rel="stylesheet" href="style.css?v=3.95.14">
+  <link rel="stylesheet" href="css/map-location.css?v=3.95.14">
   <link rel="stylesheet" href="css/language-learning.css?v=3.95.7">
   <link rel="stylesheet" href="css/language-tutor.css?v=3.95.8">
   <link rel="stylesheet" href="css/timetable-matcher.css?v=3.95.10">
@@ -1387,6 +1387,18 @@
 
                 <!-- Khung Bản Đồ Toàn Năng -->
                 <div class="main-map-leaflet-wrapper">
+                  <!-- Bộ chuyển đổi chế độ xem bản đồ Google -->
+                  <div class="map-layer-switcher" id="mapLayerSwitcher">
+                    <button type="button" class="btn-layer-pill active" data-layer="google-street">
+                      <i class="fa-solid fa-map"></i> Đường phố
+                    </button>
+                    <button type="button" class="btn-layer-pill" data-layer="google-satellite">
+                      <i class="fa-solid fa-satellite"></i> Vệ tinh
+                    </button>
+                    <button type="button" class="btn-layer-pill" data-layer="dark-night">
+                      <i class="fa-solid fa-moon"></i> Ban đêm
+                    </button>
+                  </div>
                   <div id="mainLeafletMap" class="main-leaflet-map"></div>
                   <div class="home-map-loading-overlay" id="mainMapLoadingOverlay" style="display: none;">
                     <i class="fa-solid fa-spinner fa-spin"></i>
@@ -3456,7 +3468,7 @@
   <script src="js/timetable-timeline.js?v=3.66.0"></script>
   <script src="js/lucky-wheel.js?v=3.70.0"></script>
   <script src="js/toolbox.js?v=3.95.11"></script>
-  <script src="js/map-location.js?v=3.95.13"></script>
+  <script src="js/map-location.js?v=3.95.14"></script>
   <script src="js/language-learning.js?v=3.95.10"></script>
   <script src="js/language-tutor.js?v=3.95.8"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>

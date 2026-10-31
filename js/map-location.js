@@ -1,15 +1,48 @@
 /**
  * js/map-location.js - Quản lý Trung Tâm Bản Đồ & Vị Trí Nhà Riêng Najimez
- * Sử dụng Leaflet.js, OpenStreetMap Nominatim và CartoDB Dark Matter
+ * Sử dụng Google Maps Tile Layer, Leaflet.js và BigDataCloud / Nominatim Geocoding
  * Chuẩn Code Modularization cho Dự Án Trợ Lý Ảo Najimez
  */
 
 const HOME_LOC_STORAGE_KEY = 'najimez_home_location';
 const DEFAULT_MAP_CENTER = [10.762622, 106.660172]; // TP. Hồ Chí Minh
-const DEFAULT_MAP_ZOOM = 14;
+const DEFAULT_MAP_ZOOM = 15;
 
+// Cấu hình các lớp bản đồ trực tuyến (Google Maps chính thức qua Tile Server)
+const MAP_LAYERS = {
+  'google-street': {
+    name: 'Đường phố Google',
+    url: 'https://mt{s}.google.com/vt/lyrs=m&hl=vi&x={x}&y={y}&z={z}',
+    options: {
+      subdomains: ['0', '1', '2', '3'],
+      maxZoom: 20,
+      attribution: '&copy; Google Maps'
+    }
+  },
+  'google-satellite': {
+    name: 'Vệ tinh Google',
+    url: 'https://mt{s}.google.com/vt/lyrs=y&hl=vi&x={x}&y={y}&z={z}',
+    options: {
+      subdomains: ['0', '1', '2', '3'],
+      maxZoom: 20,
+      attribution: '&copy; Google Maps'
+    }
+  },
+  'dark-night': {
+    name: 'Bản đồ Ban đêm',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+    options: {
+      maxZoom: 16,
+      attribution: '&copy; Esri &copy; OpenStreetMap'
+    }
+  }
+};
+
+let currentLayerKey = 'google-street';
 let mainLeafletMap = null;
 let mainHomeMarker = null;
+let currentMainTileLayer = null;
+
 let inlineMiniMap = null;
 let inlineHomeMarker = null;
 
@@ -156,6 +189,25 @@ function updateMainMapWorkspaceUI() {
 }
 
 /**
+ * Chuyển đổi lớp bản đồ Google (Đường phố / Vệ tinh / Ban đêm)
+ */
+function switchMainMapLayer(layerKey) {
+  if (!mainLeafletMap || !MAP_LAYERS[layerKey]) return;
+  currentLayerKey = layerKey;
+
+  if (currentMainTileLayer) {
+    mainLeafletMap.removeLayer(currentMainTileLayer);
+  }
+
+  const cfg = MAP_LAYERS[layerKey];
+  currentMainTileLayer = L.tileLayer(cfg.url, cfg.options).addTo(mainLeafletMap);
+  currentMainTileLayer.bringToBack();
+
+  const pills = document.querySelectorAll('.btn-layer-pill');
+  pills.forEach(p => p.classList.toggle('active', p.dataset.layer === layerKey));
+}
+
+/**
  * Mở Google Maps chỉ đường về nhà
  */
 function navigateToHome() {
@@ -205,12 +257,9 @@ function initMainLeafletMap() {
     zoomControl: true
   });
 
-  // Nạp CartoDB Dark Matter tiles
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 19
-  }).addTo(mainLeafletMap);
+  // Nạp lớp Google Maps tiếng Việt mặc định
+  const cfg = MAP_LAYERS[currentLayerKey] || MAP_LAYERS['google-street'];
+  currentMainTileLayer = L.tileLayer(cfg.url, cfg.options).addTo(mainLeafletMap);
 
   // Custom Neon Pin
   const homeDivIcon = L.divIcon({
@@ -265,16 +314,14 @@ function initInlineMiniMap() {
     attributionControl: false
   });
 
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    subdomains: 'abcd',
-    maxZoom: 19
-  }).addTo(inlineMiniMap);
+  // Nạp Google Maps cho mini map
+  L.tileLayer(MAP_LAYERS['google-street'].url, MAP_LAYERS['google-street'].options).addTo(inlineMiniMap);
 
   const miniDivIcon = L.divIcon({
     className: 'custom-neon-pin-wrapper',
-    html: '<div class="neon-home-marker" style="width:32px;height:32px;font-size:14px;"><i class="fa-solid fa-house-chimney"></i></div>',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16]
+    html: '<div class="neon-home-marker" style="width:34px;height:34px;font-size:15px;"><i class="fa-solid fa-house-chimney"></i></div>',
+    iconSize: [34, 34],
+    iconAnchor: [17, 17]
   });
 
   inlineHomeMarker = L.marker(initialCenter, { icon: miniDivIcon }).addTo(inlineMiniMap);
@@ -316,19 +363,34 @@ function setMainMapPickedLocation(lat, lng, addressText = null, shouldPan = true
 }
 
 /**
- * Reverse geocoding qua Nominatim
+ * Tra cứu địa chỉ tiếng Việt từ tọa độ GPS (BigDataCloud + OpenStreetMap Nominatim dự phòng)
  */
 function reverseGeocodeLocation(lat, lng, callback) {
-  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
-  
-  fetch(url, { headers: { 'Accept-Language': 'vi,en' } })
+  // 1. Thử BigDataCloud API (siêu nhanh, tên địa danh Việt Nam rất chuẩn xác, không bị chặn)
+  const bdcUrl = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=vi`;
+
+  fetch(bdcUrl)
     .then(res => res.json())
     .then(data => {
-      const addr = (data && data.display_name) || `Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-      if (callback) callback(addr);
+      const parts = [data.locality, data.city, data.principalSubdivision].filter(Boolean);
+      if (parts.length > 0) {
+        if (callback) callback(parts.join(', '));
+        return;
+      }
+      throw new Error('No locality parts');
     })
     .catch(() => {
-      if (callback) callback(`Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+      // 2. Dự phòng OpenStreetMap Nominatim
+      const osmUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
+      fetch(osmUrl, { headers: { 'Accept-Language': 'vi,en' } })
+        .then(res => res.json())
+        .then(data => {
+          const addr = (data && data.display_name) || `Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+          if (callback) callback(addr);
+        })
+        .catch(() => {
+          if (callback) callback(`Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
+        });
     });
 }
 
@@ -518,6 +580,15 @@ function initHomeLocationModule() {
   if (btnHudGps) btnHudGps.addEventListener('click', locateViaGPSOnMainMap);
   if (btnHudDir) btnHudDir.addEventListener('click', navigateToHome);
 
+  // Nút chuyển chế độ xem bản đồ (Đường phố, Vệ tinh, Ban đêm)
+  const layerPills = document.querySelectorAll('.btn-layer-pill');
+  layerPills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      const layer = pill.dataset.layer;
+      if (layer) switchMainMapLayer(layer);
+    });
+  });
+
   // Tìm kiếm trên Main Map
   const searchInput = document.getElementById('mainMapSearchInput');
   const btnSearch = document.getElementById('btnMainMapSearch');
@@ -573,4 +644,5 @@ window.updateMainMapWorkspaceUI = updateMainMapWorkspaceUI;
 window.renderMapTab = renderMapTab;
 window.navigateToHome = navigateToHome;
 window.switchTabToMap = switchTabToMap;
+window.switchMainMapLayer = switchMainMapLayer;
 window.initHomeLocationModule = initHomeLocationModule;
