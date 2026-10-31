@@ -227,6 +227,13 @@ function applyRemoteCloudData(cloudData) {
       } catch (e) {}
     }
 
+    if (cloudData.homeLocation) {
+      try {
+        localStorage.setItem('najimez_home_location', JSON.stringify(cloudData.homeLocation));
+        if (typeof updateHomeLocationUI === 'function') updateHomeLocationUI();
+      } catch (e) {}
+    }
+
     // Làm mới giao diện từ vựng & flashcard
     if (typeof sanitizeVocabNotebook === 'function') sanitizeVocabNotebook();
     if (typeof updateNotebookBadge === 'function') updateNotebookBadge();
@@ -308,6 +315,12 @@ function syncLedgerToFirebase(data, isImmediate = false) {
         if (rawM) vocabMasteredIds = JSON.parse(rawM);
       } catch (e) {}
 
+      let homeLoc = null;
+      try {
+        const rawHome = localStorage.getItem('najimez_home_location');
+        if (rawHome) homeLoc = JSON.parse(rawHome);
+      } catch (e) {}
+
       const apiKey = localStorage.getItem(APP_CONFIG.storageKey) || '';
 
       const payload = {
@@ -322,6 +335,7 @@ function syncLedgerToFirebase(data, isImmediate = false) {
         geminiApiKey: apiKey ? apiKey.trim() : '',
         vocabNotebook: vocabNotebook,
         vocabMasteredIds: vocabMasteredIds,
+        homeLocation: homeLoc,
         clientSourceId: getClientSourceId(),
         clientUpdatedAt: Date.now(),
         serverUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()

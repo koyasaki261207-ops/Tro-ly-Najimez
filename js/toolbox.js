@@ -44,7 +44,8 @@ function switchToolboxTool(toolId) {
       'dice-coin': 'quadDiceCoin',
       'pomodoro': 'quadPomodoro',
       'calculator': 'quadCalculator',
-      'currency': 'quadCurrency'
+      'currency': 'quadCurrency',
+      'home-location': 'quadHomeLocation'
     };
     const targetId = targetMap[toolId];
 

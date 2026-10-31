@@ -441,6 +441,19 @@ function buildDynamicSystemPrompt() {
     return `  + [${lName}] ${v.word}${v.phonetic ? ' (' + v.phonetic + ')' : ''}: ${v.meaning}${v.example ? ' (Ví dụ: ' + v.example + ')' : ''}`;
   });
 
+  // Phân tích vị trí Nhà Riêng của người dùng
+  let homeLocationInfo = 'Người dùng chưa thiết lập vị trí nhà riêng trên hệ thống.';
+  try {
+    const rawHome = localStorage.getItem('najimez_home_location');
+    if (rawHome) {
+      const hData = JSON.parse(rawHome);
+      if (hData && hData.lat && hData.lng) {
+        const homeMapsDirectUrl = `https://www.google.com/maps/dir/?api=1&destination=${hData.lat},${hData.lng}`;
+        homeLocationInfo = `Nhà riêng của người dùng đã được đánh dấu tại: "${hData.address || 'Tọa độ ' + hData.lat + ', ' + hData.lng}" (Tọa độ: ${hData.lat}, ${hData.lng}).\n  + Khi người dùng hỏi "nhà tôi ở đâu?", "chỉ đường về nhà", hãy thông báo địa chỉ này và đính kèm link: [📍 Mở Chỉ Đường Về Nhà Trên Google Maps](${homeMapsDirectUrl})`;
+      }
+    }
+  } catch (e) {}
+
   return `${APP_CONFIG.systemPrompt}
 
 ============================================================
@@ -498,6 +511,9 @@ ${vocabSummary.length > 0 ? vocabSummary.join('\n') : '  (Hiện chưa có từ 
 - VAI TRÒ GIA SƯ NGOẠI NGỮ CỦA NAJIMEZ:
   + Bạn nắm rõ toàn bộ các từ vựng này. Khi người dùng hỏi "tôi đã lưu những từ gì?", "hãy kiểm tra từ vựng", "đố tôi từ vựng trong sổ", bạn hãy dùng chính xác danh sách này để trả lời, giải thích, đặt câu hoặc đố bài tập tương tác.
   + Khi người dùng hỏi một từ ngoại ngữ (tiếng Anh, Nhật, Hàn, Trung, Pháp, Đức...) hoặc nhờ giải thích từ và muốn lưu lại, hãy giải thích cặn kẽ và đính kèm thẻ add_vocab để lưu ngay vào sổ từ cho họ!
+
+[6. BẢN ĐỒ & VỊ TRÍ NHÀ RIÊNG CỦA NGƯỜI DÙNG]
+- ${homeLocationInfo}
 
 ============================================================
 QUYỀN HẠN ĐIỀU KHIỂN & HÀNH ĐỘNG NÂNG CAO (ACTION PROTOCOL):

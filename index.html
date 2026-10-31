@@ -25,11 +25,16 @@
   <!-- Favicon Najimez -->
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
-  <link rel="stylesheet" href="style.css?v=3.95.11">
+  <link rel="stylesheet" href="style.css?v=3.95.12">
+  <link rel="stylesheet" href="css/map-location.css?v=3.95.12">
   <link rel="stylesheet" href="css/language-learning.css?v=3.95.7">
   <link rel="stylesheet" href="css/language-tutor.css?v=3.95.8">
   <link rel="stylesheet" href="css/timetable-matcher.css?v=3.95.10">
   <link rel="stylesheet" href="css/responsive.css?v=3.95.9">
+
+  <!-- Leaflet Map CSS & JS (OpenStreetMap Interactive Maps) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
   <!-- KaTeX hỗ trợ render công thức Toán học đẹp mắt cho Hyper Najimez -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
@@ -1238,6 +1243,71 @@
 
                     <!-- Dải tỷ giá tham khảo nhanh các ngoại tệ phổ biến với VND -->
                     <div class="curr-rates-strip" id="currRatesStrip"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- =============================================================
+                   PHẦN 6: BẢN ĐỒ & VỊ TRÍ NHÀ RIÊNG (HOME LOCATION & MAP)
+                   ============================================================= -->
+              <div class="toolbox-quad-card quad-home-location" id="quadHomeLocation">
+                <div class="quad-card-header">
+                  <div class="quad-card-title">
+                    <i class="fa-solid fa-house-chimney-user" style="color: #38bdf8;"></i>
+                    <span>6. Bản Đồ &amp; Vị Trí Nhà Riêng</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="btn-wheel-sublink" id="btnQuickRefreshHome"
+                      title="Làm mới trạng thái vị trí"
+                      style="color: #38bdf8; font-size: 0.8rem; margin: 0; padding: 2px 6px;">
+                      <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                    <button type="button" class="btn-quad-maximize" data-tool="home-location" title="Phóng to công cụ này">
+                      <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="quad-card-body home-loc-card-body">
+                  <div class="home-loc-display-card" id="homeLocDisplayCard">
+                    <!-- Trạng thái icon & Thông tin địa chỉ -->
+                    <div class="home-loc-status-wrap">
+                      <div class="home-loc-icon-aura" id="homeLocIconAura">
+                        <i class="fa-solid fa-house-chimney" id="homeLocIcon"></i>
+                      </div>
+                      <div class="home-loc-text-wrap">
+                        <div class="home-loc-title-row">
+                          <span class="home-loc-name" id="homeLocName">Nhà Riêng Của Tôi</span>
+                          <span class="home-loc-badge" id="homeLocStatusBadge">Chưa thiết lập</span>
+                        </div>
+                        <p class="home-loc-address" id="homeLocAddress">Nhấn "Đánh Dấu Vị Trí" để ghim nhà trên bản đồ mini hoặc định vị GPS tự động.</p>
+                        <div class="home-loc-coords-row" id="homeLocCoordsRow" style="display: none;">
+                          <span class="home-loc-coord-tag"><i class="fa-solid fa-location-crosshairs"></i> <span id="homeLocCoordsVal">0, 0</span></span>
+                          <span class="home-loc-time-tag" id="homeLocTimeTag"></span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Các nút hành động chính -->
+                    <div class="home-loc-actions-grid">
+                      <button type="button" class="btn-home-action cyan" id="btnOpenHomeMapModal">
+                        <i class="fa-solid fa-map-location-dot"></i> Đánh Dấu Vị Trí
+                      </button>
+                      <button type="button" class="btn-home-action gold" id="btnDirectionsHome" disabled>
+                        <i class="fa-solid fa-diamond-turn-right"></i> Chỉ Đường Về Nhà
+                      </button>
+                      <button type="button" class="btn-home-action purple" id="btnQuickGpsHome">
+                        <i class="fa-solid fa-crosshairs"></i> Bắt GPS Nhanh
+                      </button>
+                      <button type="button" class="btn-home-action slate" id="btnClearHomeLoc" style="display: none;" title="Xóa vị trí đã lưu">
+                        <i class="fa-regular fa-trash-can"></i> Xóa Vị Trí
+                      </button>
+                    </div>
+
+                    <!-- Banner gợi ý tiện ích của Najimez -->
+                    <div class="home-loc-hint-box">
+                      <i class="fa-solid fa-lightbulb" style="color: #fbbf24;"></i>
+                      <span><strong>Tiện ích Najimez:</strong> Sau khi ghim nhà, bạn có thể bấm <em>"Chỉ đường về nhà"</em> để mở Google Maps 1-chạm hoặc hỏi trong khung Chat Najimez: <em>"Chỉ đường về nhà"</em>!</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -3145,6 +3215,73 @@
     </div>
   </div>
 
+  <!-- MODAL: BẢN ĐỒ ĐÁNH DẤU VỊ TRÍ NHÀ RIÊNG LEAFLET -->
+  <div class="modal-backdrop" id="homeMapModal">
+    <div class="modal-dialog home-map-modal-dialog">
+      <div class="modal-header">
+        <div class="dialog-title">
+          <i class="fa-solid fa-map-location-dot" style="color: #38bdf8;"></i>
+          <span>Đánh Dấu Vị Trí Nhà Riêng</span>
+        </div>
+        <button class="btn-close-modal" id="btnCloseHomeMapModal">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body home-map-modal-body">
+        <p class="modal-desc" style="margin-bottom: 8px;">
+          Bấm <strong>"Vị trí GPS hiện tại"</strong>, gõ tìm kiếm hoặc <strong>nhấp chuột/kéo thả ghim 🏠</strong> trên bản đồ đến đúng vị trí nhà của bạn.
+        </p>
+
+        <!-- Thanh tìm kiếm & GPS trên bản đồ -->
+        <div class="home-map-search-bar">
+          <div class="home-map-search-input-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" id="homeMapSearchInput" placeholder="Nhập tên đường, phường, quận, thành phố..." autocomplete="off" />
+            <button type="button" id="btnClearSearchInput" class="btn-clear-search" style="display: none;">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+          <button type="button" class="btn-map-control btn-search" id="btnSearchAddress">
+            Tìm kiếm
+          </button>
+          <button type="button" class="btn-map-control btn-gps" id="btnMapGpsLocate" title="Lấy tọa độ vị trí bạn đang đứng">
+            <i class="fa-solid fa-crosshairs"></i> Vị trí hiện tại
+          </button>
+        </div>
+
+        <!-- Danh sách kết quả tìm kiếm gợi ý (Autocomplete dropdown) -->
+        <div class="home-map-search-results" id="homeMapSearchResults" style="display: none;"></div>
+
+        <!-- Container Bản Đồ Leaflet -->
+        <div class="home-leaflet-map-wrapper">
+          <div id="homeLeafletMap" class="home-leaflet-map"></div>
+          <div class="home-map-loading-overlay" id="homeMapLoadingOverlay" style="display: none;">
+            <i class="fa-solid fa-spinner fa-spin"></i>
+            <span id="homeMapLoadingText">Đang tải bản đồ...</span>
+          </div>
+        </div>
+
+        <!-- Thanh thông tin vị trí đã chọn bên dưới bản đồ -->
+        <div class="home-map-picked-info">
+          <div class="home-map-picked-row">
+            <span class="home-map-info-label"><i class="fa-solid fa-location-dot" style="color: #f43f5e;"></i> Địa chỉ:</span>
+            <span class="home-map-info-val" id="homeMapPickedAddress">Chưa chọn vị trí</span>
+          </div>
+          <div class="home-map-picked-row">
+            <span class="home-map-info-label"><i class="fa-solid fa-compass" style="color: #38bdf8;"></i> Tọa độ:</span>
+            <span class="home-map-info-val coords" id="homeMapPickedCoords">--</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-top: 1px solid rgba(255, 255, 255, 0.08);">
+        <button type="button" class="btn-cancel" id="btnCancelHomeMap">Hủy</button>
+        <button type="button" class="btn-save-confirm" id="btnSaveHomeLocation">
+          <i class="fa-solid fa-check"></i> Lưu Vị Trí Nhà Riêng
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Firebase SDK Compat v10 (Chạy mượt mà trực tiếp không cần npm build) -->
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
@@ -3168,6 +3305,7 @@
   <script src="js/timetable-timeline.js?v=3.66.0"></script>
   <script src="js/lucky-wheel.js?v=3.70.0"></script>
   <script src="js/toolbox.js?v=3.95.11"></script>
+  <script src="js/map-location.js?v=3.95.12"></script>
   <script src="js/language-learning.js?v=3.95.10"></script>
   <script src="js/language-tutor.js?v=3.95.8"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>

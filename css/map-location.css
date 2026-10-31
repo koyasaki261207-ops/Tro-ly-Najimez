@@ -1,0 +1,515 @@
+/**
+ * css/map-location.css - Giao diện Bản Đồ & Vị Trí Nhà Riêng Najimez (Cyber Luxury Glassmorphism)
+ * Tương thích Leaflet.js, CartoDB Dark Matter, OpenStreetMap
+ */
+
+/* ============================================================================
+   1. THẺ HỘP DỤNG CỤ: BẢN ĐỒ & VỊ TRÍ NHÀ RIÊNG
+   ============================================================================ */
+.quad-home-location {
+  display: flex;
+  flex-direction: column;
+}
+
+.home-loc-card-body {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+.home-loc-display-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+}
+
+.home-loc-status-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 12px;
+  padding: 12px 14px;
+  backdrop-filter: blur(10px);
+  transition: all 0.25s ease;
+}
+
+.home-loc-status-wrap:hover {
+  border-color: rgba(56, 189, 248, 0.4);
+  box-shadow: 0 4px 16px rgba(56, 189, 248, 0.12);
+}
+
+.home-loc-icon-aura {
+  width: 46px;
+  height: 46px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.05));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  color: #38bdf8;
+  flex-shrink: 0;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+  transition: all 0.3s ease;
+}
+
+.home-loc-icon-aura.configured {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.1));
+  border-color: rgba(52, 211, 153, 0.5);
+  color: #34d399;
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.35);
+}
+
+.home-loc-text-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.home-loc-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+}
+
+.home-loc-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: 0.3px;
+}
+
+.home-loc-badge {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-weight: 600;
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
+.home-loc-badge.active {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.home-loc-address {
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  line-height: 1.4;
+  margin: 0;
+  word-break: break-word;
+}
+
+.home-loc-coords-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+  font-size: 0.74rem;
+  color: #94a3b8;
+  flex-wrap: wrap;
+}
+
+.home-loc-coord-tag {
+  background: rgba(2, 132, 199, 0.15);
+  color: #38bdf8;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+}
+
+.home-loc-time-tag {
+  color: #64748b;
+  font-size: 0.7rem;
+}
+
+/* Các nút hành động */
+.home-loc-actions-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn-home-action {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.btn-home-action.cyan {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(14, 165, 233, 0.3));
+  border-color: rgba(56, 189, 248, 0.5);
+  color: #e0f2fe;
+}
+.btn-home-action.cyan:hover {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.35), rgba(14, 165, 233, 0.5));
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.35);
+}
+
+.btn-home-action.gold {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.3));
+  border-color: rgba(251, 191, 36, 0.5);
+  color: #fef3c7;
+}
+.btn-home-action.gold:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.35), rgba(217, 119, 6, 0.5));
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
+}
+.btn-home-action.gold:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.btn-home-action.purple {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: rgba(192, 132, 252, 0.35);
+  color: #f3e8ff;
+}
+.btn-home-action.purple:hover {
+  background: rgba(168, 85, 247, 0.28);
+  box-shadow: 0 0 12px rgba(192, 132, 252, 0.3);
+}
+
+.btn-home-action.slate {
+  background: rgba(100, 116, 139, 0.15);
+  border-color: rgba(148, 163, 184, 0.25);
+  color: #cbd5e1;
+}
+.btn-home-action.slate:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(248, 113, 113, 0.4);
+  color: #fca5a5;
+}
+
+.home-loc-hint-box {
+  margin-top: auto;
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px dashed rgba(251, 191, 36, 0.3);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 0.74rem;
+  color: #94a3b8;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.home-loc-hint-box em {
+  color: #fbbf24;
+  font-style: normal;
+}
+
+/* ============================================================================
+   2. MODAL BẢN ĐỒ LEAFLET ĐÁNH DẤU VỊ TRÍ NHÀ RIÊNG
+   ============================================================================ */
+.home-map-modal-dialog {
+  max-width: 720px;
+  width: 95%;
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(56, 189, 248, 0.2);
+}
+
+.home-map-modal-body {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Thanh tìm kiếm & nút GPS */
+.home-map-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.home-map-search-input-wrap {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.home-map-search-input-wrap i.fa-magnifying-glass {
+  position: absolute;
+  left: 12px;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.home-map-search-input-wrap input {
+  width: 100%;
+  padding: 8px 32px 8px 34px;
+  background: rgba(30, 41, 59, 0.8);
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 8px;
+  color: #f1f5f9;
+  font-size: 0.85rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.home-map-search-input-wrap input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  background: rgba(30, 41, 59, 0.95);
+}
+
+.btn-clear-search {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.btn-clear-search:hover {
+  color: #f87171;
+}
+
+.btn-map-control {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.btn-map-control.btn-search {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: rgba(56, 189, 248, 0.4);
+  color: #38bdf8;
+}
+.btn-map-control.btn-search:hover {
+  background: rgba(56, 189, 248, 0.35);
+  color: #ffffff;
+}
+
+.btn-map-control.btn-gps {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(52, 211, 153, 0.45);
+  color: #34d399;
+}
+.btn-map-control.btn-gps:hover {
+  background: rgba(16, 185, 129, 0.35);
+  color: #ffffff;
+  box-shadow: 0 0 12px rgba(52, 211, 153, 0.35);
+}
+
+/* Danh sách kết quả Autocomplete */
+.home-map-search-results {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  border-radius: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(12px);
+  z-index: 1000;
+}
+
+.search-result-item {
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.15s ease;
+}
+.search-result-item:last-child {
+  border-bottom: none;
+}
+.search-result-item:hover {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+}
+
+/* Container Leaflet */
+.home-leaflet-map-wrapper {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6);
+}
+
+.home-leaflet-map {
+  width: 100%;
+  height: 100%;
+  background: #0b1120;
+}
+
+/* Crosshair tâm bản đồ */
+.home-map-center-crosshair {
+  display: none;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: rgba(56, 189, 248, 0.7);
+  font-size: 1.2rem;
+  pointer-events: none;
+  z-index: 500;
+}
+
+/* Loading overlay */
+.home-map-loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(11, 17, 32, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #38bdf8;
+  font-size: 0.9rem;
+  font-weight: 600;
+  z-index: 1000;
+}
+
+/* Footer hiển thị địa chỉ đã chọn */
+.home-map-picked-info {
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.home-map-picked-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 0.8rem;
+}
+
+.home-map-info-label {
+  color: #94a3b8;
+  font-weight: 600;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.home-map-info-val {
+  color: #f1f5f9;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.home-map-info-val.coords {
+  color: #38bdf8;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.76rem;
+}
+
+/* ============================================================================
+   3. CUSTOM LEAFLET NEON MARKER & OVERRIDES
+   ============================================================================ */
+.neon-home-marker {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: radial-gradient(circle, #38bdf8 15%, #0284c7 65%, #0369a1 100%);
+  color: #ffffff;
+  font-size: 19px;
+  box-shadow: 0 0 18px rgba(56, 189, 248, 0.85), 0 0 35px rgba(56, 189, 248, 0.45);
+  border: 2.5px solid #ffffff;
+  cursor: grab;
+  transition: transform 0.2s ease;
+  animation: neonHomePulse 2.2s infinite ease-in-out;
+}
+
+.neon-home-marker:active {
+  cursor: grabbing;
+  transform: scale(1.15);
+}
+
+@keyframes neonHomePulse {
+  0% {
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.8), 0 0 25px rgba(56, 189, 248, 0.35);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(56, 189, 248, 1), 0 0 45px rgba(56, 189, 248, 0.65);
+  }
+  100% {
+    box-shadow: 0 0 16px rgba(56, 189, 248, 0.8), 0 0 25px rgba(56, 189, 248, 0.35);
+  }
+}
+
+/* Leaflet Dark mode overrides */
+.leaflet-popup-content-wrapper {
+  background: rgba(15, 23, 42, 0.95) !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6) !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(15, 23, 42, 0.95) !important;
+}
+
+.leaflet-control-zoom a {
+  background: rgba(15, 23, 42, 0.9) !important;
+  color: #38bdf8 !important;
+  border-color: rgba(56, 189, 248, 0.25) !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: rgba(30, 41, 59, 0.95) !important;
+  color: #ffffff !important;
+}
+
+.leaflet-control-attribution {
+  background: rgba(11, 17, 32, 0.75) !important;
+  color: #64748b !important;
+  font-size: 0.65rem !important;
+}
+.leaflet-control-attribution a {
+  color: #94a3b8 !important;
+}
