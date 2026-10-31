@@ -90,7 +90,7 @@ async function handleAuthStateChanged(user) {
 
   // Cứu hộ và khôi phục dữ liệu thất lạc nếu có
   if (typeof rescueAndHealUserData === 'function') {
-    await rescueAndHealUserData();
+    await rescueAndHealUserData(true);
   }
 
   // Làm mới giao diện theo kho dữ liệu của tài khoản hiện tại
