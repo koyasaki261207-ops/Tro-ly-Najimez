@@ -26,7 +26,8 @@
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
   <link rel="stylesheet" href="style.css?v=3.92.1">
-  <link rel="stylesheet" href="css/language-learning.css?v=3.95.6">
+  <link rel="stylesheet" href="css/language-learning.css?v=3.95.7">
+  <link rel="stylesheet" href="css/language-tutor.css?v=3.95.7">
   <link rel="stylesheet" href="css/timetable-matcher.css?v=3.78.0">
   <link rel="stylesheet" href="css/responsive.css?v=3.81.0">
 
@@ -1588,75 +1589,130 @@
                       </div>
                     </div>
 
-                    <!-- Khung đấu trường kiểm tra phản xạ (Active Quiz Arena) -->
+                    <!-- Khung đấu trường kiểm tra phản xạ (Active Quiz Arena - Split Layout 2 Cột) -->
                     <div class="quiz-active-content" id="quizActiveContent">
-                      <!-- Thẻ câu hỏi nổi bật (Prompt Box) -->
-                      <div class="quiz-card-prompt" id="quizPromptCard">
-                        <div class="quiz-prompt-header">
-                          <span class="quiz-type-direction" id="quizDirectionBadge">
-                            <i class="fa-solid fa-language"></i> <span id="quizDirectionText">Đang tải câu hỏi...</span>
-                          </span>
-                          <div class="quiz-header-right-meta">
-                            <span class="quiz-level-tag" id="quizLevelTag">🌱 Đang học</span>
-                            <span class="quiz-counter-pill" id="quizCounterPill">Sổ từ cá nhân</span>
+                      <!-- CỘT TRÁI (Khoảng 60% – 65%): Toàn bộ giao diện bài tập hiện tại -->
+                      <div class="quiz-exercise-col" id="quizExerciseCol">
+                        <!-- Thẻ câu hỏi nổi bật (Prompt Box) -->
+                        <div class="quiz-card-prompt" id="quizPromptCard">
+                          <div class="quiz-prompt-header">
+                            <span class="quiz-type-direction" id="quizDirectionBadge">
+                              <i class="fa-solid fa-language"></i> <span id="quizDirectionText">Đang tải câu hỏi...</span>
+                            </span>
+                            <div class="quiz-header-right-meta">
+                              <span class="quiz-level-tag" id="quizLevelTag">🌱 Đang học</span>
+                              <span class="quiz-counter-pill" id="quizCounterPill">Sổ từ cá nhân</span>
+                            </div>
+                          </div>
+
+                          <!-- Từ / Nghĩa cần hỏi -->
+                          <div class="quiz-target-question-wrap">
+                            <div class="quiz-target-word" id="quizTargetWord">
+                              <!-- Nạp động: Từ vựng hoặc Nghĩa tiếng Việt -->
+                            </div>
+                            <div class="quiz-phonetic-hint" id="quizPhoneticHint"></div>
+                          </div>
+
+                          <!-- Gợi ý hướng dẫn hành động -->
+                          <div class="quiz-prompt-instruction" id="quizPromptInstruction">
+                            Gõ câu trả lời chính xác vào ô bên dưới rồi nhấn <strong>Enter</strong> hoặc bấm <strong>Kiểm Tra</strong>.
                           </div>
                         </div>
 
-                        <!-- Từ / Nghĩa cần hỏi -->
-                        <div class="quiz-target-question-wrap">
-                          <div class="quiz-target-word" id="quizTargetWord">
-                            <!-- Nạp động: Từ vựng hoặc Nghĩa tiếng Việt -->
+                        <!-- Khu vực gõ câu trả lời (Typing Input Box) -->
+                        <div class="quiz-typing-zone" id="quizTypingZone">
+                          <div class="quiz-input-wrapper" id="quizInputWrapper">
+                            <i class="fa-solid fa-keyboard quiz-input-icon"></i>
+                            <input type="text" id="quizTypingInput" class="quiz-typing-input"
+                                   placeholder="Nhập câu trả lời của bạn..."
+                                   autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                                   onkeydown="handleQuizInputKeydown(event)" />
+                            <button type="button" class="btn-quiz-submit" id="btnQuizSubmit" onclick="submitQuizTypedAnswer()">
+                              <span>Kiểm Tra</span>
+                              <i class="fa-solid fa-arrow-right"></i>
+                            </button>
                           </div>
-                          <div class="quiz-phonetic-hint" id="quizPhoneticHint"></div>
+                          <div class="quiz-action-bar-sub">
+                            <button type="button" class="btn-quiz-sub-action" id="btnQuizGiveUp" onclick="revealQuizAnswer()" title="Xem đáp án chuẩn nếu bạn chưa nhớ ra">
+                              <i class="fa-regular fa-lightbulb"></i> <span>Chưa nhớ - Xem đáp án</span>
+                            </button>
+                            <button type="button" class="btn-quiz-sub-action" id="btnQuizSkip" onclick="skipToNextQuizQuestion()" title="Bỏ qua đổi sang từ khác">
+                              <i class="fa-solid fa-forward-step"></i> <span>Đổi từ khác</span>
+                            </button>
+                          </div>
                         </div>
 
-                        <!-- Gợi ý hướng dẫn hành động -->
-                        <div class="quiz-prompt-instruction" id="quizPromptInstruction">
-                          Gõ câu trả lời chính xác vào ô bên dưới rồi nhấn <strong>Enter</strong> hoặc bấm <strong>Kiểm Tra</strong>.
+                        <!-- Khu vực phản hồi kết quả (Feedback Card - ẩn ban đầu, hiện sau khi nộp bài) -->
+                        <div class="quiz-feedback-card" id="quizFeedbackCard" style="display: none;">
+                          <div class="quiz-feedback-status" id="quizFeedbackStatus">
+                            <!-- Icon + Text đúng hoặc sai -->
+                          </div>
+                          <div class="quiz-feedback-body" id="quizFeedbackBody">
+                            <!-- Chi tiết đáp án, phát âm, ví dụ -->
+                          </div>
+                          <div class="quiz-feedback-actions">
+                            <button type="button" class="btn-quiz-toggle-mastered" id="btnQuizToggleMastered" onclick="toggleQuizCurrentWordMastered()" title="Đánh dấu đã thuộc hoặc chưa nhớ từ này">
+                              <i class="fa-solid fa-star"></i> <span id="quizToggleMasteredText">Đánh dấu Đã thuộc</span>
+                            </button>
+                            <button type="button" class="btn-quiz-continue" id="btnQuizContinue" onclick="continueToNextQuizRound()">
+                              <span>Tiếp tục (Nhấn Enter)</span>
+                              <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                          </div>
                         </div>
                       </div>
 
-                      <!-- Khu vực gõ câu trả lời (Typing Input Box) -->
-                      <div class="quiz-typing-zone" id="quizTypingZone">
-                        <div class="quiz-input-wrapper" id="quizInputWrapper">
-                          <i class="fa-solid fa-keyboard quiz-input-icon"></i>
-                          <input type="text" id="quizTypingInput" class="quiz-typing-input"
-                                 placeholder="Nhập câu trả lời của bạn..."
-                                 autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-                                 onkeydown="handleQuizInputKeydown(event)" />
-                          <button type="button" class="btn-quiz-submit" id="btnQuizSubmit" onclick="submitQuizTypedAnswer()">
-                            <span>Kiểm Tra</span>
-                            <i class="fa-solid fa-arrow-right"></i>
-                          </button>
+                      <!-- CỘT PHẢI (Khoảng 35% – 40%): KHUNG TRÒ CHUYỆN CỦA BOT TRỢ LÝ NAJIME -->
+                      <aside class="najime-tutor-panel" id="najimeTutorPanel">
+                        <!-- Header: Tên Najime, avatar, badge Online, các nút thao tác -->
+                        <div class="najime-tutor-header">
+                          <div class="tutor-header-profile">
+                            <div class="tutor-avatar-ring">
+                              <img src="assets/najimez.jpg" alt="Najime Tutor" class="tutor-avatar-img" />
+                              <span class="tutor-status-dot" title="Najime đang online sẵn sàng hỗ trợ"></span>
+                            </div>
+                            <div class="tutor-header-meta">
+                              <div class="tutor-name-line">
+                                <span class="tutor-name-text">Najime</span>
+                                <span class="tutor-badge-online">Online</span>
+                              </div>
+                              <span class="tutor-desc-text">Trợ lý Gia Sư Từ Vựng AI</span>
+                            </div>
+                          </div>
+                          <div class="tutor-header-tools">
+                            <button type="button" class="btn-tutor-tool" id="btnResetTutorChat" onclick="resetNajimeTutorChat()" title="Làm mới cuộc trò chuyện">
+                              <i class="fa-solid fa-rotate-right"></i>
+                            </button>
+                            <button type="button" class="btn-tutor-tool" id="btnToggleTutorCollapse" onclick="toggleNajimeTutorCollapse()" title="Thu gọn / Mở rộng trợ lý">
+                              <i class="fa-solid fa-chevron-right" id="tutorCollapseIcon"></i>
+                            </button>
+                          </div>
                         </div>
-                        <div class="quiz-action-bar-sub">
-                          <button type="button" class="btn-quiz-sub-action" id="btnQuizGiveUp" onclick="revealQuizAnswer()" title="Xem đáp án chuẩn nếu bạn chưa nhớ ra">
-                            <i class="fa-regular fa-lightbulb"></i> <span>Chưa nhớ - Xem đáp án</span>
-                          </button>
-                          <button type="button" class="btn-quiz-sub-action" id="btnQuizSkip" onclick="skipToNextQuizQuestion()" title="Bỏ qua đổi sang từ khác">
-                            <i class="fa-solid fa-forward-step"></i> <span>Đổi từ khác</span>
-                          </button>
-                        </div>
-                      </div>
 
-                      <!-- Khu vực phản hồi kết quả (Feedback Card - ẩn ban đầu, hiện sau khi nộp bài) -->
-                      <div class="quiz-feedback-card" id="quizFeedbackCard" style="display: none;">
-                        <div class="quiz-feedback-status" id="quizFeedbackStatus">
-                          <!-- Icon + Text đúng hoặc sai -->
+                        <!-- Nút tab mở lại trợ lý khi bị thu gọn -->
+                        <button type="button" class="btn-tutor-expand-tab" id="btnTutorExpandTab" onclick="toggleNajimeTutorCollapse()" title="Mở lại Trợ lý Najime">
+                          <img src="assets/najimez.jpg" alt="Najime" class="tutor-tab-avatar" />
+                          <span>Trợ lý Najime</span>
+                          <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+
+                        <!-- Body: Vùng tin nhắn dạng cuộn (Scrollable) -->
+                        <div class="najime-tutor-body" id="najimeTutorBody">
+                          <!-- Nạp động qua js/language-tutor.js -->
                         </div>
-                        <div class="quiz-feedback-body" id="quizFeedbackBody">
-                          <!-- Chi tiết đáp án, phát âm, ví dụ -->
+
+                        <!-- Footer: Ô input nhắn tin trực tiếp với Najime -->
+                        <div class="najime-tutor-footer">
+                          <form class="tutor-input-form" id="tutorInputForm" onsubmit="handleTutorDirectSubmit(event)">
+                            <input type="text" id="tutorDirectInput" class="tutor-direct-input"
+                                   placeholder="Hỏi Najime về từ vựng, ví dụ, ngữ pháp..."
+                                   autocomplete="off" spellcheck="false" />
+                            <button type="submit" class="btn-tutor-send" id="btnTutorSend" title="Gửi tin nhắn">
+                              <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                          </form>
                         </div>
-                        <div class="quiz-feedback-actions">
-                          <button type="button" class="btn-quiz-toggle-mastered" id="btnQuizToggleMastered" onclick="toggleQuizCurrentWordMastered()" title="Đánh dấu đã thuộc hoặc chưa nhớ từ này">
-                            <i class="fa-solid fa-star"></i> <span id="quizToggleMasteredText">Đánh dấu Đã thuộc</span>
-                          </button>
-                          <button type="button" class="btn-quiz-continue" id="btnQuizContinue" onclick="continueToNextQuizRound()">
-                            <span>Tiếp tục (Nhấn Enter)</span>
-                            <i class="fa-solid fa-arrow-right"></i>
-                          </button>
-                        </div>
-                      </div>
+                      </aside>
                     </div>
                   </div>
                 </div>
@@ -3108,7 +3164,8 @@
   <script src="js/timetable-timeline.js?v=3.66.0"></script>
   <script src="js/lucky-wheel.js?v=3.70.0"></script>
   <script src="js/toolbox.js?v=3.75.0"></script>
-  <script src="js/language-learning.js?v=3.95.6"></script>
+  <script src="js/language-learning.js?v=3.95.7"></script>
+  <script src="js/language-tutor.js?v=3.95.7"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
   <script src="js/copilot-image.js?v=3.60.1"></script>
   <script src="js/copilot.js?v=3.95.4"></script>

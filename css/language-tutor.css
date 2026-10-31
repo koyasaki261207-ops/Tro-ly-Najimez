@@ -1,0 +1,617 @@
+/* ==========================================================================
+   NAJIME VOCABULARY TUTOR (TRỢ LÝ GIA SƯ TỪ VỰNG NAJIME)
+   Bố cục 2 cột (Split Layout) cho Đấu trường Kiểm tra phản xạ từ vựng
+   Phong cách Cyberpunk / Neon Glassmorphism đồng bộ toàn hệ thống
+   ========================================================================== */
+
+/* 1. TÁI CẤU TRÚC CONTAINER: BỐ CỤC 2 CỘT (SPLIT LAYOUT) */
+.quiz-active-content {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr) !important;
+  gap: 16px !important;
+  align-items: stretch !important;
+  flex: 1 !important;
+  width: 100% !important;
+  min-height: 520px;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* CỘT TRÁI (Khoảng 60% – 65%): Toàn bộ giao diện bài tập hiện tại */
+.quiz-exercise-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+  width: 100%;
+  flex: 1;
+}
+
+/* Khi người dùng thu gọn sidebar chat Najime */
+.quiz-active-content.tutor-collapsed {
+  grid-template-columns: 1fr !important;
+}
+
+.quiz-active-content.tutor-collapsed .najime-tutor-panel {
+  display: none !important;
+}
+
+.quiz-active-content.tutor-collapsed .btn-tutor-expand-tab {
+  display: inline-flex !important;
+}
+
+/* ==========================================================================
+   2. CỘT PHẢI (Khoảng 35% – 40%): KHUNG TRÒ CHUYỆN CỦA BOT NAJIME
+   ========================================================================== */
+.najime-tutor-panel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  max-height: 720px;
+  background: linear-gradient(155deg, rgba(13, 21, 38, 0.95), rgba(8, 14, 28, 0.98));
+  border: 1px solid rgba(6, 182, 212, 0.35);
+  border-radius: 16px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 0 20px rgba(6, 182, 212, 0.12);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.najime-tutor-panel:hover {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65), 0 0 24px rgba(6, 182, 212, 0.2);
+}
+
+/* Header khung chat */
+.najime-tutor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.96), rgba(11, 18, 34, 0.88));
+  border-bottom: 1px solid rgba(6, 182, 212, 0.25);
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+.tutor-header-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tutor-avatar-ring {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  padding: 2px;
+  background: linear-gradient(135deg, #06b6d4, #38bdf8, #818cf8);
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.45);
+  flex-shrink: 0;
+}
+
+.tutor-avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.tutor-status-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #0f172a;
+  box-shadow: 0 0 8px #10b981;
+  animation: pulseGreenTutor 1.8s infinite;
+}
+
+@keyframes pulseGreenTutor {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 12px #34d399; }
+  100% { transform: scale(0.9); opacity: 0.8; }
+}
+
+.tutor-header-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tutor-name-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tutor-name-text {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: 0.3px;
+  background: linear-gradient(135deg, #ffffff, #67e8f9);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.tutor-badge-online {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  padding: 1px 5px;
+  border-radius: 8px;
+  letter-spacing: 0.4px;
+}
+
+.tutor-desc-text {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Các nút công cụ trên header chat */
+.tutor-header-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.btn-tutor-tool {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #94a3b8;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.btn-tutor-tool:hover {
+  background: rgba(6, 182, 212, 0.15);
+  border-color: rgba(6, 182, 212, 0.5);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Nút tab mở lại trợ lý khi bị thu gọn */
+.btn-tutor-expand-tab {
+  display: none;
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(8, 14, 28, 0.98));
+  border: 1px solid rgba(6, 182, 212, 0.5);
+  border-radius: 20px;
+  color: #38bdf8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 0 12px rgba(6, 182, 212, 0.25);
+  z-index: 10;
+  transition: all 0.25s ease;
+}
+
+.btn-tutor-expand-tab:hover {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.2), rgba(56, 189, 248, 0.2));
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.tutor-tab-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* ==========================================================================
+   3. BODY: VÙNG TIN NHẮN DẠNG CUỘN (SCROLLABLE MESSAGE LIST)
+   ========================================================================== */
+.najime-tutor-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  scroll-behavior: smooth;
+  min-height: 280px;
+  background: radial-gradient(circle at top right, rgba(6, 182, 212, 0.05), transparent 70%);
+}
+
+.najime-tutor-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.najime-tutor-body::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.najime-tutor-body::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.35);
+  border-radius: 3px;
+}
+
+.najime-tutor-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.65);
+}
+
+/* Cấu trúc từng bong bóng tin nhắn */
+.tutor-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  animation: fadeInTutorMsg 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInTutorMsg {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Tin nhắn của Najime (Bên trái) */
+.tutor-msg-najime {
+  justify-content: flex-start;
+}
+
+.tutor-msg-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  padding: 1.5px;
+  background: linear-gradient(135deg, #06b6d4, #38bdf8);
+  flex-shrink: 0;
+  box-shadow: 0 0 8px rgba(6, 182, 212, 0.35);
+}
+
+.tutor-msg-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.tutor-msg-bubble {
+  max-width: 88%;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  border-radius: 12px 14px 14px 4px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  color: #e2e8f0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  word-break: break-word;
+  transition: all 0.2s ease;
+}
+
+.tutor-msg-bubble:hover {
+  border-color: rgba(6, 182, 212, 0.4);
+}
+
+/* Header tin nhắn */
+.tutor-msg-author {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-size: 0.72rem;
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.tutor-msg-time {
+  font-size: 0.68rem;
+  color: #64748b;
+  font-weight: 400;
+}
+
+/* Nội dung tin nhắn */
+.tutor-msg-content {
+  color: #cbd5e1;
+}
+
+.tutor-msg-content strong {
+  color: #f1f5f9;
+  font-weight: 600;
+}
+
+.tutor-msg-content em {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+/* Biến thể thẻ phản hồi Đúng của Najime */
+.tutor-msg-najime.msg-correct .tutor-msg-bubble {
+  border-color: rgba(16, 185, 129, 0.45);
+  background: linear-gradient(145deg, rgba(6, 32, 28, 0.9), rgba(10, 24, 32, 0.95));
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
+}
+
+.tutor-msg-najime.msg-correct .tutor-msg-author {
+  color: #34d399;
+}
+
+/* Biến thể thẻ phản hồi Sai của Najime */
+.tutor-msg-najime.msg-wrong .tutor-msg-bubble {
+  border-color: rgba(244, 63, 94, 0.45);
+  background: linear-gradient(145deg, rgba(38, 12, 22, 0.9), rgba(18, 14, 28, 0.95));
+  box-shadow: 0 4px 16px rgba(244, 63, 94, 0.15);
+}
+
+.tutor-msg-najime.msg-wrong .tutor-msg-author {
+  color: #fb7185;
+}
+
+/* Biến thể phản hồi xem đáp án */
+.tutor-msg-najime.msg-reveal .tutor-msg-bubble {
+  border-color: rgba(245, 158, 11, 0.45);
+  background: linear-gradient(145deg, rgba(36, 26, 10, 0.9), rgba(18, 16, 26, 0.95));
+}
+
+.tutor-msg-najime.msg-reveal .tutor-msg-author {
+  color: #fbbf24;
+}
+
+/* Huy hiệu tiêu đề kết quả bên trong bubble */
+.tutor-feedback-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.86rem;
+  margin-bottom: 6px;
+  padding-bottom: 5px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.tutor-feedback-banner.correct {
+  color: #34d399;
+}
+
+.tutor-feedback-banner.wrong {
+  color: #fb7185;
+}
+
+.tutor-feedback-banner.reveal {
+  color: #fbbf24;
+}
+
+/* Chi tiết thẻ phân tích đáp án */
+.tutor-analysis-box {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 6px 0;
+  padding: 6px 8px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.8rem;
+}
+
+.tutor-analysis-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.tutor-analysis-label {
+  color: #94a3b8;
+  flex-shrink: 0;
+  font-size: 0.74rem;
+}
+
+.tutor-user-val-wrong {
+  color: #fb7185;
+  text-decoration: line-through;
+  background: rgba(244, 63, 94, 0.15);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+
+.tutor-target-val-correct {
+  color: #38bdf8;
+  font-weight: 700;
+}
+
+.tutor-collocation-note {
+  margin-top: 6px;
+  padding: 6px 8px;
+  background: rgba(6, 182, 212, 0.1);
+  border-left: 2px solid #06b6d4;
+  border-radius: 0 6px 6px 0;
+  font-size: 0.78rem;
+  color: #cbd5e1;
+}
+
+.tutor-collocation-note strong {
+  color: #67e8f9;
+}
+
+/* Tin nhắn của Người Dùng (Bên phải) */
+.tutor-msg-user {
+  justify-content: flex-end;
+}
+
+.tutor-msg-user .tutor-msg-bubble {
+  background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(56, 189, 248, 0.18));
+  border: 1px solid rgba(6, 182, 212, 0.45);
+  border-radius: 14px 12px 4px 14px;
+  color: #f1f5f9;
+  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.15);
+}
+
+.tutor-msg-user .tutor-msg-author {
+  color: #38bdf8;
+  justify-content: flex-end;
+}
+
+/* Các chip câu hỏi gợi ý nhanh */
+.tutor-quick-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 8px;
+}
+
+.tutor-chip {
+  padding: 3px 8px;
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 12px;
+  color: #38bdf8;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.tutor-chip:hover {
+  background: rgba(6, 182, 212, 0.25);
+  border-color: #38bdf8;
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+/* Hiệu ứng Najime đang gõ (Typing Indicator) */
+.tutor-typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.tutor-typing-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #38bdf8;
+  opacity: 0.6;
+  animation: tutorTypingBounce 1.4s infinite ease-in-out;
+}
+
+.tutor-typing-dot:nth-child(1) { animation-delay: 0s; }
+.tutor-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.tutor-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes tutorTypingBounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-4px); opacity: 1; }
+}
+
+/* ==========================================================================
+   4. FOOTER: Ô INPUT NHẮN TIN TRỰC TIẾP VỚI NAJIME
+   ========================================================================== */
+.najime-tutor-footer {
+  padding: 10px 12px;
+  background: rgba(11, 18, 34, 0.95);
+  border-top: 1px solid rgba(6, 182, 212, 0.2);
+  flex-shrink: 0;
+}
+
+.tutor-input-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.tutor-direct-input {
+  flex: 1;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  border-radius: 10px;
+  padding: 8px 12px;
+  color: #f1f5f9;
+  font-size: 0.82rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.tutor-direct-input:focus {
+  border-color: #38bdf8;
+  box-shadow: 0 0 12px rgba(6, 182, 212, 0.25);
+  background: rgba(15, 23, 42, 0.98);
+}
+
+.tutor-direct-input::placeholder {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.btn-tutor-send {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #06b6d4, #2563eb);
+  border: none;
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  box-shadow: 0 2px 10px rgba(6, 182, 212, 0.35);
+}
+
+.btn-tutor-send:hover {
+  transform: translateY(-1px) scale(1.05);
+  filter: brightness(1.1);
+  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.5);
+}
+
+.btn-tutor-send:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   5. RESPONSIVE DESIGN (MEDIA QUERIES)
+   ========================================================================== */
+@media (max-width: 960px) {
+  .quiz-active-content {
+    grid-template-columns: 1fr !important;
+  }
+  .najime-tutor-panel {
+    max-height: 480px;
+  }
+}

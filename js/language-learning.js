@@ -1277,6 +1277,18 @@ function submitQuizTypedAnswer() {
     btnContinue.focus();
   }
   updateQuizMasteredBtn();
+
+  // Kích hoạt phản hồi tự động từ Trợ lý Gia sư Najime (khung chat bên phải)
+  if (typeof window.handleQuizAnswerForNajimeTutor === 'function') {
+    window.handleQuizAnswerForNajimeTutor({
+      rawInput,
+      target,
+      isCorrect,
+      direction: quizState.currentDirection,
+      streak: quizState.streak,
+      score: quizState.score
+    });
+  }
 }
 window.submitQuizTypedAnswer = submitQuizTypedAnswer;
 
@@ -1341,6 +1353,11 @@ function revealQuizAnswer() {
     btnContinue.focus();
   }
   updateQuizMasteredBtn();
+
+  // Gợi ý đáp án tham khảo từ Trợ lý Gia sư Najime (khung chat bên phải)
+  if (typeof window.handleQuizRevealForNajimeTutor === 'function') {
+    window.handleQuizRevealForNajimeTutor(target, quizState.currentDirection);
+  }
 }
 window.revealQuizAnswer = revealQuizAnswer;
 
@@ -1909,6 +1926,8 @@ function switchNavRailView(viewName, e) {
     const pane = document.getElementById('paneQuiz');
     if (pane) pane.classList.add('active');
     initNewQuizRound();
+    if (typeof initNajimeTutor === 'function') initNajimeTutor();
+    if (typeof scrollTutorChatToBottom === 'function') setTimeout(scrollTutorChatToBottom, 100);
   }
 }
 window.switchNavRailView = switchNavRailView;
