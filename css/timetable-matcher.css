@@ -7,9 +7,9 @@
    1. DIALOG CONTAINER & BACKDROP
    ========================================================================== */
 .timetable-matcher-dialog {
-  max-width: 920px;
+  max-width: 960px;
   width: 95%;
-  max-height: 90vh;
+  max-height: 92vh;
   display: flex;
   flex-direction: column;
   background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(99, 102, 241, 0.22) 0%, rgba(13, 19, 40, 0.95) 100%),
@@ -22,11 +22,13 @@
 }
 
 .timetable-matcher-body {
-  padding: 16px 20px 22px;
+  padding: 16px 20px 24px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  flex: 1;
+  min-height: 0;
 }
 
 /* ==========================================================================
@@ -34,15 +36,23 @@
    ========================================================================== */
 .tt-matcher-toolbar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
   padding: 12px 16px;
   background: rgba(18, 26, 56, 0.65);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md, 14px);
   backdrop-filter: blur(10px);
+  flex-shrink: 0;
+}
+
+.tt-matcher-toolbar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .tt-matcher-friend-picker {
@@ -50,6 +60,8 @@
   align-items: center;
   gap: 10px;
   min-width: 260px;
+  max-width: 480px;
+  flex: 1;
 }
 
 .tt-matcher-friend-picker label {
@@ -89,6 +101,7 @@
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .tt-matcher-tab {
@@ -115,7 +128,15 @@
 .tt-matcher-date-nav {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 10px;
+  padding: 5px 14px;
+  background: rgba(10, 15, 32, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  width: fit-content;
+  margin: 0 auto;
+  flex-shrink: 0;
 }
 
 .btn-matcher-nav {
@@ -172,11 +193,13 @@
   align-items: flex-start;
   gap: 14px;
   padding: 14px 16px;
-  background: linear-gradient(135deg, rgba(168, 85, 247, 0.12), rgba(56, 189, 248, 0.08));
-  border: 1px solid rgba(168, 85, 247, 0.3);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.14), rgba(56, 189, 248, 0.08));
+  border: 1px solid rgba(168, 85, 247, 0.35);
   border-radius: var(--radius-md, 14px);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
+  flex-shrink: 0;
+  min-height: 74px;
 }
 
 .tt-matcher-ai-avatar {
@@ -213,6 +236,7 @@
 
 .tt-matcher-ai-content {
   flex: 1;
+  min-width: 0;
 }
 
 .tt-matcher-ai-title {
@@ -238,6 +262,11 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex-shrink: 0;
+}
+
+#ttMatcherDynamicContent {
+  flex-shrink: 0;
 }
 
 .tt-free-slots-header {
@@ -353,6 +382,7 @@
   flex-direction: column;
   gap: 10px;
   margin-top: 4px;
+  flex-shrink: 0;
 }
 
 .tt-parallel-header {
@@ -360,9 +390,14 @@
   grid-template-columns: 70px 1fr 1fr;
   gap: 8px;
   padding: 8px 12px;
-  background: rgba(14, 21, 44, 0.75);
+  background: rgba(14, 21, 44, 0.96);
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  position: sticky;
+  top: -16px;
+  z-index: 20;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 .tt-col-title {
@@ -388,13 +423,12 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 14px;
   overflow: hidden;
-  height: 480px;
-  overflow-y: auto;
+  height: 930px;
 }
 
 .tt-canvas-inner {
   position: relative;
-  height: 900px; /* 15 giờ x 60px/giờ: 07:00 - 22:00 */
+  height: 930px; /* 15 giờ x 60px/giờ: 07:00 - 22:00 + padding */
   display: grid;
   grid-template-columns: 70px 1fr 1fr;
 }
@@ -599,18 +633,21 @@
    7. RESPONSIVE DESIGN
    ========================================================================== */
 @media (max-width: 768px) {
-  .tt-matcher-toolbar {
+  .tt-matcher-toolbar-top {
     flex-direction: column;
     align-items: stretch;
   }
   .tt-matcher-friend-picker {
     width: 100%;
+    max-width: none;
+  }
+  .tt-matcher-view-tabs {
+    width: 100%;
+    justify-content: center;
   }
   .tt-matcher-date-nav {
+    width: 100%;
     justify-content: space-between;
-  }
-  .tt-parallel-canvas {
-    height: 380px;
   }
   .tt-parallel-header {
     grid-template-columns: 50px 1fr 1fr;
@@ -620,6 +657,8 @@
   }
   .tt-canvas-grid-lines,
   .tt-mutual-free-ribbon {
+    left: 50px;
+  }
 }
 
 /* Nút Mở So TKB trên Header Thời Khóa Biểu */

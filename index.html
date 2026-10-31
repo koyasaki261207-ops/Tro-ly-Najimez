@@ -28,7 +28,7 @@
   <link rel="stylesheet" href="style.css?v=3.95.9">
   <link rel="stylesheet" href="css/language-learning.css?v=3.95.7">
   <link rel="stylesheet" href="css/language-tutor.css?v=3.95.8">
-  <link rel="stylesheet" href="css/timetable-matcher.css?v=3.78.0">
+  <link rel="stylesheet" href="css/timetable-matcher.css?v=3.95.10">
   <link rel="stylesheet" href="css/responsive.css?v=3.95.9">
 
   <!-- KaTeX hỗ trợ render công thức Toán học đẹp mắt cho Hyper Najimez -->
@@ -3084,17 +3084,19 @@
       <div class="modal-body timetable-matcher-body">
         <!-- Toolbar điều khiển -->
         <div class="tt-matcher-toolbar">
-          <div class="tt-matcher-friend-picker">
-            <label for="ttMatcherFriendSelect"><i class="fa-solid fa-user-group"></i> Bạn bè:</label>
-            <select id="ttMatcherFriendSelect" class="tt-matcher-select"></select>
-          </div>
-          <div class="tt-matcher-view-tabs">
-            <button type="button" class="tt-matcher-tab active" data-mode="day" id="btnTtMatchModeDay">
-              <i class="fa-solid fa-calendar-day"></i> <span>Xem Theo Ngày</span>
-            </button>
-            <button type="button" class="tt-matcher-tab" data-mode="week" id="btnTtMatchModeWeek">
-              <i class="fa-solid fa-calendar-week"></i> <span>Tổng Quan Cả Tuần</span>
-            </button>
+          <div class="tt-matcher-toolbar-top">
+            <div class="tt-matcher-friend-picker">
+              <label for="ttMatcherFriendSelect"><i class="fa-solid fa-user-group"></i> Bạn bè:</label>
+              <select id="ttMatcherFriendSelect" class="tt-matcher-select"></select>
+            </div>
+            <div class="tt-matcher-view-tabs">
+              <button type="button" class="tt-matcher-tab active" data-mode="day" id="btnTtMatchModeDay">
+                <i class="fa-solid fa-calendar-day"></i> <span>Xem Theo Ngày</span>
+              </button>
+              <button type="button" class="tt-matcher-tab" data-mode="week" id="btnTtMatchModeWeek">
+                <i class="fa-solid fa-calendar-week"></i> <span>Tổng Quan Cả Tuần</span>
+              </button>
+            </div>
           </div>
           <div class="tt-matcher-date-nav" id="ttMatcherDateNav">
             <button type="button" class="btn-matcher-nav" id="btnTtMatchPrevDate" title="Ngày trước"><i
@@ -3176,7 +3178,7 @@
   <script src="js/firebase-sync.js?v=3.95.5"></script>
   <script src="js/friends.js?v=3.77.0"></script>
   <script src="js/friends-ui.js?v=3.77.0"></script>
-  <script src="js/timetable-matcher.js?v=3.78.0"></script>
+  <script src="js/timetable-matcher.js?v=3.95.10"></script>
   <script src="js/hyper-najimez.js?v=1.0.2"></script>
   <!-- Entrypoint khởi động -->
   <script src="app.js?v=3.77.0"></script>
