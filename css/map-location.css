@@ -665,6 +665,30 @@
   margin: 0 auto;
   width: 100%;
   height: 100%;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(56, 189, 248, 0.4) rgba(15, 23, 42, 0.6);
+}
+
+.map-workspace-layout::-webkit-scrollbar {
+  width: 7px;
+}
+
+.map-workspace-layout::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+}
+
+.map-workspace-layout::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.4);
+  border-radius: 4px;
+}
+
+.map-workspace-layout::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.7);
 }
 
 .map-hud-header {
@@ -1768,12 +1792,117 @@
   background: #0369a1;
 }
 
+/* ============================================================================
+   RESPONSIVE CHO BẢN ĐỒ & ĐỊA ĐIỂM ĐÃ LƯU TRÊN TABLET & DI ĐỘNG
+   ============================================================================ */
 @media (max-width: 992px) {
+  .map-workspace-layout {
+    padding: 14px 16px 40px !important;
+    gap: 14px;
+  }
+
   .map-center-grid {
     grid-template-columns: 1fr;
+    min-height: auto;
+    gap: 14px;
   }
+
   .main-map-leaflet-wrapper {
-    min-height: 380px;
+    min-height: 340px;
+    height: 340px;
+  }
+
+  .main-leaflet-map {
+    min-height: 340px;
+    height: 340px;
+  }
+
+  .saved-places-list {
+    max-height: 380px;
+  }
+}
+
+@media (max-width: 768px) {
+  .map-workspace-layout {
+    padding: 10px 10px calc(60px + env(safe-area-inset-bottom, 24px)) !important;
+    gap: 12px;
+  }
+
+  .map-hud-header {
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .map-avatar-aura {
+    width: 40px;
+    height: 40px;
+  }
+
+  .map-avatar-aura i {
+    font-size: 1.3rem !important;
+  }
+
+  .map-title-text {
+    font-size: 1rem;
+  }
+
+  .map-brand-desc {
+    display: none; /* Thu gọn mô tả dài trên di động để dành toàn bộ không gian cho bản đồ & danh sách */
+  }
+
+  .map-hud-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .btn-map-hud-action {
+    justify-content: center;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+
+  .main-map-leaflet-wrapper {
+    min-height: 290px;
+    height: 290px;
+  }
+
+  .main-leaflet-map {
+    min-height: 290px;
+    height: 290px;
+  }
+
+  .saved-places-list {
+    max-height: 340px;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-map-leaflet-wrapper {
+    min-height: 260px;
+    height: 260px;
+  }
+
+  .main-leaflet-map {
+    min-height: 260px;
+    height: 260px;
+  }
+
+  .map-layer-switcher {
+    top: 8px;
+    right: 8px;
+    padding: 3px;
+  }
+
+  .btn-layer-pill {
+    padding: 4px 7px;
+    font-size: 0.7rem;
+  }
+
+  .btn-add-saved-place {
+    padding: 10px 14px;
+    font-size: 0.84rem;
   }
 }
 

@@ -608,12 +608,19 @@
 .calendar-workspace-layout,
 .timetable-grid-card,
 .toolbox-workspace-layout,
+.map-workspace-layout,
+.saved-places-list,
 .hyper-workspace,
 .notebook-list-body,
 .modal-body,
 .sidebar-nav {
   -webkit-overflow-scrolling: touch;
   scroll-behavior: smooth;
+}
+
+#tab-map {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Kích thước mục tiêu cảm ứng ngón tay chuẩn (44px target) */
