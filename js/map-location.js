@@ -638,6 +638,26 @@ async function promptPasteCoordinates() {
 }
 
 /**
+ * Lấy tọa độ Chấm Xanh Google Maps (Vị trí hiện tại của người dùng)
+ */
+function getMyLocationCoords() {
+  if (mainHomeMarker && mainHomeMarker.getLatLng) {
+    const cur = mainHomeMarker.getLatLng();
+    if (cur && cur.lat && cur.lng) {
+      return [cur.lat, cur.lng];
+    }
+  }
+  if (currentPickedLat && currentPickedLng) {
+    return [currentPickedLat, currentPickedLng];
+  }
+  const homeData = getSavedHomeLocation();
+  if (homeData && homeData.lat && homeData.lng) {
+    return [homeData.lat, homeData.lng];
+  }
+  return DEFAULT_MAP_CENTER;
+}
+
+/**
  * ============================================================================
  * CHỈ ĐƯỜNG TRỰC TIẾP TRÊN NAJIMEZ (IN-APP NAVIGATION - OSRM ROUTING)
  * ============================================================================
@@ -645,6 +665,13 @@ async function promptPasteCoordinates() {
 function calculateAndDrawRoute(startLat, startLng, endLat, endLng, routeTitle = 'Tuyến Đường Về Nhà') {
   if (!mainLeafletMap) initMainLeafletMap();
   switchTabToMap();
+
+  // 1. Đồng bộ tuyệt đối: Di chuyển Chấm Xanh Google Maps về đúng vị trí xuất phát
+  if (mainHomeMarker) {
+    mainHomeMarker.setLatLng([startLat, startLng]);
+  }
+  currentPickedLat = startLat;
+  currentPickedLng = startLng;
 
   const overlay = document.getElementById('mainMapLoadingOverlay');
   const overlayText = document.getElementById('mainMapLoadingText');
@@ -670,7 +697,22 @@ function calculateAndDrawRoute(startLat, startLng, endLat, endLng, routeTitle = 
       const distKm = (route.distance / 1000).toFixed(1);
       const durMins = Math.max(1, Math.round(route.duration / 60));
       // Tọa độ geojson [lng, lat] chuyển sang Leaflet [lat, lng]
-      const latlngs = (route.geometry.coordinates || []).map(coord => [coord[1], coord[0]]);
+      let latlngs = (route.geometry.coordinates || []).map(coord => [coord[1], coord[0]]);
+
+      // NỐI LIỀN MẠCH TỪ CHÍNH TÂM CHẤM XANH CỦA BẠN ĐẾN ĐÍCH ĐẾN:
+      if (latlngs.length > 0) {
+        // Nối thẳng từ tâm Chấm Xanh [startLat, startLng] vào điểm đầu OSRM (tránh đứt đoạn ra ngõ)
+        const dStart = calculateHaversineDistance(startLat, startLng, latlngs[0][0], latlngs[0][1]);
+        if (dStart > 2) {
+          latlngs.unshift([startLat, startLng]);
+        }
+        // Nối thẳng từ điểm cuối OSRM vào tâm đích đến [endLat, endLng]
+        const lastIdx = latlngs.length - 1;
+        const dEnd = calculateHaversineDistance(endLat, endLng, latlngs[lastIdx][0], latlngs[lastIdx][1]);
+        if (dEnd > 2) {
+          latlngs.push([endLat, endLng]);
+        }
+      }
 
       clearCurrentRoute();
 
@@ -692,20 +734,10 @@ function calculateAndDrawRoute(startLat, startLng, endLat, endLng, routeTitle = 
         lineJoin: 'round'
       }).addTo(mainLeafletMap);
 
-      // 3. Ghim điểm xuất phát
-      const startPinIcon = L.divIcon({
-        className: 'custom-start-pin-wrapper',
-        html: '<div style="width:30px;height:30px;border-radius:50%;background:#10b981;border:2px solid #fff;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;box-shadow:0 0 12px rgba(16,185,129,0.8);"><i class="fa-solid fa-location-arrow"></i></div>',
-        iconSize: [30, 30],
-        iconAnchor: [15, 15]
-      });
-      routeStartMarker = L.marker([startLat, startLng], { icon: startPinIcon }).addTo(mainLeafletMap);
-      routeStartMarker.bindPopup('<strong>📍 Điểm xuất phát của bạn</strong>').openPopup();
-
       // Fit map bao quát toàn bộ lộ trình
       mainLeafletMap.fitBounds(currentRouteLineLayer.getBounds(), { padding: [50, 50] });
 
-      // 4. Hiển thị bảng Turn-by-Turn Navigation
+      // 3. Hiển thị bảng Turn-by-Turn Navigation
       displayRouteInfoCard(routeTitle, distKm, durMins, route.legs && route.legs[0] && route.legs[0].steps);
 
       if (typeof showToast === 'function') {
@@ -882,7 +914,7 @@ function searchAndDisplayNearbyPlaces(keyword, placeType) {
           <div class="place-popup-card">
             <div class="place-popup-title">${pName}</div>
             <div class="place-popup-dist"><i class="fa-solid fa-compass"></i> Cách nhà bạn khoảng <strong>${distStr}</strong></div>
-            <button type="button" class="btn-route-to-place" onclick="calculateAndDrawRoute(${centerLat}, ${centerLng}, ${pLat}, ${pLng}, 'Tới: ${pName.replace(/'/g, "\\'")}')">
+            <button type="button" class="btn-route-to-place" onclick="window.routeToCoordinates(${pLat}, ${pLng}, 'Tới: ${pName.replace(/'/g, "\\'")}')">
               <i class="fa-solid fa-route"></i> Chỉ đường tới đây ngay
             </button>
           </div>
@@ -968,7 +1000,15 @@ function navigateToHome() {
 
   switchTabToMap();
 
-  // Bắt vị trí người dùng đang đứng để vẽ đường về nhà
+  const startCoords = getMyLocationCoords();
+  // Nếu Chấm Xanh đang đứng cách nhà > 15m, vẽ đường từ chính Chấm Xanh về nhà
+  const dist = calculateHaversineDistance(startCoords[0], startCoords[1], homeData.lat, homeData.lng);
+  if (dist > 15) {
+    calculateAndDrawRoute(startCoords[0], startCoords[1], homeData.lat, homeData.lng, 'Tuyến Đường Về Nhà');
+    return;
+  }
+
+  // Nếu Chấm Xanh đang trùng khít với nhà hoặc chưa xác định, xin GPS mới nhất
   if (navigator.geolocation) {
     const overlay = document.getElementById('mainMapLoadingOverlay');
     const overlayText = document.getElementById('mainMapLoadingText');
@@ -982,16 +1022,18 @@ function navigateToHome() {
         if (overlay) overlay.style.display = 'none';
         const startLat = pos.coords.latitude;
         const startLng = pos.coords.longitude;
+        if (mainHomeMarker) mainHomeMarker.setLatLng([startLat, startLng]);
+        currentPickedLat = startLat;
+        currentPickedLng = startLng;
         calculateAndDrawRoute(startLat, startLng, homeData.lat, homeData.lng, 'Tuyến Đường Về Nhà');
       },
       () => {
         if (overlay) overlay.style.display = 'none';
-        // Nếu không cho GPS, vẽ từ tâm bản đồ hoặc điểm trung tâm mặc định
         const fallbackStartLat = currentPickedLat || DEFAULT_MAP_CENTER[0];
         const fallbackStartLng = currentPickedLng || DEFAULT_MAP_CENTER[1];
         calculateAndDrawRoute(fallbackStartLat, fallbackStartLng, homeData.lat, homeData.lng, 'Tuyến Đường Về Nhà');
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
     );
   } else {
     const fallbackStartLat = currentPickedLat || DEFAULT_MAP_CENTER[0];
@@ -1363,32 +1405,14 @@ function routeToSavedPlace(id) {
   const p = savedPlaces.find(x => x.id === id);
   if (!p) return;
 
-  if (navigator.geolocation) {
-    const overlay = document.getElementById('mainMapLoadingOverlay');
-    const overlayText = document.getElementById('mainMapLoadingText');
-    if (overlay) {
-      if (overlayText) overlayText.textContent = `Đang tìm tuyến đường tới ${p.name}...`;
-      overlay.style.display = 'flex';
-    }
+  // Lấy vị trí xuất phát từ chính Chấm Xanh Google Maps của bạn trên bản đồ
+  const startCoords = getMyLocationCoords();
+  calculateAndDrawRoute(startCoords[0], startCoords[1], p.lat, p.lng, `Tới: ${p.name}`);
+}
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        if (overlay) overlay.style.display = 'none';
-        calculateAndDrawRoute(pos.coords.latitude, pos.coords.longitude, p.lat, p.lng, `Tới: ${p.name}`);
-      },
-      () => {
-        if (overlay) overlay.style.display = 'none';
-        const startLat = (currentPickedLat && currentPickedLat !== p.lat) ? currentPickedLat : DEFAULT_MAP_CENTER[0];
-        const startLng = (currentPickedLng && currentPickedLng !== p.lng) ? currentPickedLng : DEFAULT_MAP_CENTER[1];
-        calculateAndDrawRoute(startLat, startLng, p.lat, p.lng, `Tới: ${p.name}`);
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  } else {
-    const startLat = (currentPickedLat && currentPickedLat !== p.lat) ? currentPickedLat : DEFAULT_MAP_CENTER[0];
-    const startLng = (currentPickedLng && currentPickedLng !== p.lng) ? currentPickedLng : DEFAULT_MAP_CENTER[1];
-    calculateAndDrawRoute(startLat, startLng, p.lat, p.lng, `Tới: ${p.name}`);
-  }
+function routeToCoordinates(destLat, destLng, title = 'Tuyến Đường') {
+  const startCoords = getMyLocationCoords();
+  calculateAndDrawRoute(startCoords[0], startCoords[1], destLat, destLng, title);
 }
 
 /**
@@ -1593,6 +1617,8 @@ window.handleConfirmAddSavedPlace = handleConfirmAddSavedPlace;
 window.deleteSavedPlace = deleteSavedPlace;
 window.focusSavedPlaceOnMap = focusSavedPlaceOnMap;
 window.routeToSavedPlace = routeToSavedPlace;
+window.routeToCoordinates = routeToCoordinates;
+window.getMyLocationCoords = getMyLocationCoords;
 window.renderSavedPlacesListUI = renderSavedPlacesListUI;
 window.renderAllSavedPlaceMarkers = renderAllSavedPlaceMarkers;
 window.initHomeLocationModule = initHomeLocationModule;
