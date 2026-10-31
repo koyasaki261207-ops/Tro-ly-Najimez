@@ -134,6 +134,8 @@ function initTabNavigation() {
           if (typeof autoScrollTimetableToCurrentTime === 'function') autoScrollTimetableToCurrentTime();
         } else if (targetTabId === 'tab-toolbox') {
           if (typeof renderToolboxTab === 'function') renderToolboxTab();
+        } else if (targetTabId === 'tab-map') {
+          if (typeof renderMapTab === 'function') renderMapTab();
         } else if (targetTabId === 'tab-language') {
           if (typeof renderLanguageTab === 'function') renderLanguageTab();
         } else if (targetTabId === 'tab-friends') {

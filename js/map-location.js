@@ -1,16 +1,18 @@
 /**
- * js/map-location.js - Quản lý Bản Đồ & Vị Trí Nhà Riêng Najimez
+ * js/map-location.js - Quản lý Trung Tâm Bản Đồ & Vị Trí Nhà Riêng Najimez
  * Sử dụng Leaflet.js, OpenStreetMap Nominatim và CartoDB Dark Matter
  * Chuẩn Code Modularization cho Dự Án Trợ Lý Ảo Najimez
  */
 
 const HOME_LOC_STORAGE_KEY = 'najimez_home_location';
-// Tọa độ mặc định (Trung tâm TP. Hồ Chí Minh nếu chưa có vị trí)
-const DEFAULT_MAP_CENTER = [10.762622, 106.660172];
+const DEFAULT_MAP_CENTER = [10.762622, 106.660172]; // TP. Hồ Chí Minh
 const DEFAULT_MAP_ZOOM = 14;
 
-let homeLeafletMap = null;
-let homeMarkerInstance = null;
+let mainLeafletMap = null;
+let mainHomeMarker = null;
+let inlineMiniMap = null;
+let inlineHomeMarker = null;
+
 let currentPickedLat = null;
 let currentPickedLng = null;
 let currentPickedAddress = '';
@@ -36,9 +38,17 @@ function saveHomeLocationData(locData) {
   try {
     localStorage.setItem(HOME_LOC_STORAGE_KEY, JSON.stringify(locData));
     updateHomeLocationUI();
+    updateMainMapWorkspaceUI();
     window.dispatchEvent(new CustomEvent('najimez-home-location-updated', { detail: locData }));
 
-    // Kích hoạt đồng bộ đám mây Firebase nếu có module
+    // Cập nhật marker trên các bản đồ đang mở
+    if (locData.lat && locData.lng) {
+      if (mainHomeMarker) mainHomeMarker.setLatLng([locData.lat, locData.lng]);
+      if (inlineHomeMarker) inlineHomeMarker.setLatLng([locData.lat, locData.lng]);
+      if (mainLeafletMap) mainLeafletMap.setView([locData.lat, locData.lng], 16);
+      if (inlineMiniMap) inlineMiniMap.setView([locData.lat, locData.lng], 15);
+    }
+
     if (typeof syncLedgerToFirebase === 'function') {
       syncLedgerToFirebase(null, true);
     }
@@ -82,6 +92,12 @@ function updateHomeLocationUI() {
     }
     if (btnDirections) btnDirections.disabled = false;
     if (btnClear) btnClear.style.display = 'inline-flex';
+
+    // Cập nhật inline mini map
+    if (inlineHomeMarker) {
+      inlineHomeMarker.setLatLng([homeData.lat, homeData.lng]);
+      if (inlineMiniMap) inlineMiniMap.setView([homeData.lat, homeData.lng], 15);
+    }
   } else {
     if (iconAura) iconAura.classList.remove('configured');
     if (icon) icon.className = 'fa-solid fa-house-chimney';
@@ -90,10 +106,51 @@ function updateHomeLocationUI() {
       statusBadge.classList.remove('active');
     }
     if (addressEl) {
-      addressEl.textContent = 'Nhấn "Đánh Dấu Vị Trí" để ghim nhà trên bản đồ mini hoặc định vị GPS tự động.';
+      addressEl.textContent = 'Nhấn "Đánh Dấu Vị Trí" hoặc mở tab "Bản Đồ" để ghim nhà trên bản đồ trực quan.';
     }
     if (coordsRow) coordsRow.style.display = 'none';
     if (btnDirections) btnDirections.disabled = true;
+    if (btnClear) btnClear.style.display = 'none';
+  }
+}
+
+/**
+ * Cập nhật bảng điều khiển tại Trung Tâm Bản Đồ (tab-map)
+ */
+function updateMainMapWorkspaceUI() {
+  const homeData = getSavedHomeLocation();
+  const statusBadge = document.getElementById('mainMapStatusBadge');
+  const addressText = document.getElementById('mainMapAddressText');
+  const coordsRow = document.getElementById('mainMapCoordsRow');
+  const coordsVal = document.getElementById('mainMapCoordsVal');
+  const btnNav = document.getElementById('btnNavigateFromMainMap');
+  const btnClear = document.getElementById('btnClearFromMainMap');
+  const btnHudDir = document.getElementById('btnMainMapDirections');
+
+  if (homeData && homeData.lat && homeData.lng) {
+    if (statusBadge) {
+      statusBadge.textContent = 'Đã ghim vị trí';
+      statusBadge.classList.add('active');
+    }
+    if (addressText) {
+      addressText.textContent = homeData.address || `Tọa độ: ${homeData.lat.toFixed(6)}, ${homeData.lng.toFixed(6)}`;
+    }
+    if (coordsRow) coordsRow.style.display = 'block';
+    if (coordsVal) coordsVal.textContent = `${homeData.lat.toFixed(6)}, ${homeData.lng.toFixed(6)}`;
+    if (btnNav) btnNav.disabled = false;
+    if (btnHudDir) btnHudDir.disabled = false;
+    if (btnClear) btnClear.style.display = 'inline-flex';
+  } else {
+    if (statusBadge) {
+      statusBadge.textContent = 'Chưa thiết lập';
+      statusBadge.classList.remove('active');
+    }
+    if (addressText) {
+      addressText.textContent = 'Chưa có vị trí. Hãy nhấp chuột hoặc kéo ghim 🏠 trên bản đồ để chọn nhà bạn.';
+    }
+    if (coordsRow) coordsRow.style.display = 'none';
+    if (btnNav) btnNav.disabled = true;
+    if (btnHudDir) btnHudDir.disabled = true;
     if (btnClear) btnClear.style.display = 'none';
   }
 }
@@ -109,7 +166,7 @@ function navigateToHome() {
     } else {
       alert('Vui lòng đánh dấu vị trí nhà trước khi mở chỉ đường!');
     }
-    openHomeMapModal();
+    switchTabToMap();
     return;
   }
 
@@ -118,62 +175,44 @@ function navigateToHome() {
 }
 
 /**
- * Mở Modal Bản Đồ Đánh Dấu
+ * Chuyển sang Tab Trung Tâm Bản Đồ
  */
-function openHomeMapModal() {
-  const modal = document.getElementById('homeMapModal');
-  if (!modal) return;
-  modal.classList.add('active');
-
-  // Khởi tạo bản đồ nếu chưa có
-  setTimeout(() => {
-    initLeafletHomeMap();
-    if (homeLeafletMap) {
-      homeLeafletMap.invalidateSize();
-      const homeData = getSavedHomeLocation();
-      if (homeData && homeData.lat && homeData.lng) {
-        setPickedMarkerLocation(homeData.lat, homeData.lng, homeData.address, true, false);
-      } else {
-        // Tự động thử lấy GPS nếu chưa từng lưu
-        locateUserViaGPS(false);
-      }
-    }
-  }, 200);
+function switchTabToMap() {
+  const navMapBtn = document.querySelector('.sidebar-nav .nav-item[data-tab="tab-map"]');
+  if (navMapBtn) {
+    navMapBtn.click();
+  }
 }
 
 /**
- * Đóng Modal Bản Đồ
+ * Khởi tạo Leaflet Map Lớn tại Trung Tâm Bản Đồ (tab-map)
  */
-function closeHomeMapModal() {
-  const modal = document.getElementById('homeMapModal');
-  if (modal) modal.classList.remove('active');
-  hideSearchResults();
-}
+function initMainLeafletMap() {
+  if (mainLeafletMap || typeof L === 'undefined') return;
 
-/**
- * Khởi tạo Leaflet Map (CartoDB Dark Matter tiles)
- */
-function initLeafletHomeMap() {
-  if (homeLeafletMap || typeof L === 'undefined') return;
-
-  const mapContainer = document.getElementById('homeLeafletMap');
+  const mapContainer = document.getElementById('mainLeafletMap');
   if (!mapContainer) return;
 
-  // Tạo map instance
-  homeLeafletMap = L.map('homeLeafletMap', {
-    center: DEFAULT_MAP_CENTER,
-    zoom: DEFAULT_MAP_ZOOM,
+  const homeData = getSavedHomeLocation();
+  const initialCenter = (homeData && homeData.lat && homeData.lng)
+    ? [homeData.lat, homeData.lng]
+    : DEFAULT_MAP_CENTER;
+  const initialZoom = (homeData && homeData.lat && homeData.lng) ? 16 : DEFAULT_MAP_ZOOM;
+
+  mainLeafletMap = L.map('mainLeafletMap', {
+    center: initialCenter,
+    zoom: initialZoom,
     zoomControl: true
   });
 
-  // Nạp Dark Matter tiles của CartoDB (Miễn phí, chuẩn dark cyberpunk)
+  // Nạp CartoDB Dark Matter tiles
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 19
-  }).addTo(homeLeafletMap);
+  }).addTo(mainLeafletMap);
 
-  // Tạo Custom Neon Home Pin Icon
+  // Custom Neon Pin
   const homeDivIcon = L.divIcon({
     className: 'custom-neon-pin-wrapper',
     html: '<div class="neon-home-marker" title="Kéo thả ghim để chọn vị trí"><i class="fa-solid fa-house-chimney"></i></div>',
@@ -181,86 +220,127 @@ function initLeafletHomeMap() {
     iconAnchor: [22, 22]
   });
 
-  // Tạo Marker có thể kéo thả
-  homeMarkerInstance = L.marker(DEFAULT_MAP_CENTER, {
+  mainHomeMarker = L.marker(initialCenter, {
     icon: homeDivIcon,
     draggable: true
-  }).addTo(homeLeafletMap);
+  }).addTo(mainLeafletMap);
 
-  // Sự kiện kéo thả ghim marker
-  homeMarkerInstance.on('dragend', (e) => {
+  currentPickedLat = initialCenter[0];
+  currentPickedLng = initialCenter[1];
+
+  // Sự kiện kéo thả ghim
+  mainHomeMarker.on('dragend', (e) => {
     const latlng = e.target.getLatLng();
-    setPickedMarkerLocation(latlng.lat, latlng.lng, null, false, true);
+    setMainMapPickedLocation(latlng.lat, latlng.lng, null, false, true);
   });
 
-  // Sự kiện nhấp chuột trực tiếp lên bản đồ
-  homeLeafletMap.on('click', (e) => {
-    setPickedMarkerLocation(e.latlng.lat, e.latlng.lng, null, false, true);
+  // Sự kiện click trực tiếp lên bản đồ
+  mainLeafletMap.on('click', (e) => {
+    setMainMapPickedLocation(e.latlng.lat, e.latlng.lng, null, false, true);
+  });
+
+  if (homeData && homeData.address) {
+    setMainMapPickedLocation(homeData.lat, homeData.lng, homeData.address, false, false);
+  }
+}
+
+/**
+ * Khởi tạo Bản đồ mini tương tác ngay trên thẻ Hộp Dụng Cụ
+ */
+function initInlineMiniMap() {
+  if (inlineMiniMap || typeof L === 'undefined') return;
+
+  const miniContainer = document.getElementById('homeInlineMiniMap');
+  if (!miniContainer) return;
+
+  const homeData = getSavedHomeLocation();
+  const initialCenter = (homeData && homeData.lat && homeData.lng)
+    ? [homeData.lat, homeData.lng]
+    : DEFAULT_MAP_CENTER;
+
+  inlineMiniMap = L.map('homeInlineMiniMap', {
+    center: initialCenter,
+    zoom: 15,
+    zoomControl: false,
+    attributionControl: false
+  });
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(inlineMiniMap);
+
+  const miniDivIcon = L.divIcon({
+    className: 'custom-neon-pin-wrapper',
+    html: '<div class="neon-home-marker" style="width:32px;height:32px;font-size:14px;"><i class="fa-solid fa-house-chimney"></i></div>',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
+  });
+
+  inlineHomeMarker = L.marker(initialCenter, { icon: miniDivIcon }).addTo(inlineMiniMap);
+
+  // Click vào mini map sẽ chuyển sang Trung Tâm Bản Đồ đầy đủ
+  inlineMiniMap.on('click', () => {
+    switchTabToMap();
   });
 }
 
 /**
- * Đặt vị trí ghim và cập nhật nhãn địa chỉ
+ * Cập nhật vị trí được chọn trên Main Map
  */
-function setPickedMarkerLocation(lat, lng, addressText = null, shouldPan = true, shouldReverseGeocode = true) {
+function setMainMapPickedLocation(lat, lng, addressText = null, shouldPan = true, shouldReverseGeocode = true) {
   currentPickedLat = lat;
   currentPickedLng = lng;
 
-  if (homeMarkerInstance) {
-    homeMarkerInstance.setLatLng([lat, lng]);
-  }
-  if (homeLeafletMap && shouldPan) {
-    homeLeafletMap.setView([lat, lng], Math.max(homeLeafletMap.getZoom(), 15));
+  if (mainHomeMarker) mainHomeMarker.setLatLng([lat, lng]);
+  if (mainLeafletMap && shouldPan) {
+    mainLeafletMap.setView([lat, lng], Math.max(mainLeafletMap.getZoom(), 16));
   }
 
-  const coordsEl = document.getElementById('homeMapPickedCoords');
-  if (coordsEl) coordsEl.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+  const coordsRow = document.getElementById('mainMapCoordsRow');
+  const coordsVal = document.getElementById('mainMapCoordsVal');
+  if (coordsRow) coordsRow.style.display = 'block';
+  if (coordsVal) coordsVal.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 
-  const addressEl = document.getElementById('homeMapPickedAddress');
+  const addrText = document.getElementById('mainMapAddressText');
   if (addressText) {
     currentPickedAddress = addressText;
-    if (addressEl) addressEl.textContent = addressText;
+    if (addrText) addrText.textContent = addressText;
   } else if (shouldReverseGeocode) {
-    if (addressEl) addressEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xác định tên địa chỉ...';
-    reverseGeocodeLocation(lat, lng);
+    if (addrText) addrText.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang xác định tên địa chỉ...';
+    reverseGeocodeLocation(lat, lng, (resolvedAddr) => {
+      currentPickedAddress = resolvedAddr;
+      if (addrText) addrText.textContent = resolvedAddr;
+    });
   }
 }
 
 /**
- * Tra cứu địa chỉ từ tọa độ (Reverse Geocoding qua OpenStreetMap Nominatim)
+ * Reverse geocoding qua Nominatim
  */
-function reverseGeocodeLocation(lat, lng) {
+function reverseGeocodeLocation(lat, lng, callback) {
   const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`;
   
   fetch(url, { headers: { 'Accept-Language': 'vi,en' } })
     .then(res => res.json())
     .then(data => {
-      const addressEl = document.getElementById('homeMapPickedAddress');
-      if (data && data.display_name) {
-        currentPickedAddress = data.display_name;
-        if (addressEl) addressEl.textContent = data.display_name;
-      } else {
-        currentPickedAddress = `Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-        if (addressEl) addressEl.textContent = currentPickedAddress;
-      }
+      const addr = (data && data.display_name) || `Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      if (callback) callback(addr);
     })
-    .catch(err => {
-      console.warn('[MapLocation] Lỗi reverse geocode:', err);
-      const addressEl = document.getElementById('homeMapPickedAddress');
-      currentPickedAddress = `Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-      if (addressEl) addressEl.textContent = currentPickedAddress;
+    .catch(() => {
+      if (callback) callback(`Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`);
     });
 }
 
 /**
- * Tìm kiếm địa chỉ qua OpenStreetMap Nominatim
+ * Tìm kiếm địa chỉ qua Nominatim trên Main Map
  */
-function searchAddressViaNominatim(query) {
+function searchMainMapAddress(query) {
   if (!query || query.trim().length < 2) return;
   const cleanQ = query.trim();
   const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(cleanQ)}&countrycodes=vn&limit=5&addressdetails=1`;
 
-  const resultsDropdown = document.getElementById('homeMapSearchResults');
+  const resultsDropdown = document.getElementById('mainMapSearchResults');
   if (resultsDropdown) {
     resultsDropdown.innerHTML = '<div class="search-result-item" style="color:#94a3b8;"><i class="fa-solid fa-spinner fa-spin"></i> Đang tìm kiếm...</div>';
     resultsDropdown.style.display = 'block';
@@ -271,7 +351,7 @@ function searchAddressViaNominatim(query) {
     .then(list => {
       if (!resultsDropdown) return;
       if (!list || list.length === 0) {
-        resultsDropdown.innerHTML = '<div class="search-result-item" style="color:#f87171;">Không tìm thấy địa điểm phù hợp. Thử tìm tên đường/quận rộng hơn.</div>';
+        resultsDropdown.innerHTML = '<div class="search-result-item" style="color:#f87171;">Không tìm thấy địa điểm. Thử tìm tên đường/quận rộng hơn.</div>';
         return;
       }
 
@@ -283,116 +363,75 @@ function searchAddressViaNominatim(query) {
         itemEl.addEventListener('click', () => {
           const lat = parseFloat(item.lat);
           const lng = parseFloat(item.lon);
-          setPickedMarkerLocation(lat, lng, item.display_name, true, false);
-          hideSearchResults();
+          setMainMapPickedLocation(lat, lng, item.display_name, true, false);
+          resultsDropdown.style.display = 'none';
         });
         resultsDropdown.appendChild(itemEl);
       });
     })
     .catch(err => {
-      console.warn('[MapLocation] Lỗi tìm kiếm địa chỉ:', err);
+      console.warn('[MapLocation] Lỗi tìm kiếm:', err);
       if (resultsDropdown) {
         resultsDropdown.innerHTML = '<div class="search-result-item" style="color:#f87171;">Lỗi kết nối tra cứu địa chỉ.</div>';
       }
     });
 }
 
-function hideSearchResults() {
-  const dropdown = document.getElementById('homeMapSearchResults');
-  if (dropdown) dropdown.style.display = 'none';
-}
-
 /**
- * Định vị GPS qua trình duyệt
+ * Định vị GPS qua trình duyệt trên Main Map
  */
-function locateUserViaGPS(showToastNotice = true) {
+function locateViaGPSOnMainMap() {
   if (!navigator.geolocation) {
-    if (showToastNotice) alert('Trình duyệt của bạn không hỗ trợ định vị GPS!');
+    alert('Trình duyệt của bạn không hỗ trợ định vị GPS!');
     return;
   }
 
-  const overlay = document.getElementById('homeMapLoadingOverlay');
-  const overlayText = document.getElementById('homeMapLoadingText');
+  const overlay = document.getElementById('mainMapLoadingOverlay');
+  const overlayText = document.getElementById('mainMapLoadingText');
   if (overlay) {
     if (overlayText) overlayText.textContent = 'Đang bắt tín hiệu GPS...';
     overlay.style.display = 'flex';
   }
 
   navigator.geolocation.getCurrentPosition(
-    (position) => {
+    (pos) => {
       if (overlay) overlay.style.display = 'none';
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-      setPickedMarkerLocation(lat, lng, null, true, true);
-      if (showToastNotice && typeof showToast === 'function') {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      setMainMapPickedLocation(lat, lng, null, true, true);
+      if (typeof showToast === 'function') {
         showToast('Đã bắt vị trí GPS thành công!', 'success');
       }
     },
     (err) => {
       if (overlay) overlay.style.display = 'none';
-      console.warn('[MapLocation] Lỗi bắt GPS:', err.message);
-      if (showToastNotice) {
-        alert('Không thể lấy vị trí GPS. Hãy kiểm tra quyền truy cập vị trí của trình duyệt!');
-      }
+      console.warn('[MapLocation] Lỗi GPS:', err.message);
+      alert('Không thể lấy vị trí GPS. Hãy kiểm tra quyền truy cập vị trí của trình duyệt!');
     },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    { enableHighAccuracy: true, timeout: 10000 }
   );
 }
 
 /**
- * Bắt GPS nhanh trực tiếp từ thẻ Dashboard mà không cần mở Modal
+ * Lưu vị trí từ Main Map làm nhà riêng
  */
-function handleQuickGpsHome() {
-  if (!navigator.geolocation) {
-    alert('Trình duyệt của bạn không hỗ trợ định vị GPS!');
+function handleSaveFromMainMap() {
+  if (!currentPickedLat || !currentPickedLng) {
+    alert('Vui lòng chọn vị trí trên bản đồ trước khi lưu!');
     return;
   }
 
-  const confirmMsg = confirm('Bạn có muốn lấy vị trí GPS hiện tại để lưu làm Nhà Riêng của bạn không?');
-  if (!confirmMsg) return;
+  const addr = currentPickedAddress || `Tọa độ: ${currentPickedLat.toFixed(6)}, ${currentPickedLng.toFixed(6)}`;
+  const ok = saveHomeLocationData({
+    lat: currentPickedLat,
+    lng: currentPickedLng,
+    address: addr,
+    updatedAt: Date.now()
+  });
 
-  if (typeof showToast === 'function') {
-    showToast('Đang kết nối GPS thiết bị...', 'info');
+  if (ok && typeof showToast === 'function') {
+    showToast('Đã lưu vị trí Nhà Riêng thành công!', 'success');
   }
-
-  navigator.geolocation.getCurrentPosition(
-    (pos) => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      
-      // Gọi geocoding lấy địa chỉ
-      fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18`, { headers: { 'Accept-Language': 'vi,en' } })
-        .then(res => res.json())
-        .then(data => {
-          const addr = (data && data.display_name) || `Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-          saveHomeLocationData({
-            lat: lat,
-            lng: lng,
-            address: addr,
-            updatedAt: Date.now()
-          });
-          if (typeof showToast === 'function') {
-            showToast('Đã lưu vị trí Nhà Riêng thành công qua GPS!', 'success');
-          }
-        })
-        .catch(() => {
-          saveHomeLocationData({
-            lat: lat,
-            lng: lng,
-            address: `Tọa độ: ${lat.toFixed(5)}, ${lng.toFixed(5)}`,
-            updatedAt: Date.now()
-          });
-          if (typeof showToast === 'function') {
-            showToast('Đã lưu vị trí Nhà Riêng thành công!', 'success');
-          }
-        });
-    },
-    (err) => {
-      console.warn('[MapLocation] Quick GPS lỗi:', err.message);
-      alert('Không thể lấy GPS. Vui lòng cấp quyền vị trí cho trình duyệt!');
-    },
-    { enableHighAccuracy: true, timeout: 10000 }
-  );
 }
 
 /**
@@ -404,36 +443,39 @@ function handleClearHomeLocation() {
 
   localStorage.removeItem(HOME_LOC_STORAGE_KEY);
   updateHomeLocationUI();
+  updateMainMapWorkspaceUI();
   if (typeof showToast === 'function') {
     showToast('Đã xóa vị trí Nhà Riêng.', 'info');
   }
 }
 
 /**
- * Lưu vị trí từ Modal
+ * Mở tìm kiếm địa điểm xung quanh qua Google Maps
  */
-function handleConfirmSaveModal() {
-  if (!currentPickedLat || !currentPickedLng) {
-    alert('Vui lòng chọn vị trí trên bản đồ trước khi lưu!');
-    return;
-  }
+function handleSearchNearbyPlace(query) {
+  const homeData = getSavedHomeLocation();
+  const lat = (homeData && homeData.lat) || currentPickedLat || DEFAULT_MAP_CENTER[0];
+  const lng = (homeData && homeData.lng) || currentPickedLng || DEFAULT_MAP_CENTER[1];
 
-  const addr = currentPickedAddress || `Tọa độ: ${currentPickedLat.toFixed(5)}, ${currentPickedLng.toFixed(5)}`;
-  const ok = saveHomeLocationData({
-    lat: currentPickedLat,
-    lng: currentPickedLng,
-    address: addr,
-    updatedAt: Date.now()
-  });
+  const url = `https://www.google.com/maps/search/${encodeURIComponent(query)}/@${lat},${lng},15z`;
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
 
-  if (ok) {
-    if (typeof showToast === 'function') {
-      showToast('Đã lưu vị trí Nhà Riêng thành công!', 'success');
+/**
+ * Hàm gọi khi chuyển sang tab Bản Đồ (tab-map)
+ */
+function renderMapTab() {
+  setTimeout(() => {
+    initMainLeafletMap();
+    if (mainLeafletMap) {
+      mainLeafletMap.invalidateSize();
+      const homeData = getSavedHomeLocation();
+      if (homeData && homeData.lat && homeData.lng) {
+        mainLeafletMap.setView([homeData.lat, homeData.lng], 16);
+      }
     }
-    closeHomeMapModal();
-  } else {
-    alert('Có lỗi khi lưu vị trí. Vui lòng thử lại!');
-  }
+    updateMainMapWorkspaceUI();
+  }, 100);
 }
 
 /**
@@ -441,54 +483,65 @@ function handleConfirmSaveModal() {
  */
 function initHomeLocationModule() {
   updateHomeLocationUI();
+  updateMainMapWorkspaceUI();
+
+  // Khởi tạo mini map khi rảnh rỗi
+  setTimeout(() => {
+    initInlineMiniMap();
+  }, 600);
 
   // Nút trên Thẻ Hộp Dụng Cụ
-  const btnOpenModal = document.getElementById('btnOpenHomeMapModal');
+  const btnOpenFullMap = document.getElementById('btnOpenFullMapFromCard');
   const btnDirections = document.getElementById('btnDirectionsHome');
   const btnQuickGps = document.getElementById('btnQuickGpsHome');
   const btnClear = document.getElementById('btnClearHomeLoc');
   const btnRefresh = document.getElementById('btnQuickRefreshHome');
 
-  if (btnOpenModal) btnOpenModal.addEventListener('click', openHomeMapModal);
+  if (btnOpenFullMap) btnOpenFullMap.addEventListener('click', switchTabToMap);
   if (btnDirections) btnDirections.addEventListener('click', navigateToHome);
-  if (btnQuickGps) btnQuickGps.addEventListener('click', handleQuickGpsHome);
+  if (btnQuickGps) btnQuickGps.addEventListener('click', locateViaGPSOnMainMap);
   if (btnClear) btnClear.addEventListener('click', handleClearHomeLocation);
   if (btnRefresh) btnRefresh.addEventListener('click', updateHomeLocationUI);
 
-  // Nút trên Modal
-  const btnCloseModal = document.getElementById('btnCloseHomeMapModal');
-  const btnCancelModal = document.getElementById('btnCancelHomeMap');
-  const btnSaveModal = document.getElementById('btnSaveHomeLocation');
-  const btnGpsModal = document.getElementById('btnMapGpsLocate');
-  const btnSearch = document.getElementById('btnSearchAddress');
-  const searchInput = document.getElementById('homeMapSearchInput');
-  const btnClearSearch = document.getElementById('btnClearSearchInput');
+  // Nút trên Main Map Workspace (tab-map)
+  const btnSaveMain = document.getElementById('btnSaveFromMainMap');
+  const btnNavMain = document.getElementById('btnNavigateFromMainMap');
+  const btnGpsMain = document.getElementById('btnGpsFromMainMap');
+  const btnClearMain = document.getElementById('btnClearFromMainMap');
+  const btnHudGps = document.getElementById('btnMainMapGps');
+  const btnHudDir = document.getElementById('btnMainMapDirections');
 
-  if (btnCloseModal) btnCloseModal.addEventListener('click', closeHomeMapModal);
-  if (btnCancelModal) btnCancelModal.addEventListener('click', closeHomeMapModal);
-  if (btnSaveModal) btnSaveModal.addEventListener('click', handleConfirmSaveModal);
-  if (btnGpsModal) btnGpsModal.addEventListener('click', () => locateUserViaGPS(true));
+  if (btnSaveMain) btnSaveMain.addEventListener('click', handleSaveFromMainMap);
+  if (btnNavMain) btnNavMain.addEventListener('click', navigateToHome);
+  if (btnGpsMain) btnGpsMain.addEventListener('click', locateViaGPSOnMainMap);
+  if (btnClearMain) btnClearMain.addEventListener('click', handleClearHomeLocation);
+  if (btnHudGps) btnHudGps.addEventListener('click', locateViaGPSOnMainMap);
+  if (btnHudDir) btnHudDir.addEventListener('click', navigateToHome);
+
+  // Tìm kiếm trên Main Map
+  const searchInput = document.getElementById('mainMapSearchInput');
+  const btnSearch = document.getElementById('btnMainMapSearch');
+  const btnClearSearch = document.getElementById('btnMainMapClearSearch');
 
   if (btnSearch && searchInput) {
-    btnSearch.addEventListener('click', () => searchAddressViaNominatim(searchInput.value));
+    btnSearch.addEventListener('click', () => searchMainMapAddress(searchInput.value));
     searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        searchAddressViaNominatim(searchInput.value);
+        searchMainMapAddress(searchInput.value);
       }
     });
 
     searchInput.addEventListener('input', () => {
-      if (btnClearSearch) {
-        btnClearSearch.style.display = searchInput.value ? 'block' : 'none';
-      }
+      if (btnClearSearch) btnClearSearch.style.display = searchInput.value ? 'block' : 'none';
       clearTimeout(searchDebounceTimeout);
       if (searchInput.value.trim().length >= 3) {
         searchDebounceTimeout = setTimeout(() => {
-          searchAddressViaNominatim(searchInput.value);
+          searchMainMapAddress(searchInput.value);
         }, 500);
       } else {
-        hideSearchResults();
+        const res = document.getElementById('mainMapSearchResults');
+        if (res) res.style.display = 'none';
       }
     });
   }
@@ -497,23 +550,27 @@ function initHomeLocationModule() {
     btnClearSearch.addEventListener('click', () => {
       searchInput.value = '';
       btnClearSearch.style.display = 'none';
-      hideSearchResults();
+      const res = document.getElementById('mainMapSearchResults');
+      if (res) res.style.display = 'none';
     });
   }
 
-  // Đóng modal khi click ra ngoài backdrop
-  const modalBackdrop = document.getElementById('homeMapModal');
-  if (modalBackdrop) {
-    modalBackdrop.addEventListener('click', (e) => {
-      if (e.target === modalBackdrop) closeHomeMapModal();
+  // Chips tìm địa điểm xung quanh
+  const placeChips = document.querySelectorAll('.map-place-chip');
+  placeChips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const q = chip.dataset.query;
+      if (q) handleSearchNearbyPlace(q);
     });
-  }
+  });
 }
 
-// Xuất các hàm ra global scope để các module khác (Copilot, Firebase) có thể gọi
+// Xuất ra global scope
 window.getSavedHomeLocation = getSavedHomeLocation;
 window.saveHomeLocationData = saveHomeLocationData;
 window.updateHomeLocationUI = updateHomeLocationUI;
-window.openHomeMapModal = openHomeMapModal;
+window.updateMainMapWorkspaceUI = updateMainMapWorkspaceUI;
+window.renderMapTab = renderMapTab;
 window.navigateToHome = navigateToHome;
+window.switchTabToMap = switchTabToMap;
 window.initHomeLocationModule = initHomeLocationModule;

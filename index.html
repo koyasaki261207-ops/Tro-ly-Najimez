@@ -25,8 +25,8 @@
   <!-- Favicon Najimez -->
   <link rel="icon" type="image/jpeg" href="assets/najimez.jpg">
 
-  <link rel="stylesheet" href="style.css?v=3.95.12">
-  <link rel="stylesheet" href="css/map-location.css?v=3.95.12">
+  <link rel="stylesheet" href="style.css?v=3.95.13">
+  <link rel="stylesheet" href="css/map-location.css?v=3.95.13">
   <link rel="stylesheet" href="css/language-learning.css?v=3.95.7">
   <link rel="stylesheet" href="css/language-tutor.css?v=3.95.8">
   <link rel="stylesheet" href="css/timetable-matcher.css?v=3.95.10">
@@ -131,6 +131,12 @@
           <span class="pill-badge"
             style="background: rgba(168, 85, 247, 0.25); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">Tiện
             Ích</span>
+        </button>
+        <button class="nav-item" data-tab="tab-map">
+          <i class="fa-solid fa-map-location-dot" style="color: #38bdf8;"></i>
+          <span>Bản Đồ &amp; Vị Trí</span>
+          <span class="pill-badge"
+            style="background: rgba(56, 189, 248, 0.25); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4);">GPS</span>
         </button>
         <button class="nav-item" data-tab="tab-language">
           <i class="fa-solid fa-language" style="color: #06b6d4;"></i>
@@ -1287,9 +1293,17 @@
                       </div>
                     </div>
 
+                    <!-- Bản Đồ Mini Trực Tiếp Ngay Trên Thẻ -->
+                    <div class="home-inline-minimap-wrapper">
+                      <div id="homeInlineMiniMap" class="home-inline-minimap"></div>
+                      <button type="button" class="btn-open-full-map-badge" id="btnOpenFullMapFromCard" title="Mở Trung Tâm Bản Đồ đầy đủ">
+                        <i class="fa-solid fa-up-right-from-square"></i> Mở Bản Đồ Lớn
+                      </button>
+                    </div>
+
                     <!-- Các nút hành động chính -->
                     <div class="home-loc-actions-grid">
-                      <button type="button" class="btn-home-action cyan" id="btnOpenHomeMapModal">
+                      <button type="button" class="btn-home-action cyan" id="btnOpenFullMapFromCard2" onclick="switchTabToMap()">
                         <i class="fa-solid fa-map-location-dot"></i> Đánh Dấu Vị Trí
                       </button>
                       <button type="button" class="btn-home-action gold" id="btnDirectionsHome" disabled>
@@ -1313,6 +1327,143 @@
               </div>
 
             </div>
+          </div>
+        </section>
+
+        <!-- =================================================================
+             TAB: TRUNG TÂM BẢN ĐỒ & VỊ TRÍ (MAP & LOCATION CENTER)
+             ================================================================= -->
+        <section class="tab-pane" id="tab-map">
+          <div class="map-workspace-layout">
+
+            <!-- HUD Header: Banner Bản Đồ Najimez -->
+            <header class="map-hud-header">
+              <div class="map-brand-box">
+                <div class="map-avatar-aura">
+                  <i class="fa-solid fa-map-location-dot" style="font-size: 1.6rem; color: #38bdf8;"></i>
+                </div>
+                <div class="map-brand-title-wrap">
+                  <div class="map-title-row">
+                    <span class="map-title-text">TRUNG TÂM BẢN ĐỒ &amp; VỊ TRÍ</span>
+                    <span class="map-status-badge">
+                      <span class="map-pulse-dot"></span> VỊ TRÍ THỜI GIAN THỰC
+                    </span>
+                  </div>
+                  <span class="map-brand-desc">Đánh dấu nhà riêng, tra cứu địa điểm, định vị GPS và chỉ đường nhanh qua Google Maps</span>
+                </div>
+              </div>
+
+              <!-- Thanh nút hành động trên Header -->
+              <div class="map-hud-actions">
+                <button type="button" class="btn-map-hud-action cyan" id="btnMainMapGps">
+                  <i class="fa-solid fa-crosshairs"></i> Vị Trí Hiện Tại
+                </button>
+                <button type="button" class="btn-map-hud-action gold" id="btnMainMapDirections" disabled>
+                  <i class="fa-solid fa-diamond-turn-right"></i> Chỉ Đường Về Nhà
+                </button>
+              </div>
+            </header>
+
+            <!-- Bố cục Trung Tâm Bản Đồ: 2 cột (Cột Trái: Bản Đồ Lớn - Cột Phải: Bảng Điều Khiển & Vị Trí Nhà) -->
+            <div class="map-center-grid">
+              <!-- Cột Trái: Bản Đồ Leaflet Lớn & Thanh Tìm Kiếm -->
+              <div class="map-main-view-col">
+                <!-- Thanh tìm kiếm địa chỉ -->
+                <div class="map-center-search-bar">
+                  <div class="map-search-input-wrap">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="mainMapSearchInput" placeholder="Tìm kiếm địa chỉ, tên đường, quận, thành phố tại Việt Nam..." autocomplete="off" />
+                    <button type="button" id="btnMainMapClearSearch" class="btn-clear-search" style="display: none;">
+                      <i class="fa-solid fa-xmark"></i>
+                    </button>
+                  </div>
+                  <button type="button" class="btn-map-control btn-search" id="btnMainMapSearch">
+                    Tìm kiếm
+                  </button>
+                </div>
+
+                <!-- Danh sách gợi ý tìm kiếm -->
+                <div class="main-map-search-results" id="mainMapSearchResults" style="display: none;"></div>
+
+                <!-- Khung Bản Đồ Toàn Năng -->
+                <div class="main-map-leaflet-wrapper">
+                  <div id="mainLeafletMap" class="main-leaflet-map"></div>
+                  <div class="home-map-loading-overlay" id="mainMapLoadingOverlay" style="display: none;">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                    <span id="mainMapLoadingText">Đang tải bản đồ...</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Cột Phải: Bảng Thông Tin & Điều Khiển Vị Trí Nhà -->
+              <div class="map-control-sidebar-col">
+                <!-- Thẻ Thông Tin Nhà Riêng -->
+                <div class="map-info-card">
+                  <div class="map-info-header">
+                    <div class="map-info-title">
+                      <i class="fa-solid fa-house-chimney-user" style="color: #38bdf8;"></i>
+                      <span>Vị Trí Nhà Riêng Của Bạn</span>
+                    </div>
+                    <span class="home-loc-badge" id="mainMapStatusBadge">Chưa thiết lập</span>
+                  </div>
+
+                  <div class="map-info-body">
+                    <div class="map-info-addr-box">
+                      <div class="map-info-addr-label"><i class="fa-solid fa-location-dot" style="color: #f43f5e;"></i> Địa chỉ đã ghim:</div>
+                      <p class="map-info-addr-text" id="mainMapAddressText">Chưa có vị trí. Hãy nhấp chuột hoặc kéo ghim 🏠 trên bản đồ để chọn nhà bạn.</p>
+                      <div class="map-info-coords-row" id="mainMapCoordsRow" style="display: none;">
+                        <span><i class="fa-solid fa-compass"></i> Tọa độ: <strong id="mainMapCoordsVal" style="color: #38bdf8;">--</strong></span>
+                      </div>
+                    </div>
+
+                    <div class="map-control-buttons-stack" style="margin-top: 12px;">
+                      <button type="button" class="btn-home-action cyan" id="btnSaveFromMainMap" style="width: 100%;">
+                        <i class="fa-solid fa-floppy-disk"></i> Lưu Vị Trí Này Làm Nhà
+                      </button>
+                      <button type="button" class="btn-home-action gold" id="btnNavigateFromMainMap" style="width: 100%;" disabled>
+                        <i class="fa-solid fa-diamond-turn-right"></i> Mở Google Maps Dẫn Đường
+                      </button>
+                      <button type="button" class="btn-home-action purple" id="btnGpsFromMainMap" style="width: 100%;">
+                        <i class="fa-solid fa-crosshairs"></i> Lấy Vị Trí GPS Đang Đứng
+                      </button>
+                      <button type="button" class="btn-home-action slate" id="btnClearFromMainMap" style="width: 100%; display: none;">
+                        <i class="fa-regular fa-trash-can"></i> Xóa Vị Trí Đã Lưu
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Thẻ Tiện Ích Gợi Ý Tìm Nhanh Quanh Nhà -->
+                <div class="map-quick-places-card">
+                  <div class="map-places-title">
+                    <i class="fa-solid fa-compass-drafting" style="color: #fbbf24;"></i>
+                    <span>Tìm Nhanh Quanh Vị Trí Này</span>
+                  </div>
+                  <div class="map-places-chips">
+                    <button type="button" class="map-place-chip" data-query="quán cà phê">
+                      ☕ Quán Cà Phê
+                    </button>
+                    <button type="button" class="map-place-chip" data-query="cây xăng">
+                      ⛽ Cây Xăng
+                    </button>
+                    <button type="button" class="map-place-chip" data-query="tiệm thuốc">
+                      💊 Tiệm Thuốc
+                    </button>
+                    <button type="button" class="map-place-chip" data-query="siêu thị">
+                      🛒 Siêu Thị
+                    </button>
+                    <button type="button" class="map-place-chip" data-query="bệnh viện">
+                      🏥 Bệnh Viện
+                    </button>
+                    <button type="button" class="map-place-chip" data-query="quán ăn">
+                      🍜 Quán Ăn
+                    </button>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -3292,7 +3443,7 @@
   <!-- Các module chức năng theo chuẩn Code Modularization -->
   <script src="js/config.js?v=3.55.0"></script>
   <script src="js/storage.js?v=3.55.0"></script>
-  <script src="js/ui.js?v=3.77.0"></script>
+  <script src="js/ui.js?v=3.95.13"></script>
   <script src="js/vietqr.js?v=3.55.0"></script>
   <script src="js/bill-image.js?v=3.95.10"></script>
   <script src="js/debt.js?v=3.95.10"></script>
@@ -3305,7 +3456,7 @@
   <script src="js/timetable-timeline.js?v=3.66.0"></script>
   <script src="js/lucky-wheel.js?v=3.70.0"></script>
   <script src="js/toolbox.js?v=3.95.11"></script>
-  <script src="js/map-location.js?v=3.95.12"></script>
+  <script src="js/map-location.js?v=3.95.13"></script>
   <script src="js/language-learning.js?v=3.95.10"></script>
   <script src="js/language-tutor.js?v=3.95.8"></script>
   <script src="js/voice-settings.js?v=3.55.0"></script>
