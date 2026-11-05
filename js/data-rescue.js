@@ -193,8 +193,10 @@ async function rescueAndHealUserData(forceHeal = false) {
     const hasPythonEvent = curEvList.some(e => e && e.title && e.title.toLowerCase().includes('python'));
     const hasThaiDebt = curDbList.some(d => d && d.person && d.person.toLowerCase().includes('thái'));
 
-    // Nếu đã có đầy đủ và không bị thiếu sự kiện cốt lõi, chỉ lưu backup
-    if (!forceHeal && hasEnglishEvent && hasPythonEvent && hasThaiDebt && curTxList.length > 2) {
+    // Nếu đã có đầy đủ sự kiện hoặc đã từng hoàn tất cứu hộ, chỉ lưu an toàn và dừng lại
+    const alreadyRescued = localStorage.getItem('najimez_rescue_v1_done') === '1';
+    if (!forceHeal && (alreadyRescued || (hasEnglishEvent && hasPythonEvent))) {
+      localStorage.setItem('najimez_rescue_v1_done', '1');
       try {
         localStorage.setItem('najimez_ledger_backup_safety', JSON.stringify(currentData));
       } catch (_) {}
@@ -275,10 +277,11 @@ async function rescueAndHealUserData(forceHeal = false) {
     recoveredEvents = mergeEventLists(recoveredEvents, GOLDEN_RESCUE_EVENTS);
 
     let recoveredTx = curTxList;
-    recoveredTx = mergeTxLists(recoveredTx, candidateTx);
-    if (guestData && Array.isArray(guestData.transactions)) recoveredTx = mergeTxLists(recoveredTx, guestData.transactions);
-    if (safetyBackupData && Array.isArray(safetyBackupData.transactions)) recoveredTx = mergeTxLists(recoveredTx, safetyBackupData.transactions);
-    recoveredTx = mergeTxLists(recoveredTx, GOLDEN_RESCUE_TXS);
+    if (forceHeal) {
+      recoveredTx = mergeTxLists(recoveredTx, candidateTx);
+      if (guestData && Array.isArray(guestData.transactions)) recoveredTx = mergeTxLists(recoveredTx, guestData.transactions);
+      if (safetyBackupData && Array.isArray(safetyBackupData.transactions)) recoveredTx = mergeTxLists(recoveredTx, safetyBackupData.transactions);
+    }
 
     let recoveredDebts = curDbList;
     recoveredDebts = mergeDebtLists(recoveredDebts, candidateDebts);
@@ -329,10 +332,10 @@ async function rescueAndHealUserData(forceHeal = false) {
   }
 }
 
-// Khởi chạy cứu hộ dữ liệu tự động nhiều lần để đón đầu Firebase Auth
+// Chỉ khởi chạy cứu hộ dữ liệu nếu chưa từng hoàn tất
 function initDataRescueModule() {
-  setTimeout(() => rescueAndHealUserData(false), 500);
-  setTimeout(() => rescueAndHealUserData(false), 1500);
+  if (localStorage.getItem('najimez_rescue_v1_done') === '1') return;
+  setTimeout(() => rescueAndHealUserData(false), 1000);
 }
 
 if (document.readyState === 'loading') {

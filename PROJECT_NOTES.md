@@ -138,6 +138,13 @@
     * **Bảng Chỉ Dẫn Từng Ngã Rẽ (Turn-by-turn Navigation):** Hiển thị tổng khoảng cách (km) và thời gian dự kiến (phút), cùng danh sách từng bước rẽ chi tiết với icon trực quan.
   * [`css/map-location.css`](file:///d:/Siêu%20bá%20khí%20trợ%20lý/css/map-location.css): Định kiểu Cyber Glassmorphism cho Trung Tâm Bản Đồ & Quản Lý Địa Điểm: Thẻ `map-saved-places-card` với danh sách cuộn mượt mà, ghim neon phát sáng theo từng loại địa điểm, modal `modalAddSavedPlace` viền cyan và popup chi tiết sang trọng.
 
+### 2.4. Đồng Bộ Đám Mây & Bảo Toàn Dữ Liệu Hai Chiều (Cloud Firestore Realtime Sync)
+* **Tự động đồng bộ thời gian thực:** Đồng bộ hai chiều giữa Điện thoại và Máy tính qua Firebase Firestore `najimez_vault`.
+* **Đồng bộ thao tác Xóa (Two-Way Safe Deletion Sync):**
+  * Đảm bảo khi người dùng xóa giao dịch hoặc dọn sạch lịch sử Sổ Thu Chi Cá Nhân trên điện thoại (`transactions: []`), hệ thống đẩy mảng rỗng hợp lệ lên Cloud và máy tính nhận diện, áp dụng ngay tức thì.
+  * Loại bỏ cơ chế fallback nhầm lẫn sang bản ghi cũ (guest data zombie fallback) và gỡ bỏ hoàn toàn vòng lặp đẩy ngược (echo push loop) khiến máy tính khôi phục lại các giao dịch người dùng đã xóa.
+  * Phân hệ cứu hộ dữ liệu (`data-rescue.js`) chỉ chạy 1 lần duy nhất khi khôi phục lịch học/sự kiện cốt lõi bị mất, không tự ý nạp lại giao dịch mẫu hay can thiệp vào quyền chủ động xóa lịch sử thu chi của người dùng.
+
 ---
 
 ## 4. Định Hướng Kiến Trúc & Quy Chuẩn (Code Modularization)

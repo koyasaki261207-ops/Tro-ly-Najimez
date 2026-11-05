@@ -1755,6 +1755,7 @@ function executeAction(action, data) {
   if (action.type === 'clear_all_transactions' || action.type === 'delete_all_transactions') {
     const totalDeleted = Array.isArray(data.transactions) ? data.transactions.length : 0;
     data.transactions = [];
+    if (typeof saveLedgerData === 'function') saveLedgerData(data);
     if (typeof renderTransactionsUI === 'function') renderTransactionsUI();
     if (typeof updateBalanceUI === 'function') updateBalanceUI();
     const card = document.createElement('div');
@@ -1783,6 +1784,7 @@ function executeAction(action, data) {
     });
 
     if (data.transactions.length < initialLen) {
+      if (typeof saveLedgerData === 'function') saveLedgerData(data);
       if (typeof renderTransactionsUI === 'function') renderTransactionsUI();
       if (typeof updateBalanceUI === 'function') updateBalanceUI();
       const card = document.createElement('div');

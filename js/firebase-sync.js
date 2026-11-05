@@ -135,45 +135,38 @@ function subscribeToCloudChanges() {
 // Cập nhật dữ liệu từ Đám mây vào LocalStorage và làm mới toàn bộ giao diện
 function applyRemoteCloudData(cloudData) {
   if (isApplyingRemoteUpdate) return;
+  if (!cloudData || typeof cloudData !== 'object') return;
+
+  const hasAnyData = Array.isArray(cloudData.transactions) ||
+                     Array.isArray(cloudData.debts) ||
+                     Array.isArray(cloudData.tasks) ||
+                     Array.isArray(cloudData.calendarEvents) ||
+                     cloudData.bank || cloudData.contacts;
+  if (!hasAnyData) return;
+
   try {
     isApplyingRemoteUpdate = true;
     const currentLocal = typeof getLedgerData === 'function' ? getLedgerData() : {};
 
-    let guestFallback = null;
-    try {
-      const gRaw = localStorage.getItem(APP_CONFIG.ledgerKey);
-      if (gRaw) guestFallback = JSON.parse(gRaw);
-    } catch (_) {}
-
-    const resolveSafeList = (cloudArr, localArr, guestArr) => {
-      if (Array.isArray(cloudArr) && cloudArr.length > 0) return cloudArr;
-      if (Array.isArray(localArr) && localArr.length > 0) return localArr;
-      if (Array.isArray(guestArr) && guestArr.length > 0) return guestArr;
+    const resolveList = (cloudArr, localArr) => {
+      if (Array.isArray(cloudArr)) return cloudArr;
+      if (Array.isArray(localArr)) return localArr;
       return [];
     };
 
-    const safeTx = resolveSafeList(cloudData.transactions, currentLocal.transactions, guestFallback && guestFallback.transactions);
-    const safeDebts = resolveSafeList(cloudData.debts, currentLocal.debts, guestFallback && guestFallback.debts);
-    const safeTasks = resolveSafeList(cloudData.tasks, currentLocal.tasks, guestFallback && guestFallback.tasks);
-    const safeEvents = resolveSafeList(cloudData.calendarEvents, currentLocal.calendarEvents, guestFallback && guestFallback.calendarEvents);
+    const safeTx = resolveList(cloudData.transactions, currentLocal.transactions);
+    const safeDebts = resolveList(cloudData.debts, currentLocal.debts);
+    const safeTasks = resolveList(cloudData.tasks, currentLocal.tasks);
+    const safeEvents = resolveList(cloudData.calendarEvents, currentLocal.calendarEvents);
 
     const mergedData = {
       transactions: safeTx,
       debts: safeDebts,
       tasks: safeTasks,
       calendarEvents: safeEvents,
-      bank: { ...(guestFallback && guestFallback.bank), ...(currentLocal.bank || {}), ...(cloudData.bank || {}) },
-      contacts: { ...(guestFallback && guestFallback.contacts), ...(currentLocal.contacts || {}), ...(cloudData.contacts || {}) }
+      bank: { ...(currentLocal.bank || {}), ...(cloudData.bank || {}) },
+      contacts: { ...(currentLocal.contacts || {}) , ...(cloudData.contacts || {}) }
     };
-
-    if (
-      ((!Array.isArray(cloudData.transactions) || cloudData.transactions.length === 0) && safeTx.length > 0) ||
-      ((!Array.isArray(cloudData.calendarEvents) || cloudData.calendarEvents.length === 0) && safeEvents.length > 0)
-    ) {
-      if (window.currentUserUid) {
-        setTimeout(() => { if (typeof triggerAutoSyncToCloud === 'function') triggerAutoSyncToCloud(); }, 1000);
-      }
-    }
 
     // Đồng bộ cài đặt vòng quay may mắn nếu có
     if (Array.isArray(cloudData.wheelItems) && cloudData.wheelItems.length >= 2) {
@@ -205,6 +198,11 @@ function applyRemoteCloudData(cloudData) {
     // Lưu vào LocalStorage riêng biệt theo tài khoản
     const targetKey = typeof getCurrentLedgerKey === 'function' ? getCurrentLedgerKey() : APP_CONFIG.ledgerKey;
     localStorage.setItem(targetKey, JSON.stringify(healed));
+    const guestKey = window.APP_CONFIG && APP_CONFIG.ledgerKey;
+    if (guestKey && targetKey !== guestKey) {
+      localStorage.setItem(guestKey, JSON.stringify(healed));
+    }
+    localStorage.setItem('najimez_ledger_backup_safety', JSON.stringify(healed));
     localStorage.setItem(FIREBASE_LAST_SYNC_STORAGE, Date.now().toString());
 
     // Đồng bộ Sổ từ vựng ngoại ngữ cá nhân
@@ -312,24 +310,20 @@ function syncLedgerToFirebase(data, isImmediate = false) {
       const apiKey = localStorage.getItem(APP_CONFIG.storageKey) || '';
 
       let src = (data && typeof data === 'object') ? data : null;
-      if (!src || (!src.transactions && !src.calendarEvents)) {
-        src = typeof getLedgerData === 'function' ? getLedgerData() : {};
+      if (!src || (!Array.isArray(src.transactions) && !Array.isArray(src.calendarEvents) && !Array.isArray(src.debts))) {
+        src = typeof getLedgerData === 'function' ? getLedgerData() : null;
       }
-      let gData = null;
-      try {
-        const gRaw = localStorage.getItem(APP_CONFIG.ledgerKey);
-        if (gRaw) gData = JSON.parse(gRaw);
-      } catch (_) {}
+      if (!src) return;
 
-      const pickSafe = (a, b) => (Array.isArray(a) && a.length > 0) ? a : ((Array.isArray(b) && b.length > 0) ? b : []);
+      const resolveArr = (arr) => Array.isArray(arr) ? arr : [];
 
       const payload = {
-        transactions: pickSafe(src.transactions, gData && gData.transactions),
-        debts: pickSafe(src.debts, gData && gData.debts),
-        tasks: pickSafe(src.tasks, gData && gData.tasks),
-        calendarEvents: pickSafe(src.calendarEvents, gData && gData.calendarEvents),
-        bank: (src && src.bank) || (gData && gData.bank) || {},
-        contacts: (src && src.contacts) || (gData && gData.contacts) || {},
+        transactions: resolveArr(src.transactions),
+        debts: resolveArr(src.debts),
+        tasks: resolveArr(src.tasks),
+        calendarEvents: resolveArr(src.calendarEvents),
+        bank: src.bank || {},
+        contacts: src.contacts || {},
         wheelItems: customWheel,
         voiceSettings: customVoice,
         geminiApiKey: apiKey ? apiKey.trim() : '',
