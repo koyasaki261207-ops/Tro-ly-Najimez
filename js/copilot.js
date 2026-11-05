@@ -550,9 +550,14 @@ Khi người dùng yêu cầu hành động, hãy giải thích chu đáo và đ
    - Xóa toàn bộ việc cần làm: <!--NAJIMEZ_ACTION:{"type":"clear_all_tasks"}-->
 6. GHI CHI TIÊU MỚI: <!--NAJIMEZ_ACTION:{"type":"expense","amount":50000,"category":"Ăn uống","note":"Cà phê"}-->
 7. GHI THU NHẬP MỚI: <!--NAJIMEZ_ACTION:{"type":"income","amount":200000,"category":"Thu nhập","note":"Thưởng"}-->
-8. GHI NỢ MỚI: <!--NAJIMEZ_ACTION:{"type":"debt","direction":"they_owe_me","person":"Huy","amount":100000,"note":"Vay tiền"}-->
-9. THÊM VIỆC CẦN LÀM MỚI: <!--NAJIMEZ_ACTION:{"type":"task","title":"Họp nhóm","time":"14:00"}-->
-10. THÊM SỰ KIỆN / LỊCH HỌC VÀO TIỆN ÍCH LỊCH & THỜI KHÓA BIỂU:
+8. THIẾT LẬP / CÀI ĐẶT SỐ DƯ VÍ HIỆN TẠI (SỐ DƯ BAN ĐẦU):
+   Khi người dùng thông báo số dư hiện tại trong ví hoặc cài đặt số dư ban đầu (ví dụ: "số dư hiện tại 3tr 426k", "ví đang có 5 triệu", "số dư ví là 3tr426k", "cài đặt số dư 500k", "ví có 2tr", "số dư đầu kỳ là 1tr"):
+   BẮT BUỘC XUẤT THẺ "set_balance":
+   <!--NAJIMEZ_ACTION:{"type":"set_balance","amount":3426000,"note":"Số dư hiện tại"}-->
+   (Hệ thống sẽ tự động cập nhật số dư ví về đúng chính xác số tiền này và hiển thị thẻ số dư ví màu xanh ngọc đẹp mắt!)
+9. GHI NỢ MỚI: <!--NAJIMEZ_ACTION:{"type":"debt","direction":"they_owe_me","person":"Huy","amount":100000,"note":"Vay tiền"}-->
+10. THÊM VIỆC CẦN LÀM MỚI: <!--NAJIMEZ_ACTION:{"type":"task","title":"Họp nhóm","time":"14:00"}-->
+11. THÊM SỰ KIỆN / LỊCH HỌC VÀO TIỆN ÍCH LỊCH & THỜI KHÓA BIỂU:
     a) Sự kiện 1 ngày đơn lẻ:
        <!--NAJIMEZ_ACTION:{"type":"calendar_event","title":"Học Tiếng Anh","date":"${todayKey}","time":"07:30","endTime":"09:15","category":"Học tập"}-->
     b) Sự kiện lặp lại hằng tuần (ví dụ Thứ 2 hằng tuần):
@@ -1055,9 +1060,29 @@ function parseAndExecuteActions(text) {
     }
   }
 
-  // Safety Net cho giải quyết / xung đột chiều sổ nợ nếu AI quên xuất thẻ action:
+  // Safety Net cho số dư ví hoặc giải quyết / xung đột chiều sổ nợ nếu AI quên xuất thẻ action:
   if (cards.length === 0) {
     const userPromptClean = typeof lastUserPrompt === 'string' ? lastUserPrompt.toLowerCase().trim() : '';
+
+    // 1. Nhận diện người dùng thiết lập / cài đặt số dư ví hiện tại
+    const balPattern = /(?:số\s+dư(?:\s+ví)?(?:\s+hiện\s+tại|\s+ban\s+đầu)?|ví(?:\s+hiện)?(?:\s+đang)?(?:\s+có)?)\s*(?:là|:|=)?\s*([0-9\s.,]+(?:tr|triệu|k|nghìn|ngàn|đ|vnd)?(?:\s*[0-9\s.,]+(?:k|nghìn|ngàn|đ|vnd)?)?)/i;
+    let balAmt = 0;
+    const userBalMatch = userPromptClean.match(balPattern);
+    if (userBalMatch && userBalMatch[1] && !/(?:bao\s+nhiêu|còn|hết|ở\s+đâu|sao|chưa)/i.test(userPromptClean)) {
+      balAmt = typeof parseAmount === 'function' ? parseAmount(userBalMatch[1]) : 0;
+    }
+    // Nếu prompt chưa parse được nhưng câu trả lời của AI có xác nhận số dư cụ thể (vd: 3.426.000 đ)
+    if (!balAmt && /(?:số\s+dư|ví)/i.test(userPromptClean)) {
+      const aiReplyMatch = text.match(/(?:số\s+dư(?:\s+ví)?(?:\s+hiện\s+tại)?(?:\s+của\s+bạn)?\s+là\s+([0-9.,]+)\s*(?:đ|vnd)?)/i);
+      if (aiReplyMatch && aiReplyMatch[1]) {
+        balAmt = typeof parseAmount === 'function' ? parseAmount(aiReplyMatch[1]) : 0;
+      }
+    }
+    if (balAmt > 0) {
+      const cardEl = executeAction({ type: 'set_balance', amount: balAmt, note: 'Số dư hiện tại ban đầu' }, data);
+      if (cardEl) cards.push(cardEl);
+    }
+
     if (userPromptClean && /(?:đã\s+trả\s+nợ|trả\s+nợ|thanh\s+toán\s+nợ|tất\s+toán|thu\s+nợ)/i.test(userPromptClean)) {
       const mentionedDebt = (data.debts || []).find(d => d.person && matchPersonName(d.person, userPromptClean));
       if (mentionedDebt) {
@@ -1259,6 +1284,81 @@ function executeAction(action, data) {
       <div class="action-card-right">
         <span class="card-amount">${isExpense ? '-' : '+'}${formatCurrency(tx.amount)}</span>
         <button type="button" class="btn-card-action undo" title="Hủy bỏ giao dịch này">
+          <i class="fa-solid fa-rotate-left"></i>
+        </button>
+      </div>
+    `;
+
+    card.querySelector('.undo').addEventListener('click', () => {
+      removeTransaction(id, card);
+    });
+    return card;
+  }
+
+  // 1b. Thiết lập / Cài đặt số dư ví hiện tại (set_balance / adjust_balance)
+  if (action.type === 'set_balance' || action.type === 'adjust_balance') {
+    const targetAmt = Math.abs(Number(action.amount) || 0);
+    const curBal = (data.transactions || []).reduce((acc, t) => acc + (t.type === 'income' ? (Number(t.amount) || 0) : -(Number(t.amount) || 0)), 0);
+    const diff = targetAmt - curBal;
+
+    let txType = 'income';
+    let txAmt = targetAmt;
+    let txCategory = 'Số dư ban đầu';
+    let txNote = action.note || 'Số dư hiện tại ban đầu';
+
+    if (data.transactions.length === 0 || curBal === 0) {
+      txType = 'income';
+      txAmt = targetAmt;
+      txCategory = 'Số dư ban đầu';
+      txNote = action.note || 'Số dư hiện tại ban đầu';
+    } else if (diff > 0) {
+      txType = 'income';
+      txAmt = diff;
+      txCategory = 'Điều chỉnh số dư';
+      txNote = action.note || `Điều chỉnh tăng số dư ví (lên ${formatCurrency(targetAmt)})`;
+    } else if (diff < 0) {
+      txType = 'expense';
+      txAmt = Math.abs(diff);
+      txCategory = 'Điều chỉnh số dư';
+      txNote = action.note || `Điều chỉnh giảm số dư ví (xuống ${formatCurrency(targetAmt)})`;
+    } else {
+      txAmt = 0;
+    }
+
+    if (txAmt > 0) {
+      const tx = {
+        id,
+        type: txType,
+        amount: txAmt,
+        category: txCategory,
+        note: txNote,
+        timestamp: Date.now()
+      };
+      data.transactions.unshift(tx);
+      if (typeof autoFetchAndAssignWebImageForItem === 'function') {
+        autoFetchAndAssignWebImageForItem(tx);
+      }
+    }
+
+    const card = document.createElement('div');
+    card.className = `action-card finance-income`;
+    card.dataset.id = id;
+    card.innerHTML = `
+      <div class="action-card-left">
+        <div class="action-card-icon" style="background: rgba(52, 211, 153, 0.16); color: #34d399;">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+        <div class="action-card-info">
+          <div class="action-card-title">
+            <span>${escapeHTML(txNote)}</span>
+            <span class="card-category-badge" style="background: rgba(52, 211, 153, 0.2); color: #34d399;">Số dư ví</span>
+          </div>
+          <div class="action-card-sub">Đã cập nhật số dư ví khả dụng về <strong>${formatCurrency(targetAmt)}</strong></div>
+        </div>
+      </div>
+      <div class="action-card-right">
+        <span class="card-amount" style="color: #34d399;">${formatCurrency(targetAmt)}</span>
+        <button type="button" class="btn-card-action undo" title="Hủy bỏ cập nhật này">
           <i class="fa-solid fa-rotate-left"></i>
         </button>
       </div>
@@ -2669,6 +2769,18 @@ function getNaturalAIResponse(userText) {
     return {
       text: `Dựa trên dữ liệu sổ nợ thời gian thực của bạn:\n\n⚠️ Người bạn đang nợ nhiều nhất là **${escapeHTML(topPerson.name)}** với số tiền **${formatCurrency(topPerson.net)}**.\n\nDanh sách chi tiết những người bạn đang nợ:\n${details}`
     };
+  }
+
+  // Thiết lập / Cài đặt số dư ví hiện tại (vd: "số dư hiện tại 3tr 426k", "ví đang có 500k", "số dư ví là 3tr426k")
+  const setBalMatch = lower.match(/(?:số\s+dư(?:\s+ví)?(?:\s+hiện\s+tại|\s+ban\s+đầu)?|ví(?:\s+hiện)?(?:\s+đang)?(?:\s+có)?)\s*(?:là|:|=)?\s*([0-9\s.,]+(?:tr|triệu|k|nghìn|ngàn|đ|vnd)?(?:\s*[0-9\s.,]+(?:k|nghìn|ngàn|đ|vnd)?)?)/i);
+  if (setBalMatch && !/(?:bao\s+nhiêu|còn|hết|ở\s+đâu|sao|chưa|không)/i.test(lower)) {
+    const rawAmt = setBalMatch[1];
+    const amount = typeof parseAmount === 'function' ? parseAmount(rawAmt) : 0;
+    if (amount > 0) {
+      return {
+        text: `Dạ Najimez đã ghi nhận và cập nhật số dư ví hiện tại của bạn là **${formatCurrency(amount)}** rồi nhé!\n\n<!--NAJIMEZ_ACTION:{"type":"set_balance","amount":${amount},"note":"Số dư hiện tại ban đầu"}-->`
+      };
+    }
   }
 
   // Tra cứu: Số dư ví / Còn bao nhiêu tiền / Tổng thu chi

@@ -429,6 +429,22 @@ function parseAmount(str) {
   let clean = String(str).toLowerCase().replace(/đ|vnd/g, '').trim();
   if (!clean) return 0;
 
+  // Hỗ trợ dạng số kết hợp: "3tr 426k", "3 triệu 426 nghìn", "3tr426k", "3tr5", "1tr 200k"
+  const comboMatch = clean.match(/^(\d+(?:[.,]\d+)?)\s*(?:tr|triệu)\s*(\d+(?:[.,]\d+)?)\s*(?:k|nghìn|ngàn)?$/);
+  if (comboMatch) {
+    const trVal = parseFloat(comboMatch[1].replace(',', '.'));
+    const subRaw = comboMatch[2].replace(',', '.');
+    let subVal = parseFloat(subRaw);
+    if (!isNaN(trVal) && !isNaN(subVal)) {
+      if (subRaw.length === 1 && !clean.includes('k')) {
+        subVal = subVal * 100000;
+      } else if (subRaw.length <= 3) {
+        subVal = subVal * 1000;
+      }
+      return Math.round(trVal * 1000000 + subVal);
+    }
+  }
+
   const isMillion = clean.includes('tr') || clean.includes('triệu');
   const isThousand = clean.includes('k') || clean.includes('nghìn') || clean.includes('ngàn');
 

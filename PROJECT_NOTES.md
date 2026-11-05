@@ -31,6 +31,8 @@
 
 ### 2.2. Bộ Não Hành Động Quản Lý Tài Chính & Sổ Nợ (Action Engine)
 * **Tự động nhận diện & Tạo thẻ giao dịch:** Khi chat về thu/chi, AI tự động tạo thẻ Thu/Chi trực quan, cộng trừ tiền và cập nhật số dư thực tế trên Header.
+* **Thiết lập / Cài đặt số dư ví hiện tại (`set_balance` / `adjust_balance`):** Nhận diện lệnh thông báo số dư hiện tại của người dùng (ví dụ: "số dư hiện tại 3tr 426k", "ví đang có 5 triệu", "cài đặt số dư ban đầu 2tr"), tự động đối soát với số dư hiện tại để bù/trừ chính xác, tạo thẻ hành động số dư ví xanh ngọc trực quan và cập nhật số dư hiển thị ngay lập tức.
+* **Bộ phân tích số tiền tiếng Việt đa năng ([parseAmount](file:///d:/Siêu%20bá%20khí%20trợ%20lý/js/storage.js)):** Hỗ trợ chuẩn xác các cú pháp số tiền hỗn hợp như `3tr 426k`, `3tr426k`, `3 triệu 426 nghìn`, `3tr5`, `1tr 200k`,...
 * **Quản lý Sổ nợ, Tất toán & Tạo mã VietQR:**
   * Tự động tạo thẻ nợ nần 2 chiều kèm nút kích hoạt tạo ảnh mã VietQR ngân hàng thực tế để thanh toán/đòi tiền ngay lập tức.
   * **Thuật toán Tất toán nợ thông minh (`settle_debt`):** Nhận diện lệnh "tôi đã trả nợ cho [ai]" hoặc "[ai] đã trả nợ tôi", tự động gạch nợ (`status: 'paid'`), khấu trừ đúng số dư nợ (không bị cộng dồn thêm nợ), và tự động đồng bộ một khoản Thu/Chi tương ứng vào Sổ Thu Chi cá nhân.
