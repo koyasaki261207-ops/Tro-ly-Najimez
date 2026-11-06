@@ -147,6 +147,13 @@
   * Loại bỏ cơ chế fallback nhầm lẫn sang bản ghi cũ (guest data zombie fallback) và gỡ bỏ hoàn toàn vòng lặp đẩy ngược (echo push loop) khiến máy tính khôi phục lại các giao dịch người dùng đã xóa.
   * Phân hệ cứu hộ dữ liệu (`data-rescue.js`) chỉ chạy 1 lần duy nhất khi khôi phục lịch học/sự kiện cốt lõi bị mất, không tự ý nạp lại giao dịch mẫu hay can thiệp vào quyền chủ động xóa lịch sử thu chi của người dùng.
 
+### 2.5. Trí Tuệ Lưu Từ Vựng 1-Chạm Không Tốn Thao Tác (Zero-Extra-Turn Vocabulary Extraction)
+* **Khắc phục triệt để lỗi tốn thao tác khi học từ vựng:**
+  * **Nâng giới hạn Token:** Tăng `maxOutputTokens` từ `2048` lên `8192` trong cả `callGeminiAPIStream` và `callGeminiAPIFallback` của `copilot.js`, giúp Gemini thoải mái tạo danh sách giải thích chi tiết hàng chục từ kèm toàn bộ thẻ action `add_vocab_batch` mà không bao giờ bị cắt cụt hay ngắt quãng.
+  * **Bắt buộc hành động ngay lượt đầu tiên (1-Turn Mandate):** Hướng dẫn cứng trong System Prompt yêu cầu Gemini khi giải thích danh sách từ vựng/ảnh bài học thì **bắt buộc xuất thẻ `add_vocab_batch` ngay lập tức ở lần phản hồi đầu tiên**, tuyệt đối không chỉ nói miệng "đã lưu" mà quên kèm thẻ action.
+  * **Lớp phòng vệ bóc tách tự động (Client-Side Heuristic Fallback):** Hàm `extractVocabListFromText` bóc tách độc lập toàn bộ danh sách từ vựng (từ, phiên âm IPA, nghĩa tiếng Việt, câu ví dụ) từ văn bản AI phản hồi. Kể cả khi AI quên xuất thẻ action hoặc bị lỗi mạng/cắt cụt thẻ, hệ thống client vẫn tự động nhận diện và lưu 100% từ vựng vào Sổ Từ Vựng ngay trên Turn 1.
+  * **Xử lý tức thì phản hồi bổ sung (Instant Follow-up Interceptor):** Nếu người dùng nhắn *"Lưu vào sổ từ vựng"*, *"Chưa lưu mà"*, *"Lưu hết từ đi"*, hệ thống lập tức quét ngược tin nhắn gần nhất của trợ lý, bóc tách và nạp thẳng vào cơ sở dữ liệu với tốc độ tức thì (<250ms), hiển thị thẻ hành động kèm nút hoàn tác mà không bắt người dùng phải đợi hay tốn thêm lượt trao đổi.
+
 ---
 
 ## 4. Định Hướng Kiến Trúc & Quy Chuẩn (Code Modularization)

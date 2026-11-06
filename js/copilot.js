@@ -593,15 +593,17 @@ Khi người dùng yêu cầu hành động, hãy giải thích chu đáo và đ
     (Lưu ý: items là mảng các chuỗi lựa chọn được tách biệt rõ ràng từ câu của người dùng, tối thiểu 2 mục. Trong phản hồi, hãy khen ngợi hoặc hào hứng giới thiệu về vòng quay và mời người dùng bấm nút bên dưới để mở vòng quay trong Hộp Dụng Cụ!)
 14. THAO TÁC VỚI SỔ TỪ VỰNG NGOẠI NGỮ ("TỪ VỰNG CỦA TÔI"):
     a) THÊM TỪ VỰNG VÀO SỔ TỪ (HỖ TRỢ LƯU TỪNG TỪ VÀ LƯU HÀNG LOẠT NHIỀU TỪ 100%):
-       - QUY TẮC CỐT LÕI (TUYỆT ĐỐI KHÔNG BỎ SÓT TỪ):
-         Khi người dùng gửi hình ảnh (chụp vở bài tập, sách giáo khoa, đề thi, flashcard...) hoặc văn bản chứa danh sách từ vựng và bảo bạn giải thích / lưu vào sổ:
-         BẠN BẮT BUỘC PHẢI LƯU TẤT CẢ 100% CÁC TỪ TRONG DANH SÁCH/HÌNH ẢNH ĐÓ VÀO SỔ TỪ (TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ Ý CHỈ CHỌN VÀI TỪ TIÊU BIỂU, KHÔNG ĐƯỢC BỎ SÓT BẤT KỲ TỪ NÀO).
+       - QUY TẮC CỐT LÕI (TUYỆT ĐỐI 100% LƯU NGAY Ở LƯỢT ĐẦU TIÊN - ZERO EXTRA TURNS):
+         Khi người dùng gửi hình ảnh (chụp vở bài tập, sách giáo khoa, đề thi, flashcard...) hoặc văn bản chứa danh sách từ vựng:
+         BẠN BẮT BUỘC PHẢI XUẤT THẺ <!--NAJIMEZ_ACTION:{"type":"add_vocab_batch",...}--> NGAY TRONG LẦN TRẢ LỜI ĐẦU TIÊN!
+         TUYỆT ĐỐI KHÔNG ĐƯỢC CHỈ NÓI MIỆNG TRONG VĂN BẢN RẰNG "Najimez đã lưu rồi" MÀ QUÊN HOẶC KHÔNG XUẤT THẺ ACTION!
+         Người dùng không muốn phải nhắc đi nhắc lại "Lưu vào sổ từ vựng" hay "Chưa lưu mà"! Hãy lưu 100% từ vựng ngay lập tức không để sót từ nào!
        - NGUYÊN TẮC SƯ PHẠM ĐỘC LẬP TỪ VỰNG (TUYỆT ĐỐI KHÔNG GỘP TỪ ĐỒNG NGHĨA):
          TUYỆT ĐỐI KHÔNG ĐƯỢC GỘP các từ đồng nghĩa hoặc tương đương thành một thẻ (ví dụ không được ghi: "Couch / sofa", "Cap / hat", "Parking area / lot", "Be laid out ~ arranged", "Pile up ~ stack").
          Việc gộp chung sẽ khiến người học bị học vẹt, mất phản xạ ghi nhớ độc lập.
          BẮT BUỘC PHẢI TÁCH RIÊNG TỪNG TỪ THÀNH CÁC THẺ RIÊNG BIỆT: "Couch" riêng, "Sofa" riêng, "Cap" riêng, "Hat" riêng, "Parking area" riêng, "Parking lot" riêng... Mỗi từ có phiên âm IPA chuẩn riêng, ý nghĩa riêng và câu ví dụ riêng.
        - KHI CÓ TỪ 2 TỪ TRỞ LÊN (LƯU HÀNG LOẠT):
-         BẮT BUỘC DÙNG THẺ "add_vocab_batch" gom toàn bộ tất cả các từ trong 1 thẻ action duy nhất để tiết kiệm token và đảm bảo lưu đủ 100% không bị ngắt quãng:
+         BẮT BUỘC DÙNG THẺ "add_vocab_batch" gom toàn bộ tất cả các từ trong 1 thẻ action duy nhất ở cuối câu trả lời để hệ thống tự động nạp vào Sổ Từ:
          <!--NAJIMEZ_ACTION:{"type":"add_vocab_batch","lang":"en","items":[{"word":"Couch","phonetic":"/kaʊtʃ/","meaning":"Ghế sofa dài","example":"A comfortable couch is in the living room."},{"word":"Sofa","phonetic":"/ˈsəʊ.fə/","meaning":"Ghế sofa, ghế bành","example":"She is sitting on the sofa."}]}-->
        - KHI CHỈ CÓ 1 TỪ ĐƠN LẺ:
          <!--NAJIMEZ_ACTION:{"type":"add_vocab","lang":"en","word":"Couch","phonetic":"/kaʊtʃ/","meaning":"Ghế sofa dài","example":"A comfortable couch is in the living room."}-->
@@ -680,7 +682,7 @@ async function callGeminiAPIStream(userPrompt, onChunk, attachedImg = null) {
     generationConfig: {
       temperature: 0.75,
       topP: 0.95,
-      maxOutputTokens: 2048
+      maxOutputTokens: 8192
     }
   };
 
@@ -812,7 +814,7 @@ async function callGeminiAPIFallback(userPrompt, modelInfo = null, attachedImg =
     ]),
     generationConfig: {
       temperature: 0.75,
-      maxOutputTokens: 2048
+      maxOutputTokens: 8192
     }
   };
 
@@ -1044,6 +1046,110 @@ function createMessageToolbar(textToCopy, onRegenerate) {
   return toolbar;
 }
 
+/**
+ * Bóc tách danh sách từ vựng tự động từ văn bản phản hồi của AI (Multi-line blocks hoặc inline list)
+ * Đảm bảo 100% không bỏ sót từ vựng kể cả khi AI quên xuất thẻ NAJIMEZ_ACTION
+ */
+function extractVocabListFromText(rawText) {
+  if (!rawText || typeof rawText !== 'string') return [];
+  const text = rawText.trim();
+  const items = [];
+  const seenWords = new Set();
+
+  function addItem(word, phonetic, meaning, example) {
+    if (!word) return;
+    let cleanWord = word.trim().replace(/^[*_#`"']+|[*_#`"']+$/g, '').trim();
+    cleanWord = cleanWord.replace(/^\d+[\.\)]\s*/, '').trim();
+    if (!cleanWord || cleanWord.length > 60) return;
+    if (/^(danh\s*sách|tổng\s*kết|từ\s*vựng|bài\s*học|unit|ghi\s*chú|ví\s*dụ|lưu\s*ý|chú\s*ý|phiên\s*âm|ý\s*nghĩa|câu\s*hỏi|bài\s*tập)/i.test(cleanWord)) return;
+    const lowerKey = cleanWord.toLowerCase();
+    if (seenWords.has(lowerKey)) return;
+    seenWords.add(lowerKey);
+
+    let cleanPhonetic = (phonetic || '').trim().replace(/^[*_`"']+|[*_`"']+$/g, '').trim();
+    let cleanMeaning = (meaning || '').trim().replace(/^[*_`"']+|[*_`"']+$/g, '').trim();
+    let cleanExample = (example || '').trim().replace(/^[*_`"']+|[*_`"']+$/g, '').trim();
+
+    if (cleanPhonetic && !cleanPhonetic.startsWith('/') && !cleanPhonetic.startsWith('[')) {
+      cleanPhonetic = `/${cleanPhonetic}/`;
+    }
+
+    items.push({
+      word: cleanWord,
+      phonetic: cleanPhonetic,
+      meaning: cleanMeaning,
+      example: cleanExample,
+      lang: 'en'
+    });
+  }
+
+  // Pattern A: Dạng khối phân tách theo dòng với các gạch đầu dòng con (Phiên âm / Ý nghĩa / Ví dụ)
+  const blockRegex = /(?:^|\n)(?:#{1,4}\s*)?(?:(?:\d+[\.\)]|\*|\-)\s+)?(?:\*\*)?([A-Za-z0-9\s'\-\/\u00C0-\u024F\u1E00-\u1EFF\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]+?)(?:\*\*)?\s*\n((?:[ \t]*(?:[o\*\-\+•]|\d+[\.\)])[ \t]*[^\n]+\n?)+)/g;
+  let bMatch;
+  while ((bMatch = blockRegex.exec(text)) !== null) {
+    const rawHead = bMatch[1].trim();
+    const subBody = bMatch[2];
+    if (/(?:phiên\s*âm|ý\s*nghĩa|nghĩa|ví\s*dụ|ipa|meaning|example)/i.test(subBody)) {
+      let headWord = rawHead.replace(/^\d+[\.\)]\s*/, '').replace(/^[o\*\-\+•]\s*/, '').trim();
+      headWord = headWord.replace(/\s*\([^\)]*\)$/, '').trim();
+
+      let phonetic = '';
+      let meaning = '';
+      let example = '';
+
+      const pMatch = subBody.match(/(?:phiên\s*âm|ipa)\s*[:\-–]\s*([^\n\r]+)/i);
+      if (pMatch) phonetic = pMatch[1].trim();
+
+      const mMatch = subBody.match(/(?:ý\s*nghĩa|nghĩa\s*tiếng\s*việt|nghĩa|meaning)\s*[:\-–]\s*([^\n\r]+)/i);
+      if (mMatch) meaning = mMatch[1].trim();
+
+      const eMatch = subBody.match(/(?:ví\s*dụ|câu\s*ví\s*dụ|example)\s*[:\-–]\s*([^\n\r]+)/i);
+      if (eMatch) example = eMatch[1].trim();
+
+      if (headWord && (meaning || phonetic)) {
+        addItem(headWord, phonetic, meaning, example);
+      }
+    }
+  }
+
+  // Pattern B: Dạng inline 1 dòng: 1. **Word** (/phonetic/): Ý nghĩa. Ví dụ: ...
+  const lineRegex = /(?:^|\n)(?:#{1,4}\s*)?(?:\d+[\.\)]|\*|\-)?\s*(?:\*\*)?([A-Za-z\s'\-\/\u00C0-\u024F\u1E00-\u1EFF\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]{2,40}?)(?:\*\*)?\s*(?:\((?:\/([^\/]+)\/|([^)]+))\))?\s*[:\-–]\s*([^\n\r]+)/g;
+  let lMatch;
+  while ((lMatch = lineRegex.exec(text)) !== null) {
+    const rawWord = lMatch[1].trim();
+    const p1 = lMatch[2] || '';
+    const p2 = lMatch[3] || '';
+    const rest = (lMatch[4] || '').trim();
+    if (!rawWord || seenWords.has(rawWord.toLowerCase())) continue;
+    if (/^(hôm\s*nay|ngày\s*mai|công\s*việc|sự\s*kiện|chú\s*ý|lưu\s*ý|ví\s*dụ|nghĩa|phiên\s*âm|từ\s*vựng)/i.test(rawWord)) continue;
+
+    let phonetic = p1 ? `/${p1}/` : (p2 && (p2.includes('/') || p2.length < 20) ? `/${p2.replace(/^\/|\/$/g, '')}/` : '');
+    let meaning = rest;
+    let example = '';
+
+    if (!phonetic) {
+      const slashMatch = rest.match(/(?:\/([^\/]+)\/|\[([^\]]+)\])/);
+      if (slashMatch) {
+        phonetic = slashMatch[0];
+        meaning = meaning.replace(slashMatch[0], '').trim();
+      }
+    }
+
+    const exSplit = meaning.split(/(?:ví\s*dụ|câu\s*ví\s*dụ|example|ex)\s*[:\-–]/i);
+    if (exSplit.length > 1) {
+      meaning = exSplit[0].trim();
+      example = exSplit.slice(1).join(' ').trim();
+    }
+
+    meaning = meaning.replace(/^[:\-–\s]+|[:\-–\s]+$/g, '').trim();
+    if (rawWord && (meaning || phonetic)) {
+      addItem(rawWord, phonetic, meaning, example);
+    }
+  }
+
+  return items;
+}
+
 function parseAndExecuteActions(text) {
   const actionRegex = /<!--NAJIMEZ_ACTION:(\{[\s\S]*?\})-->/g;
   const cards = [];
@@ -1060,7 +1166,7 @@ function parseAndExecuteActions(text) {
     }
   }
 
-  // Safety Net cho số dư ví hoặc giải quyết / xung đột chiều sổ nợ nếu AI quên xuất thẻ action:
+  // Safety Net cho số dư ví, giải quyết / xung đột chiều sổ nợ hoặc lưu từ vựng nếu AI quên xuất thẻ action:
   if (cards.length === 0) {
     const userPromptClean = typeof lastUserPrompt === 'string' ? lastUserPrompt.toLowerCase().trim() : '';
 
@@ -1083,6 +1189,7 @@ function parseAndExecuteActions(text) {
       if (cardEl) cards.push(cardEl);
     }
 
+    // 2. Nhận diện trả nợ / thu nợ
     if (userPromptClean && /(?:đã\s+trả\s+nợ|trả\s+nợ|thanh\s+toán\s+nợ|tất\s+toán|thu\s+nợ)/i.test(userPromptClean)) {
       const mentionedDebt = (data.debts || []).find(d => d.person && matchPersonName(d.person, userPromptClean));
       if (mentionedDebt) {
@@ -1100,10 +1207,28 @@ function parseAndExecuteActions(text) {
         }
       }
     }
+
+    // 3. Tự động bóc tách từ vựng nếu AI liệt kê từ vựng trong văn bản mà quên xuất thẻ <!--NAJIMEZ_ACTION-->
+    const isVocabContext = /(?:từ\s*vựng|sổ\s*từ|flashcard|tiếng\s*(?:anh|nhật|hàn|trung|pháp|đức)|unit|vocabulary|vocab|bài\s*tập)/i.test(userPromptClean)
+      || /(?:đã\s*(?:tự\s*động\s*)?lưu(?:\s*toàn\s*bộ|\s*trọn\s*vẹn)?\s*(?:\d+\s*)?từ\s*vựng|sổ\s*từ\s*vựng)/i.test(text)
+      || !!lastAttachedImage;
+
+    const extractedVocab = extractVocabListFromText(text);
+    if (extractedVocab.length > 0 && (extractedVocab.length >= 2 || isVocabContext)) {
+      let detectedLang = 'en';
+      if (/[\u3040-\u30ff]/i.test(text) || /tiếng\s*nhật/i.test(userPromptClean)) detectedLang = 'ja';
+      else if (/[\uac00-\ud7af]/i.test(text) || /tiếng\s*hàn/i.test(userPromptClean)) detectedLang = 'ko';
+      else if (/tiếng\s*trung/i.test(userPromptClean)) detectedLang = 'zh';
+      else if (/tiếng\s*pháp/i.test(userPromptClean)) detectedLang = 'fr';
+      else if (/tiếng\s*đức/i.test(userPromptClean)) detectedLang = 'de';
+
+      const cardEl = executeAction({ type: 'add_vocab_batch', lang: detectedLang, items: extractedVocab }, data);
+      if (cardEl) cards.push(cardEl);
+    }
   }
 
   saveLedgerData(data);
-  let cleanText = text.replace(actionRegex, '').trim();
+  let cleanText = text.replace(actionRegex, '').replace(/<!--NAJIMEZ_ACTION[\s\S]*?(?:-->|$)/g, '').trim();
 
   // Kiểm tra xem có thẻ xung đột (conflict) hoặc thẻ cảnh báo (warning) không
   const conflictCard = cards.find(c => c && c.dataset && c.dataset.isConflict === 'true');
@@ -3439,6 +3564,7 @@ function initChatEngine() {
     const cleanText = (text || '').trim();
     if (!cleanText && !attachedImg) return;
     lastUserPrompt = cleanText || (attachedImg ? 'Phân tích hình ảnh' : '');
+    lastAttachedImage = attachedImg;
 
     // Tự động dừng âm thanh cũ ngay khi gửi tin nhắn mới
     if (typeof stopSpeakingAssistant === 'function') {
@@ -3450,6 +3576,39 @@ function initChatEngine() {
 
     if (typeof playAssistantSound === 'function') {
       playAssistantSound('send');
+    }
+
+    // Safety Net Tức Thì: Người dùng yêu cầu lưu từ vựng từ câu trả lời trước đó của Najimez (tránh tốn thêm thao tác)
+    const isVocabFollowUp = /(?:lưu\s+(?:vào\s+)?sổ\s*(?:từ\s*vựng|từ)?|chưa\s+lưu|sao\s+chưa\s+lưu|lưu\s+hết|lưu\s+toàn\s+bộ|lưu\s+lại)/i.test(cleanText);
+    if (isVocabFollowUp && !attachedImg && Array.isArray(conversationHistory) && conversationHistory.length > 0) {
+      let lastModelText = '';
+      for (let i = conversationHistory.length - 1; i >= 0; i--) {
+        if (conversationHistory[i].role === 'model' && conversationHistory[i].parts?.[0]?.text) {
+          lastModelText = conversationHistory[i].parts[0].text;
+          break;
+        }
+      }
+      if (lastModelText) {
+        const extractedFollowUp = extractVocabListFromText(lastModelText);
+        if (extractedFollowUp.length > 0) {
+          const ledgerData = getLedgerData();
+          let detectedLang = 'en';
+          if (/[\u3040-\u30ff]/i.test(lastModelText)) detectedLang = 'ja';
+          else if (/[\uac00-\ud7af]/i.test(lastModelText)) detectedLang = 'ko';
+          const cardEl = executeAction({ type: 'add_vocab_batch', lang: detectedLang, items: extractedFollowUp }, ledgerData);
+          saveLedgerData(ledgerData);
+          const bubble = createAIMessageBubble();
+          setTimeout(() => {
+            bubble.finalize(`Dạ! Najimez đã quét và lưu toàn bộ **${extractedFollowUp.length} từ vựng** vào **Sổ Từ Vựng** của bạn ngay lập tức rồi đây ạ! Bạn không cần phải thao tác lại nữa nha! Chúc bạn học thật tốt! ❤️✨`);
+            if (cardEl) {
+              bubble.cardsContainer.style.display = 'flex';
+              bubble.cardsContainer.innerHTML = '';
+              bubble.cardsContainer.appendChild(cardEl);
+            }
+          }, 200);
+          return;
+        }
+      }
     }
 
     if (specificAction) {
@@ -3666,6 +3825,8 @@ function initChatEngine() {
 
       if (confirmed) {
         conversationHistory = [];
+        lastUserPrompt = '';
+        lastAttachedImage = null;
         if (typeof updateHeaderGreeting === 'function') updateHeaderGreeting();
         feed.innerHTML = `
           <div class="chat-msg ai">

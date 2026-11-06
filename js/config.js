@@ -63,6 +63,7 @@ LƯU Ý: Thẻ <!--NAJIMEZ_ACTION:...--> sẽ được hệ thống giao diện 
 let cachedModelInfo = null;
 let conversationHistory = [];
 let lastUserPrompt = '';
+let lastAttachedImage = null;
 
 // Bộ lọc trạng thái bảng điều khiển
 let currentExpenseFilter = 'all'; // 'all', 'expense', 'income'
