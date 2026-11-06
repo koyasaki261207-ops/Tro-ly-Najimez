@@ -193,9 +193,9 @@ async function rescueAndHealUserData(forceHeal = false) {
     const hasPythonEvent = curEvList.some(e => e && e.title && e.title.toLowerCase().includes('python'));
     const hasThaiDebt = curDbList.some(d => d && d.person && d.person.toLowerCase().includes('thái'));
 
-    // Nếu đã có đầy đủ sự kiện hoặc đã từng hoàn tất cứu hộ, chỉ lưu an toàn và dừng lại
+    // Nếu đã có đầy đủ sự kiện hoặc đã từng hoàn tất cứu hộ, dừng lại ngay lập tức
     const alreadyRescued = localStorage.getItem('najimez_rescue_v1_done') === '1';
-    if (!forceHeal && (alreadyRescued || (hasEnglishEvent && hasPythonEvent))) {
+    if (alreadyRescued || (hasEnglishEvent && hasPythonEvent)) {
       localStorage.setItem('najimez_rescue_v1_done', '1');
       try {
         localStorage.setItem('najimez_ledger_backup_safety', JSON.stringify(currentData));
@@ -222,7 +222,6 @@ async function rescueAndHealUserData(forceHeal = false) {
 
     // 3. Quét mọi key khác trong localStorage bắt đầu bằng hoặc chứa 'najimez_ledger'
     let candidateEvents = [];
-    let candidateTx = [];
     let candidateDebts = [];
     let candidateTasks = [];
 
@@ -234,9 +233,6 @@ async function rescueAndHealUserData(forceHeal = false) {
           if (item && typeof item === 'object') {
             if (Array.isArray(item.calendarEvents) && item.calendarEvents.length > 0) {
               candidateEvents = mergeEventLists(candidateEvents, item.calendarEvents);
-            }
-            if (Array.isArray(item.transactions) && item.transactions.length > 0) {
-              candidateTx = mergeTxLists(candidateTx, item.transactions);
             }
             if (Array.isArray(item.debts) && item.debts.length > 0) {
               candidateDebts = mergeDebtLists(candidateDebts, item.debts);
@@ -276,12 +272,8 @@ async function rescueAndHealUserData(forceHeal = false) {
     // Bổ sung các sự kiện chuẩn nếu còn thiếu
     recoveredEvents = mergeEventLists(recoveredEvents, GOLDEN_RESCUE_EVENTS);
 
-    let recoveredTx = curTxList;
-    if (forceHeal) {
-      recoveredTx = mergeTxLists(recoveredTx, candidateTx);
-      if (guestData && Array.isArray(guestData.transactions)) recoveredTx = mergeTxLists(recoveredTx, guestData.transactions);
-      if (safetyBackupData && Array.isArray(safetyBackupData.transactions)) recoveredTx = mergeTxLists(recoveredTx, safetyBackupData.transactions);
-    }
+    // Tuyệt đối không can thiệp hay khôi phục lại các giao dịch thu chi cá nhân người dùng đã xóa
+    const recoveredTx = curTxList;
 
     let recoveredDebts = curDbList;
     recoveredDebts = mergeDebtLists(recoveredDebts, candidateDebts);
@@ -304,7 +296,8 @@ async function rescueAndHealUserData(forceHeal = false) {
       contacts: currentData.contacts || (guestData && guestData.contacts) || {}
     };
 
-    // Lưu lại vào LocalStorage của tài khoản hiện tại
+    // Lưu lại vào LocalStorage của tài khoản hiện tại và đánh dấu hoàn tất cứu hộ
+    localStorage.setItem('najimez_rescue_v1_done', '1');
     localStorage.setItem(currentKey, JSON.stringify(recoveredData));
     localStorage.setItem('najimez_ledger_backup_safety', JSON.stringify(recoveredData));
 

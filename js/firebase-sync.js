@@ -382,9 +382,6 @@ async function syncOrMigrateUserData() {
     if (docSnap.exists) {
       // Đã có dữ liệu trên Cloud cho tài khoản Google này -> Nạp về máy
       applyRemoteCloudData(docSnap.data());
-      if (typeof rescueAndHealUserData === 'function') {
-        setTimeout(rescueAndHealUserData, 300);
-      }
     } else {
       // Tài khoản Google mới -> Kiểm tra và di chuyển dữ liệu từ Khách sang
       const guestKey = APP_CONFIG.ledgerKey;
@@ -441,10 +438,6 @@ function triggerAutoSyncToCloud() {
 // Khởi tạo các bộ lắng nghe toàn cục cho module đồng bộ đám mây
 function initFirebaseSyncModule() {
   initFirebaseModule();
-
-  if (typeof rescueAndHealUserData === 'function') {
-    setTimeout(rescueAndHealUserData, 500);
-  }
 
   // Đảm bảo dữ liệu luôn được đẩy lên trước khi người dùng tắt hoặc ẩn tab
   window.addEventListener('visibilitychange', () => {
